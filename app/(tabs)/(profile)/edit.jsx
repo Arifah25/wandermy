@@ -2,14 +2,14 @@ import { View, Text } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-const Explore = () => {
+const EditProfile = () => {
   return (
     <SafeAreaView
-    className="h-full flex-1 p-5 items-center justify-center"
+    className="bg-white h-full flex-1 p-5 items-center justify-start"
     >
-      <Text>Explore</Text>
+      <Text>EditProfile</Text>
     </SafeAreaView>
   )
 }
 
-export default Explore
+export default EditProfile

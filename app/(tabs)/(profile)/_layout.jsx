@@ -9,25 +9,31 @@ import Profile from './index';
 const Stack = createNativeStackNavigator();
 
 const HeaderIcon = ({ onPress, icon }) => (
-  <TouchableOpacity onPress={onPress} style={{ marginRight: 10 }}>
-    <Image source={icon} style={{ width: 24, height: 24, tintColor: '#fff', margin: 20 }} />
+  <TouchableOpacity onPress={onPress} style={{ margin: 10 }}>
+    <Image source={icon} style={{ width: 24, height: 24, tintColor: '#fff' }} />
   </TouchableOpacity>
 );
 
 const ProfileLayout = () => {
+  const navigation = useNavigation();
+  const handleBack = () => {
+    navigation.goBack();
+  }
+
   return (
     <Stack.Navigator>
-    <Stack.Screen
-      name="Profile"
-      component={Profile}
-      options={{ 
-        headerTitle: 'Profile',
-        headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-        headerStyle: { backgroundColor: '#A91D1D', height: 95 },
-        headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-      }}
-    />
-  </Stack.Navigator>
+      <Stack.Screen
+        name="Profile"
+        component={Profile}
+        options={{ 
+          headerTitle: 'Profile',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+    </Stack.Navigator>
   )
 }
 

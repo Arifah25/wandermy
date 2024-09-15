@@ -11,7 +11,8 @@ const TabIcon = ({ icon, color, name, focused }) => {
         resizeMode="contain"
         style={{ tintColor: color, width: 24, height: 24 }}
       />
-      <Text style={{ color, fontSize: 12, fontWeight: focused ? 'bold' : 'normal' }}>{name}</Text>
+      {/* if want to put label */}
+      {/* <Text style={{ color, fontSize: 12, fontWeight: focused ? 'bold' : 'normal' }}>{name}</Text> */}
     </View>
   );
 };
@@ -27,15 +28,14 @@ const TabsLayout = () => {
         backgroundColor: '#CBCBCB',
         borderTopWidth: 1,
         borderTopColor: '#C3C3C3',
-        height: 80,
+        height: `${9}%`,
       },
     }}
     >
       <Tabs.Screen
         name="(home)"
-        //component={HomeLayout}
         options={{
-          //headerShown: false,
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon icon={icons.home} color={color} name="Home" focused={focused} />
           ),
@@ -66,6 +66,9 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <TabIcon icon={icons.profile} color={color} name="Profile" focused={focused} />
           ),
+          tabBarStyle: {
+            display: 'none', // Hide the tab bar on the Profile screen
+          },
         }}
       />
     </Tabs>
