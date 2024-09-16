@@ -1,10 +1,14 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Explore from './index';
+import { useRouter } from 'expo-router';
+import CreateLayout from './(create)/_layout';
+import CreateAttraction from './(create)/attraction';
+import CreateDining from './(create)/dining';
+import CreateEvent from './(create)/event';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,9 +19,9 @@ const HeaderIcon = ({ onPress, icon }) => (
 );
 
 const ExploreLayout = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const handleBack = () => {
-    navigation.goBack();
+    router.back();
   }
   
   return (
@@ -30,6 +34,13 @@ const ExploreLayout = () => {
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
+        }}
+      />
+      <Stack.Screen
+        name="(create)"
+        component={CreateLayout}
+        options={{ 
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

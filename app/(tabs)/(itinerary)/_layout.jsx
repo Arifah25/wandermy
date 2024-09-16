@@ -1,10 +1,10 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Itinerary from './index';
+import { useRouter } from 'expo-router';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,9 +15,9 @@ const HeaderIcon = ({ onPress, icon }) => (
 );
 
 const ItineraryLayout = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const handleBack = () => {
-    navigation.goBack();
+    router.back();
   }
 
   return (

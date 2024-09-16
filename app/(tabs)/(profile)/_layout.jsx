@@ -5,6 +5,10 @@ import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Profile from './index';
+import BookmarkPlaces from './bookmark';
+import EditProfile from "./edit";
+import MyItineraries from "./itinerary"
+import { useRouter } from 'expo-router';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,9 +19,9 @@ const HeaderIcon = ({ onPress, icon }) => (
 );
 
 const ProfileLayout = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const handleBack = () => {
-    navigation.goBack();
+    router.back();
   }
 
   return (
@@ -27,6 +31,39 @@ const ProfileLayout = () => {
         component={Profile}
         options={{ 
           headerTitle: 'Profile',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen
+        name="edit"
+        component={EditProfile}
+        options={{ 
+          headerTitle: 'Edit Profile',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen
+        name="bookmark"
+        component={BookmarkPlaces}
+        options={{ 
+          headerTitle: 'Bookmarks',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen
+        name="itinerary"
+        component={MyItineraries}
+        options={{ 
+          headerTitle: 'My Itineraries',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
