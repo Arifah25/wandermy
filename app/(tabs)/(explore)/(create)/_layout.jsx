@@ -24,11 +24,7 @@ const CreateLayout = () => {
   }
   
   return (
-    <Stack.Navigator
-      screenOptions={{
-        tabBarStyle: { display: 'none' },  // Hide the tab bar for all screens in this navigator
-      }}
-    >
+    <Stack.Navigator>
       <Stack.Screen
         name="attraction"
         component={CreateAttraction}

@@ -5,10 +5,13 @@ import { FormField, Button } from "../../components";
 import { Link, useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../configs/firebaseConfig";
+import { getDatabase, ref, set } from "firebase/database";
 
 const SignUp = () => {
   // for navigation
   const router = useRouter();
+
+  const database = getDatabase();
 
   // Initialize state variables
   const [email, setEmail] = useState("");

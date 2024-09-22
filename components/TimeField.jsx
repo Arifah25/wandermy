@@ -11,7 +11,7 @@ const TimeField = ({
   const [show, setShow] = useState(false);
 
   const onChange = (event, selectedDate) => {
-    // setShow(Platform.OS === 'ios');
+     setShow(Platform.OS === 'ios');
     if (selectedDate) {
       const hours = selectedDate.getHours();
       const minutes = selectedDate.getMinutes();
@@ -31,13 +31,13 @@ const TimeField = ({
 
   return (
     <View
-    className="bg-secondary w-24 rounded-full">
+    className=" w-24 rounded-lg">
       <Button
        title={value || placeholder} 
        onPress={() => setShow(true)} 
        color={"#808080"}
        />
-      {show && (
+       {show && (
         <DateTimePicker
           value={dateValue}
           mode="time"
@@ -46,6 +46,7 @@ const TimeField = ({
           {...props}
         />
       )}
+      
     </View>
   );
 };

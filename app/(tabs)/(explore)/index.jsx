@@ -75,27 +75,33 @@ const Explore = () => {
               What listing do you want to apply for?
             </Text>
             <View className="flex-1 items-center mt-3">
-              <TouchableOpacity 
+              <View className="mt-4 bg-white items-center w-3/4 h-12 rounded-md justify-center">
+                <TouchableOpacity 
                 onPress={addAttraction}
-              >
-                <View className="mt-4 bg-white items-center w-[190px] h-[44px] rounded-[9px] justify-center">
-                  <Text className="font-kregular text-2xl">Attraction</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity 
+                >
+                  <Text className="font-kregular text-xl">
+                    Attraction
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View className="mt-4 bg-white items-center w-3/4 h-12 rounded-md justify-center">
+                <TouchableOpacity 
                 onPress={addDining}
-              >
-                <View className="mt-4 bg-white items-center w-[190px] h-[44px] rounded-[9px] justify-center">
-                  <Text className="font-kregular text-2xl">Dining</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity 
+                >
+                  <Text className="font-kregular text-xl">
+                    Dining
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View className="mt-4 bg-white items-center w-3/4 h-12 rounded-md justify-center">
+                <TouchableOpacity 
                 onPress={addEvent}
-              >
-                <View className="mt-4 bg-white items-center w-[190px] h-[44px] rounded-[9px] justify-center">
-                  <Text className="font-kregular text-2xl">Events</Text>
-                </View>
-              </TouchableOpacity>
+                >
+                  <Text className="font-kregular text-xl">
+                    Event
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>

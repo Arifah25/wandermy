@@ -18,15 +18,15 @@ const CreateForm = ({
     className="space-y-1 w-full mb-5"
     >
       <Text 
-      className="font-kregular text-xl"
+      className="font-kregular text-xl mb-1"
       >
       {title}
       </Text>
       <View 
-      className={` ${tags ? 'h-40' : 'h-12'} bg-white rounded-md justify-start items-center flex-row border-2 border-secondary focus:border-black`}
+      className={` ${tags ? 'h-40 items-start' : 'h-12 items-center'} bg-white rounded-md justify-start flex-row border-2 border-secondary focus:border-black `}
       >
         <TextInput
-        className="flex-1 font-pregular text-base ml-3"
+        className={`flex-1 font-pregular text-base ml-3 ${tags ? 'mt-1' : ''}`}
         value={value}
         placeholder={placeholder}
         placeholderTextColor="#7E6C6C"

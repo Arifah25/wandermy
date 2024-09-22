@@ -1,7 +1,7 @@
 import { View, Text, Image } from 'react-native'
 import React from 'react'
 import { icons } from '../../constants';
-import { Tabs } from 'expo-router'
+import { Tabs, usePathname } from 'expo-router'
 
 const TabIcon = ({ icon, color, name, focused }) => {
   return (
@@ -18,18 +18,28 @@ const TabIcon = ({ icon, color, name, focused }) => {
 };
 
 const TabsLayout = () => {
+  const pathname = usePathname();
+
+  // Log the current route name
+  // console.log('Current route:', pathname);
+
   return (
     <Tabs
-    screenOptions={{
-      tabBarShowLabel: false,
-      tabBarActiveTintColor: '#A91D1D',
-      tabBarInactiveTintColor: '#000',
-      tabBarStyle: {
-        backgroundColor: '#CBCBCB',
-        borderTopWidth: 1,
-        borderTopColor: '#C3C3C3',
-        height: `${9}%`,
-      },
+    screenOptions={({ route }) => {
+      // Log the route name within screenOptions
+      // console.log('Route in screenOptions:', route.name);
+
+      return {
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#A91D1D',
+        tabBarInactiveTintColor: '#000',
+        tabBarStyle: {
+          backgroundColor: '#CBCBCB',
+          borderTopWidth: 1,
+          borderTopColor: '#C3C3C3',
+          height: `${9}%`,
+        }
+      };
     }}
     >
       <Tabs.Screen
@@ -49,8 +59,10 @@ const TabsLayout = () => {
             <TabIcon icon={icons.explore} color={color} name="Explore" focused={focused} />
           ),
           tabBarStyle: {
-            display: 'none', // Hide the tab bar on the Profile screen
-          },
+            display: pathname.includes('/attraction') || 
+                     pathname.includes('/dining') || 
+                     pathname.includes('/event') ? 'none' : '',
+          }
         }}
       />
       <Tabs.Screen
@@ -79,4 +91,3 @@ const TabsLayout = () => {
 }
 
 export default TabsLayout
-

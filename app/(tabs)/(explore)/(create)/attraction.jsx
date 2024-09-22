@@ -1,7 +1,7 @@
 import { View, Text, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Button, CreateForm, TimeField, } from '../../../../components'
+import { AddPhoto, Button, CreateForm, TimeField, } from '../../../../components'
 import { useRouter } from 'expo-router'
 
 const CreateAttraction = () => {
@@ -47,15 +47,16 @@ const CreateAttraction = () => {
     setForm({ ...form, operatingHours: updatedOperatingHours });
   };
 
+  const handlePost = () => {
+    // Post
+  }
   return (
-    <SafeAreaView
-    className="flex-1 justify-center"
-    >
+    // <SafeAreaView>
       <ScrollView
-      className="h-full px-8 "
+      className="flex-1 h-full px-8"
       >
         <View
-        className="mb-5"
+        className="my-5"
         >
           <Text
           className="font-kregular text-xl"
@@ -63,6 +64,7 @@ const CreateAttraction = () => {
             Poster :
           </Text>
           {/* image picker for poster */}
+          <AddPhoto />
         </View>
         <CreateForm 
         title="Attraction name :"
@@ -72,9 +74,11 @@ const CreateAttraction = () => {
         className="items-center mb-5"
         >
           <CreateForm
-          title="Location :"
+          title="Address :"
           value={form.address}
-          handleChangeText={(e) => setForm({ ...form, address: e })}        />
+          tags="true"
+          handleChangeText={(e) => setForm({ ...form, address: e })}       
+           />
           {/* pin location */}
           <Button 
           title="Pin Location"
@@ -123,6 +127,7 @@ const CreateAttraction = () => {
             Price :
           </Text>
           {/* image picker for poster */}
+          <AddPhoto />
         </View>
         <CreateForm 
         title="Tags :"
@@ -132,21 +137,21 @@ const CreateAttraction = () => {
         tags="true"
         />
         <View
-        className="flex-row items-center justify-evenly my-5">
+        className="flex-row items-center justify-evenly mt-5 mb-10">
           <Button 
           title="Cancel"
-          handlePress={() => router.push("(auth)/sign-up")}
+          handlePress={() => router.back()}
           style="bg-secondary w-2/5"
           textColor="text-primary"
           />
           <Button 
           title="POST"
-          handlePress={() => router.push("(auth)/sign-up")}
+          handlePress={handlePost}
           style="bg-primary w-2/5"
           textColor="text-white"/>
         </View>
       </ScrollView>      
-    </SafeAreaView>
+    // </SafeAreaView>
   )
 }
 
