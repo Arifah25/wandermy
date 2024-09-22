@@ -7,6 +7,7 @@ import CreateAttraction from './attraction';
 import CreateDining from './dining';
 import CreateEvent from './event';
 import { icons } from '../../../../constants';
+import PinLocation from './location';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +24,11 @@ const CreateLayout = () => {
   }
   
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        tabBarStyle: { display: 'none' },  // Hide the tab bar for all screens in this navigator
+      }}
+    >
       <Stack.Screen
         name="attraction"
         component={CreateAttraction}
@@ -31,6 +36,7 @@ const CreateLayout = () => {
           headerShown: true,
           headerTitle: 'Create Attraction',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D', height: 95 },
           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
@@ -42,6 +48,7 @@ const CreateLayout = () => {
           headerShown: true,
           headerTitle: 'Create Dining',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D', height: 95 },
           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
@@ -53,9 +60,17 @@ const CreateLayout = () => {
           headerShown: true,
           headerTitle: 'Create Event',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D', height: 95 },
           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
+        />
+        <Stack.Screen
+        name="location"
+        component={PinLocation}
+        options={{
+          headerShown: false,
+         }}
         />
     </Stack.Navigator>
   )

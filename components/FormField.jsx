@@ -8,7 +8,7 @@ const FormField = ({
   placeholder,
   value,
   handleChangeText,
-  props,
+  ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -17,15 +17,15 @@ const FormField = ({
     className="space-y-2 w-11/12 mb-7"
     >
       <Text 
-      className="font-ksemibold text-base"
+      className="font-ksemibold text-lg"
       >
       {title}
       </Text>
       <View 
-      className="bg-white rounded-md h-12 justify-start items-center flex-row border-2 border-secondary focus:border-black"
+      className="bg-white rounded-md h-14 justify-start items-center flex-row border-2 border-secondary focus:border-black"
       >
         <TextInput
-        className="flex-1 font-pregular ml-3"
+        className="flex-1 font-pregular text-base ml-3"
         value={value}
         placeholder={placeholder}
         placeholderTextColor="#7E6C6C"

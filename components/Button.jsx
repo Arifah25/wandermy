@@ -10,10 +10,10 @@ const Button = ({
     <TouchableOpacity
     onPress={handlePress}
     activeOpacity={0.7}
-    className={`${style} h-10 rounded justify-center`}
+    className={`${style} h-14 rounded justify-center`}
     >
       <Text
-      className={`${textColor} font-kregular text-base text-center`}
+      className={`${textColor} font-kregular text-lg text-center`}
       >
         {title}
       </Text>

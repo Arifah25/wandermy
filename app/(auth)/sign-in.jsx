@@ -49,12 +49,12 @@ const SignIn = () => {
 
   return (
     <SafeAreaView
-      className="bg-white h-full flex-1 p-5 items-center justify-start"
+      className="bg-white h-full flex-1 px-5 items-center justify-start"
     >
       <Image 
         source={icons.wandermy}
         resizeMode='contain'
-        className="w-48 h-48 items-center"
+        className="w-56 h-56 items-center"
       />
       <FormField 
         title="Email"
@@ -65,6 +65,7 @@ const SignIn = () => {
       <FormField
         title="Password"
         handleChangeText={(value) => setPassword(value)} // Update the password state variable
+        keyboardType="default"
       />
 
       <View 

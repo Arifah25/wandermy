@@ -48,6 +48,9 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <TabIcon icon={icons.explore} color={color} name="Explore" focused={focused} />
           ),
+          tabBarStyle: {
+            display: 'none', // Hide the tab bar on the Profile screen
+          },
         }}
       />
       <Tabs.Screen
@@ -76,3 +79,4 @@ const TabsLayout = () => {
 }
 
 export default TabsLayout
+

@@ -20,7 +20,6 @@ const Explore = () => {
 
   const addAttraction = () => {
     router.push("(tabs)/(explore)/(create)/attraction");
-    console.log("pushed");
     toggleModalVisibility();
   };
 
