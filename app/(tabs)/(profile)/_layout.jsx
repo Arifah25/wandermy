@@ -27,7 +27,7 @@ const ProfileLayout = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Profile"
+        name="index"
         component={Profile}
         options={{ 
           headerTitle: 'Profile',

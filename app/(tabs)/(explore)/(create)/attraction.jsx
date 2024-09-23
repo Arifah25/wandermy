@@ -84,7 +84,8 @@ const CreateAttraction = () => {
           title="Pin Location"
           handlePress={() => router.push("(tabs)/(explore)/(create)/location")}
           style="bg-secondary w-full"
-          textColor="text-black"
+          textColor="text-black ml-5"
+          location="true"
           />
 
         </View>

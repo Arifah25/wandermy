@@ -23,7 +23,7 @@ const HomeLayout = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Home"
+        name="index"
         component={Home}
         options={{ 
           headerTitle: 'WanderMy',

@@ -15,7 +15,7 @@ const Explore = () => {
   };
 
   const handleAdd = () => {
-    toggleModalVisibility();
+    router.push("(tabs)/(itinerary)/new");
   };
 
   const addAttraction = () => {
@@ -29,7 +29,7 @@ const Explore = () => {
   };
 
   const addEvent = () => {
-    router.push("/(tabs)/(explore)/(create)/event");
+    router.push("(tabs)/(explore)/(create)/event");
     toggleModalVisibility();
   };
 
@@ -38,7 +38,7 @@ const Explore = () => {
     className="h-full flex-1 px-5 items-center justify-start"
     >
      <View
-     className="flex-row items-center"
+     className="flex-row items-center -mt-2"
      >
       <Search />
       <TouchableOpacity>

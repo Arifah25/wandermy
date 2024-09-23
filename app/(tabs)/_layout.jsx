@@ -5,11 +5,11 @@ import { Tabs, usePathname } from 'expo-router'
 
 const TabIcon = ({ icon, color, name, focused }) => {
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
       <Image
         source={icon}
         resizeMode="contain"
-        style={{ tintColor: color, width: 24, height: 24 }}
+        style={{ tintColor: color, width: 24, height: 24, }}
       />
       {/* if want to put label */}
       {/* <Text style={{ color, fontSize: 12, fontWeight: focused ? 'bold' : 'normal' }}>{name}</Text> */}
@@ -21,26 +21,25 @@ const TabsLayout = () => {
   const pathname = usePathname();
 
   // Log the current route name
-  // console.log('Current route:', pathname);
+  //  console.log('Current route:', pathname);
 
-  return (
+   return (
     <Tabs
-    screenOptions={({ route }) => {
-      // Log the route name within screenOptions
-      // console.log('Route in screenOptions:', route.name);
-
-      return {
+      screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#A91D1D',
         tabBarInactiveTintColor: '#000',
-        tabBarStyle: {
+        tabBarStyle: pathname === '/' ? {
           backgroundColor: '#CBCBCB',
           borderTopWidth: 1,
           borderTopColor: '#C3C3C3',
           height: `${9}%`,
-        }
-      };
-    }}
+          justifyContent: 'center',
+          alignItems: 'center',
+        } : {
+          display: 'none', // Hide the tab bar on all screens except /index
+        },
+      }}
     >
       <Tabs.Screen
         name="(home)"
@@ -58,11 +57,6 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <TabIcon icon={icons.explore} color={color} name="Explore" focused={focused} />
           ),
-          tabBarStyle: {
-            display: pathname.includes('/attraction') || 
-                     pathname.includes('/dining') || 
-                     pathname.includes('/event') ? 'none' : '',
-          }
         }}
       />
       <Tabs.Screen

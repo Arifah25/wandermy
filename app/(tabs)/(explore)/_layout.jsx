@@ -27,7 +27,7 @@ const ExploreLayout = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Explore"
+        name="index"
         component={Explore}
         options={{ 
           headerTitle: 'Explore',
