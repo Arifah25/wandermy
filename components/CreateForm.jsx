@@ -26,7 +26,7 @@ const CreateForm = ({
       className={` ${tags ? 'h-40 items-start' : 'h-12 items-center'} bg-white rounded-md justify-start flex-row border-2 border-secondary focus:border-black `}
       >
         <TextInput
-        className={`flex-1 font-pregular text-base ml-3 ${tags ? 'mt-1' : ''}`}
+        className={`font-pregular text-base py-1 px-3 `}
         value={value}
         placeholder={placeholder}
         placeholderTextColor="#7E6C6C"

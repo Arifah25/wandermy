@@ -6,6 +6,8 @@ import CreateForm from "./CreateForm";
 import TimeField from "./TimeField";
 import AddPhoto from "./AddPhoto";
 import ItineraryCard from "./ItineraryCard";
+import DateField from "./DateField";
+import PlaceCard from "./PlacesCard";
 
 export{
     FormField,
@@ -15,5 +17,7 @@ export{
     CreateForm,
     TimeField,
     AddPhoto,
-    ItineraryCard
+    ItineraryCard,
+    DateField,
+    PlaceCard,
 };

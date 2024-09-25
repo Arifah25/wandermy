@@ -4,12 +4,15 @@ import { View, TouchableOpacity, Image, TextInput, Alert } from "react-native";
 
 import { icons } from "../constants";
 
-const SearchInput = ({ initialQuery }) => {
+const SearchInput = ({ 
+  initialQuery,
+  width, 
+}) => {
   const pathname = usePathname();
   const [query, setQuery] = useState(initialQuery || "");
 
   return (
-    <View className="flex-row items-center space-x-4 w-[305px] h-14 px-4 bg-secondary rounded-xl border-2 border-secondary focus:border-black">
+    <View className={`flex-row items-center h-14 px-4 ${width} rounded-md border-2 border-secondary focus:border-black`}>
       <TextInput
         className="text-base mt-0.5 text-black flex-1 font-kregular"
         value={query}

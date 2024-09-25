@@ -31,7 +31,7 @@ const Profile = () => {
         </Text>
         {/* tags */}
         <View
-          className="items-start bg-secondary h-24 w-full p-2 rounded-md"
+          className="items-start bg-secondary h-24 w-full p-[10px] rounded-md"
         >
           {/* get from database */}
           <Text

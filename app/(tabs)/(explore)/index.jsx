@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Image, Modal } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {Search, TabPlace } from '../../../components'
+import {PlaceCard, Search, TabPlace } from '../../../components'
 import { icons } from '../../../constants'
 import { useRouter } from 'expo-router'
 
@@ -15,7 +15,7 @@ const Explore = () => {
   };
 
   const handleAdd = () => {
-    router.push("(tabs)/(itinerary)/new");
+    toggleModalVisibility();
   };
 
   const addAttraction = () => {
@@ -35,12 +35,14 @@ const Explore = () => {
 
   return (
     <SafeAreaView
-    className="h-full flex-1 px-5 items-center justify-start"
+    className="bg-white h-full flex-1 px-5 items-center justify-start"
     >
      <View
      className="flex-row items-center -mt-2"
      >
-      <Search />
+      <Search 
+      width="w-5/6"
+      />
       <TouchableOpacity>
         <Image
           source={icons.filter}
@@ -57,7 +59,16 @@ const Explore = () => {
         onPress={handleAdd}
       >
         <Image source={icons.plus} tintColor="#fff" className="w-7 h-7"/>
-      </TouchableOpacity>    
+      </TouchableOpacity>   
+      <View className="flex-row justify-evenly mt-7 w-full">
+      <PlaceCard
+      name="Petronas Twin Tower"
+      handlePress={() => router.push('(tabs)/(explore)/details')} 
+      />
+      <PlaceCard
+      name="KLCC" 
+      />
+      </View> 
       <Modal
         visible={isModalVisible}
         transparent={true}

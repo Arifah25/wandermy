@@ -40,10 +40,10 @@ const EditProfile = () => {
           Username
         </Text>
         <View 
-        className="w-56 bg-white rounded-md h-8 justify-center border-2 border-secondary focus:border-black"
+        className="w-56 bg-white rounded-md h-10 justify-center border-2 border-secondary focus:border-black"
         >
           <TextInput
-          className="font-pregular ml-3"
+          className="font-pregular p-2"
           //value={value}
           // placeholder={placeholder}
           placeholderTextColor="#7E6C6C"
@@ -60,10 +60,10 @@ const EditProfile = () => {
           Email
         </Text>
         <View 
-        className="w-56 bg-white rounded-md h-8 justify-center border-2 border-secondary focus:border-black"
+        className="w-56 bg-white rounded-md h-10 justify-center border-2 border-secondary focus:border-black"
         >
           <TextInput
-          className="font-pregular ml-3"
+          className="font-pregular p-2"
           //value={value}
           // placeholder={placeholder}
           placeholderTextColor="#7E6C6C"
@@ -84,7 +84,7 @@ const EditProfile = () => {
         className="mt-3 w-full bg-white rounded-md h-40 justify-start border-2 border-secondary focus:border-black"
         >
           <TextInput
-          className="font-pregular m-3"
+          className="font-pregular p-3"
           //value={value}
           // placeholder={placeholder}
           placeholderTextColor="#7E6C6C"

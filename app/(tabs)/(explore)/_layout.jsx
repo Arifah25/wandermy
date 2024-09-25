@@ -9,6 +9,7 @@ import CreateLayout from './(create)/_layout';
 import CreateAttraction from './(create)/attraction';
 import CreateDining from './(create)/dining';
 import CreateEvent from './(create)/event';
+import Details from './details';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,17 @@ const ExploreLayout = () => {
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
+        }}
+      />
+      <Stack.Screen 
+        name="details"
+        component={Details}
+        options={{
+          headerTitle: 'Explore',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
       />
       <Stack.Screen

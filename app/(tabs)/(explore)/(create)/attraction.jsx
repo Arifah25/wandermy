@@ -53,7 +53,7 @@ const CreateAttraction = () => {
   return (
     // <SafeAreaView>
       <ScrollView
-      className="flex-1 h-full px-8"
+      className="flex-1 h-full px-8 bg-white"
       >
         <View
         className="my-5"

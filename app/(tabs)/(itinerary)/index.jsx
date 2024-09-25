@@ -11,8 +11,8 @@ const Itinerary = () => {
   const [itinerary, setItinerary] = useState([]);
 
   return (
-    <SafeAreaView
-    className="h-full flex-1 px-5 -mt-3 justify-start"
+    <View
+    className="bg-white h-full flex-1 p-5 justify-start"
     >
          
        {itinerary?.length==0?
@@ -38,7 +38,7 @@ const Itinerary = () => {
       >
         <Image source={icons.plus} tintColor="#fff" className="w-7 h-7"/>
       </TouchableOpacity> 
-    </SafeAreaView>
+    </View>
   )
 }
 
