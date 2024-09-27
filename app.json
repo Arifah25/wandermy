@@ -20,7 +20,10 @@
       }
     },
     "android": {
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
@@ -35,7 +38,8 @@
       "expo-router",
       "expo-font",
       "expo-splash-screen",
-      "expo-system-ui"
+      "expo-system-ui",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

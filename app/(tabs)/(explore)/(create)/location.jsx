@@ -54,6 +54,12 @@ const PinLocation = () => {
               description={`${pinLocation.latitude}, ${pinLocation.longitude}`}
             />
           )}
+          <TouchableOpacity
+            className="absolute bottom-5 right-5 bg-primary p-4 rounded-full shadow-sm shadow-black"
+            // onPress={handleAdd}
+          >
+            <Image source={icons.plus} tintColor="#fff" className="w-7 h-7"/>
+          </TouchableOpacity>  
         </MapView>
       ) : (
         <Text>{errorMsg || "Loading map..."}</Text>

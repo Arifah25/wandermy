@@ -1,15 +1,24 @@
 import { View, Text, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { AddPhoto, Button, CreateForm, TimeField, } from '../../../../components'
 import { useRouter } from 'expo-router'
+import { getDatabase, ref, push, set } from "firebase/database";
+import { getAuth } from 'firebase/auth'
 
 const CreateAttraction = () => {
   
   // Use the useRouter hook to get the router object for navigation
   const router = useRouter();
 
+  //database and get user ID
+  const db = getDatabase();
+  const auth = getAuth();
+  const userId = auth.currentUser.uid;
+
   // Initialize state variables for attributes in attraction
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newPlaceRef, setNewPlaceRef] = useState(null);
   const [placeID, setPlaceID] = useState(null);
   const [form, setForm] = useState({
     name: '',
@@ -22,15 +31,31 @@ const CreateAttraction = () => {
     poster: [], 
     tags: '',
     operatingHours: [
-      { dayOfWeek: 'SUN', openingTime: '', closingTime: '' },
-      { dayOfWeek: 'MON', openingTime: '', closingTime: '' },
-      { dayOfWeek: 'TUE', openingTime: '', closingTime: '' },
-      { dayOfWeek: 'WED', openingTime: '', closingTime: '' },
-      { dayOfWeek: 'THU', openingTime: '', closingTime: '' },
-      { dayOfWeek: 'FRI', openingTime: '', closingTime: '' },
-      { dayOfWeek: 'SAT', openingTime: '', closingTime: '' },
+      { dayOfWeek: 'SUN', openingTime: '9:00', closingTime: '22:00' },
+      { dayOfWeek: 'MON', openingTime: '9:00', closingTime: '22:00' },
+      { dayOfWeek: 'TUE', openingTime: '9:00', closingTime: '22:00' },
+      { dayOfWeek: 'WED', openingTime: '9:00', closingTime: '22:00' },
+      { dayOfWeek: 'THU', openingTime: '9:00', closingTime: '22:00' },
+      { dayOfWeek: 'FRI', openingTime: '9:00', closingTime: '22:00' },
+      { dayOfWeek: 'SAT', openingTime: '9:00', closingTime: '22:00' },
     ],
   });
+
+  useEffect(() => {
+    const generatePlaceID = async () => {
+      try {
+        const placeRef = ref(db, 'places');
+        const newPlaceRef = push(placeRef);
+        const newPlaceID = newPlaceRef.key;
+        setPlaceID(newPlaceID);
+        setNewPlaceRef(newPlaceRef);
+      } catch (error) {
+        console.error('Error generating places ID: ', error);
+      }
+    };
+
+    generatePlaceID();
+  }, []);
   
   const handleChangeOpeningTime = (dayOfWeek, time) => {
     const updatedOperatingHours = form.operatingHours.map((day) =>
@@ -47,9 +72,45 @@ const CreateAttraction = () => {
     setForm({ ...form, operatingHours: updatedOperatingHours });
   };
 
-  const handlePost = () => {
-    // Post
-  }
+  const handlePost = async () => {
+    setIsSubmitting(true);
+    try {
+      const placeData = {
+        placeID,
+        name: form.name,
+        latitude: form.latitude,
+        longitude: form.longitude,
+        address: form.address,
+        websiteLink: form.websiteLink,
+        contactNum: form.contactNum,
+        poster: form.poster,
+        price_or_menu: form.poster,
+        tags: form.tags,
+        category: 'attraction',
+        status: 'pending',
+        user: userId,
+      };
+      await set(newPlaceRef, placeData);
+
+      // Save opening hours
+      const operatingHoursRef = ref(db, `operatingHours/${placeID}`);
+      form.operatingHours.forEach(async (day) => {
+        const newOpeningHourRef = push(operatingHoursRef);
+        await set(newOpeningHourRef, {
+          dayOfWeek: day.dayOfWeek,
+          openingTime: day.openingTime,
+          closingTime: day.closingTime,
+        });
+      });
+
+      setIsSubmitting(false);
+      router.back();
+      } catch (error) {
+        console.error(error);
+        setIsSubmitting(false);
+    }
+  };
+  
   return (
     // <SafeAreaView>
       <ScrollView
@@ -132,8 +193,8 @@ const CreateAttraction = () => {
         </View>
         <CreateForm 
         title="Tags :"
-        value={form.contactNum}
-        handleChangeText={(e) => setForm({ ...form, contactNum: e })}
+        value={form.tags}
+        handleChangeText={(e) => setForm({ ...form, tags: e })}
         keyboardType="default"
         tags="true"
         />

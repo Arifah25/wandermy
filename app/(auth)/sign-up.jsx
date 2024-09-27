@@ -1,51 +1,92 @@
-import { View, Text, ToastAndroid } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { View, Text, ToastAndroid, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormField, Button } from "../../components";
 import { Link, useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../configs/firebaseConfig";
-import { getDatabase, ref, set } from "firebase/database";
+import { getDatabase, ref as databaseRef, set } from "firebase/database";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { icons } from '../../constants';
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
 
 const SignUp = () => {
   // for navigation
   const router = useRouter();
 
   const database = getDatabase();
+  const storage = getStorage();
 
   // Initialize state variables
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
 
+  // Photo
+  const uploadDefaultProfileImage = async (userUid) => {
+    try {
+      // Load the asset (local image)
+      const asset = Asset.fromModule(icons.profile); // Load the local image asset
+      await asset.downloadAsync(); // Ensure the asset is downloaded
+  
+      // Get the URI of the asset
+      const fileUri = asset.localUri || asset.uri; // This will give the local path to the asset
+  
+      // Use fetch to convert the local image to a Blob
+      const response = await fetch(fileUri);
+      const blob = await response.blob(); // Convert the file into a blob
+  
+      // Set up a reference to the Firebase Storage location
+      const storageReference = storageRef(getStorage(), `profilePictures/${userUid}`);
+  
+      // Upload the blob to Firebase Storage
+      await uploadBytes(storageReference, blob);
+  
+      // Get the download URL of the uploaded image
+      const profilePictureURL = await getDownloadURL(storageReference);
+  
+      return profilePictureURL; // Return the URL of the uploaded image
+      
+    } catch (error) {
+      console.error("Error uploading default profile picture:", error);
+      throw error; // Rethrow the error for further handling
+    }
+  };
+
   // Define the OnCreateAccount function to handle the sign-up process
-  const OnCreateAccount = () => {
+  const OnCreateAccount = async () => {
     // Check if all fields are filled in
     if (!email && !password && !username) {
       // If not, display a toast message to the user
-      ToastAndroid.show('Please enter all details', ToastAndroid.BOTTOM)
+      ToastAndroid.show('Please fill in all fields', ToastAndroid.BOTTOM);
+      return;
     }
 
-    // to create a new user
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // If the user is created successfully, get the user object
-        const user = userCredential.user;
-        // You can add additional logic here to handle the user object
-        // For example, you can log the user object to the console for debugging
-        // console.log(user);
+    try {
+      // Create the user with Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-        // Navigate to the sign-in page after a successful sign-up process
-        router.push("(auth)/sign-in");
-      })
-      .catch((error) => {
-        // If there's an error, get the error code and message
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        // Log the error message and code to the console for debugging
-        console.log(errorMessage, errorCode);
+      // Upload the default profile image (icons.profile) to Firebase Storage
+      const profilePictureURL = uploadDefaultProfileImage(user.uid); 
+
+      // Save the user data to Firebase Realtime Database
+      await set(databaseRef(database, 'users/' + user.uid), {
+        email: email,
+        username: username,
+        userPreference: '',
+        profilePicture: profilePictureURL, // Store the default profile picture URL
       });
-  }
+
+      // Navigate to the sign-in page
+      router.push("(auth)/sign-in");
+    } catch (error) {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error(errorMessage, errorCode);
+    }
+  };
 
   return (
     <SafeAreaView

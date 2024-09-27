@@ -23,14 +23,16 @@ const CreateForm = ({
       {title}
       </Text>
       <View 
-      className={` ${tags ? 'h-40 items-start' : 'h-12 items-center'} bg-white rounded-md justify-start flex-row border-2 border-secondary focus:border-black `}
+      className={`${tags ? 'h-40 items-start' : 'h-12 items-center'} bg-white rounded-md justify-start flex-row border-2 border-secondary focus:border-black `}
       >
         <TextInput
-        className={`font-pregular text-base py-1 px-3 `}
+        className={`w-full font-pregular text-base py-2 px-2 `}
         value={value}
         placeholder={placeholder}
         placeholderTextColor="#7E6C6C"
         onChangeText={handleChangeText}
+        multiline
+        // textAlignVertical="top" // Align text to the top of the TextInput
         {...props}
         />
       </View>
