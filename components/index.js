@@ -9,6 +9,7 @@ import ItineraryCard from "./ItineraryCard";
 import DateField from "./DateField";
 import PlaceCard from "./PlacesCard";
 import Poster from "./Poster";
+import Map from "./Map";
 
 export{
     FormField,
@@ -22,4 +23,5 @@ export{
     DateField,
     PlaceCard,
     Poster,
+    Map,
 };

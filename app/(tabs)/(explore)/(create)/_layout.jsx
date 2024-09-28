@@ -7,7 +7,6 @@ import CreateAttraction from './attraction';
 import CreateDining from './dining';
 import CreateEvent from './event';
 import { icons } from '../../../../constants';
-import PinLocation from './location';
 
 const Stack = createNativeStackNavigator();
 
@@ -60,13 +59,6 @@ const CreateLayout = () => {
           headerStyle: { backgroundColor: '#A91D1D', height: 95 },
           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
-        />
-        <Stack.Screen
-        name="location"
-        component={PinLocation}
-        options={{
-          headerShown: false,
-         }}
         />
     </Stack.Navigator>
   )
