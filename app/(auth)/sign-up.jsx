@@ -9,7 +9,6 @@ import { getDatabase, ref as databaseRef, set } from "firebase/database";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { icons } from '../../constants';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
 
 const SignUp = () => {
   // for navigation

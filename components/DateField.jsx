@@ -16,15 +16,15 @@ const DateField = ({
       const year = selectedDate.getFullYear();
       const month = selectedDate.getMonth() + 1; // months are 0-based
       const day = selectedDate.getDate();
-      const formattedDate = `${month < 10 ? `0${month}` : month}/${day < 10 ? `0${day}` : day}/${year}`;
+      const formattedDate = `${day < 10 ? `0${day}` : day}/${month < 10 ? `0${month}` : month}/${year}`;
       handleChangeText(formattedDate);
       setShow(false);
     }
   };
 
   // Validate value to ensure it's in the correct format
-  const parsedValue = typeof value === 'string' && value.includes('/') ? value : '01/01/2022';
-  const [month, day, year] = parsedValue.split('/').map(Number);
+  const parsedValue = typeof value === 'string' && value.includes('/') ? value : '01/01/2025';
+  const [day, month, year] = parsedValue.split('/').map(Number);
 
   const dateValue = new Date();
   dateValue.setFullYear(year);
@@ -59,8 +59,8 @@ const DateField = ({
             onPress={() => setShow(true)}
             className="w-24 rounded-md h-10 justify-center items-center bg-secondary"
           >
-            <Text className="text-base">
-              {value}
+            <Text className="text-base font-kregular">
+              {value || placeholder}
             </Text>
           </TouchableOpacity>
         )

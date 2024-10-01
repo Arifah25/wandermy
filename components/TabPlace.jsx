@@ -6,11 +6,11 @@ const TabComponent = ({ activeTab, setActiveTab }) => {
     <View className="mt-5 flex-row justify-evenly ">
       <TouchableOpacity 
         className="flex-1 py-[10px] bg-secondary items-center rounded-[10px] mx-[5px] active? bg-secondary : bg-gray-200"
-        style={[activeTab === 'attractions' && styles.activeTab]} 
-        onPress={() => setActiveTab('attractions')}
+        style={[activeTab === 'attraction' && styles.activeTab]} 
+        onPress={() => setActiveTab('attraction')}
       >
-        <Text className="text-base text-[#333] font-kregular" style={[activeTab === 'attractions' && styles.activeTabText]}>
-          Attractions
+        <Text className="text-base text-[#333] font-kregular" style={[activeTab === 'attraction' && styles.activeTabText]}>
+          Attraction
         </Text>
       </TouchableOpacity>
       <TouchableOpacity 
@@ -24,11 +24,11 @@ const TabComponent = ({ activeTab, setActiveTab }) => {
       </TouchableOpacity>
       <TouchableOpacity 
         className="flex-1 py-[10px] bg-secondary items-center rounded-[10px] mx-[5px] active? bg-secondary : bg-gray-200"
-        style={[activeTab === 'events' && styles.activeTab]} 
-        onPress={() => setActiveTab('events')}
+        style={[activeTab === 'event' && styles.activeTab]} 
+        onPress={() => setActiveTab('event')}
       >
-        <Text className="text-base text-[#333] font-kregular" style={[ activeTab === 'events' && styles.activeTabText]}>
-          Events
+        <Text className="text-base text-[#333] font-kregular" style={[ activeTab === 'event' && styles.activeTabText]}>
+          Event
         </Text>
       </TouchableOpacity>
     </View>

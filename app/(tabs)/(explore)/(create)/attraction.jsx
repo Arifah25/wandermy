@@ -1,9 +1,11 @@
-import { View, Text, ScrollView, Modal } from 'react-native'
+import { View, Text, ScrollView, Modal, Switch } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../../components'
 import { getDatabase, ref, push, set } from "firebase/database";
-import { getAuth } from 'firebase/auth'
+import { getAuth } from 'firebase/auth';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 const CreateAttraction = () => {
   
@@ -32,15 +34,40 @@ const CreateAttraction = () => {
     poster: [], 
     tags: '',
     operatingHours: [
-      { dayOfWeek: 'SUN', openingTime: '9:00 AM', closingTime: '10:00 PM' },
-      { dayOfWeek: 'MON', openingTime: '9:00 AM', closingTime: '10:00 PM' },
-      { dayOfWeek: 'TUE', openingTime: '9:00 AM', closingTime: '10:00 PM' },
-      { dayOfWeek: 'WED', openingTime: '9:00 AM', closingTime: '10:00 PM' },
-      { dayOfWeek: 'THU', openingTime: '9:00 AM', closingTime: '10:00 PM' },
-      { dayOfWeek: 'FRI', openingTime: '9:00 AM', closingTime: '10:00 PM' },
-      { dayOfWeek: 'SAT', openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'MON', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'TUE', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'WED', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'THU', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'FRI', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'SAT', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'SUN', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
     ],
   });
+
+  // Store selected images in state
+  const [posterImages, setPosterImages] = useState([]);
+  const [priceImages, setPriceImages] = useState([]);
+
+  const uploadImages = async (images, folderName) => {
+    const storage = getStorage();
+    const uploadedUrls = [];
+    
+    for (const uri of images) {
+      const storageRef1 = storageRef(storage, `places/attraction/${placeID}/${folderName}/${new Date().toISOString()}`);
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      
+      try {
+        const snapshot = await uploadBytes(storageRef1, blob);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        uploadedUrls.push(downloadURL); // Collect uploaded image URLs
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    }
+    
+    return uploadedUrls;
+  };
 
   // If latitude and longitude are passed from the PinLocation page, update the form state
   useEffect(() => {
@@ -85,9 +112,20 @@ const CreateAttraction = () => {
     setForm({ ...form, operatingHours: updatedOperatingHours });
   };
 
+  const handleToggleDayOpen = (dayOfWeek) => {
+    const updatedOperatingHours = form.operatingHours.map((day) =>
+      day.dayOfWeek === dayOfWeek ? { ...day, isOpen: !day.isOpen } : day
+    );
+    setForm({ ...form, operatingHours: updatedOperatingHours });
+  };
+
   const handlePost = async () => {
     setIsSubmitting(true);
     try {
+      // Upload images and get the URLs
+      const posterUrls = await uploadImages(posterImages, 'poster');
+      const priceUrls = await uploadImages(priceImages, 'price');
+
       const placeData = {
         placeID,
         name: form.name,
@@ -96,8 +134,8 @@ const CreateAttraction = () => {
         address: form.address,
         websiteLink: form.websiteLink,
         contactNum: form.contactNum,
-        poster: form.poster,
-        price_or_menu: form.poster,
+        poster: posterUrls, // Use uploaded URLs
+        price_or_menu: priceUrls,
         tags: form.tags,
         category: 'attraction',
         status: 'pending',
@@ -111,8 +149,9 @@ const CreateAttraction = () => {
         const newOpeningHourRef = push(operatingHoursRef);
         await set(newOpeningHourRef, {
           dayOfWeek: day.dayOfWeek,
-          openingTime: day.openingTime,
-          closingTime: day.closingTime,
+          isOpen: day.isOpen,
+          openingTime: day.isOpen ? day.openingTime : 'null',
+          closingTime: day.isOpen ? day.closingTime : null,
         });
       });
 
@@ -124,6 +163,7 @@ const CreateAttraction = () => {
         setIsSubmitting(false);
     }
   };
+  
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -133,7 +173,7 @@ const CreateAttraction = () => {
   };
 
   const handleLocationSelected = (locationData) => {
-    console.log('Selected Location:', locationData);
+    // console.log('Selected Location:', locationData);
     
     // Update the form with latitude and longitude from the locationData
     setForm((prevForm) => ({
@@ -184,9 +224,8 @@ const CreateAttraction = () => {
           </Text>
           {/* image picker for poster */}
           <AddPhoto
-            placeID={placeID} 
-            folderName="poster"
-            handlePress={handlePosterImagePicked}
+            images={posterImages}
+            setImages={setPosterImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
 
@@ -226,25 +265,34 @@ const CreateAttraction = () => {
         handleChangeText={(e) => setForm({ ...form, contactNum: e })}
         keyboardType="phone-pad"
         />
-        {/* Operating Hours */}
+          {/* Operating Hours with Open/Close toggle */}
+        <View className="w-full">
+        {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
+          <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
+            <View className="flex-row items-center w-1/3 justify-start mb-2">
+              <Text className="text-base font-semibold w-1/2">{dayOfWeek}</Text>
+              <Switch 
+                value={isOpen}
+                onValueChange={() => handleToggleDayOpen(dayOfWeek)}
+                label={isOpen ? 'Open' : 'Close'}
+              />
+            </View>
 
-        <View className="">
-          {form.operatingHours.map(({ dayOfWeek, openingTime, closingTime }) => (
-            <View key={dayOfWeek} className=" flex-row justify-evenly items-center mb-7">
-              <Text className="text-base font-semibold w-10">{dayOfWeek}</Text>
-              <View className="flex-row items-center">
+            {isOpen && (
+              <View className="flex-row justify-evenly items-center">
                 <TimeField
                   value={openingTime}
                   handleChangeText={(time) => handleChangeOpeningTime(dayOfWeek, time)}
                 />
-                <Text className="w-10 align-middle text-center text-base font-semibold">-</Text>
+                <Text className="mx-3">-</Text>
                 <TimeField
                   value={closingTime}
                   handleChangeText={(time) => handleChangeClosingTime(dayOfWeek, time)}
                 />
               </View>
-            </View>
-          ))}
+            )}
+          </View>
+        ))}
         </View>
         <View
         className="mb-5"
@@ -254,12 +302,11 @@ const CreateAttraction = () => {
           >
             Price :
           </Text>
-          {/* image picker for poster */}
+          {/* image picker for price */}
           <AddPhoto
-            placeID={placeID} 
-            folderName="price"
-            handlePress={handlePriceImagesPicked}
             isMultiple={true}
+            images={priceImages}
+            setImages={setPriceImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
 
@@ -275,7 +322,7 @@ const CreateAttraction = () => {
         className="flex-row items-center justify-evenly mt-5 mb-10">
           <Button 
           title="Cancel"
-          handlePress={() => router.push('/index')}
+          handlePress={() => router.back()}
           style="bg-secondary w-2/5"
           textColor="text-primary"
           />

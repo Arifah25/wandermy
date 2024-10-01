@@ -10,6 +10,7 @@ import DateField from "./DateField";
 import PlaceCard from "./PlacesCard";
 import Poster from "./Poster";
 import Map from "./Map";
+import DetailTab from "./detailsTab";
 
 export{
     FormField,
@@ -24,4 +25,5 @@ export{
     PlaceCard,
     Poster,
     Map,
+    DetailTab,
 };

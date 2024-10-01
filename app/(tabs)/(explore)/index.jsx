@@ -1,14 +1,53 @@
-import { View, Text, TouchableOpacity, Image, Modal } from 'react-native'
-import React, { useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import {PlaceCard, Search, TabPlace } from '../../../components'
-import { icons } from '../../../constants'
-import { useRouter } from 'expo-router'
+import React, { useState, useEffect } from 'react';
+import { View, FlatList, ActivityIndicator, TouchableOpacity, Image, Modal, Text, SafeAreaView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import { PlaceCard, Search, TabPlace } from '../../../components';
+import { icons } from '../../../constants';
 
 const Explore = () => {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState('attractions');
+  
+  const [places, setPlaces] = useState([]); // State to store places data
+  const [loading, setLoading] = useState(true); // Loading state for data fetching
+  const [activeTab, setActiveTab] = useState('attraction'); // Active category tab
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const router = useRouter(); // Navigation handler
+
+  // Fetch data based on the active category
+  useEffect(() => {
+    setLoading(true);
+    const db = getDatabase();
+
+    // Switch between the different categories: 'attractions', 'dining', and 'events'
+    const placesRef = ref(db, 'places'); // Assuming all places are under one 'places' node
+    
+    const unsubscribe = onValue(placesRef, (snapshot) => {
+      const data = snapshot.val();
+      const placesArray = data
+        ? Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }))
+        : [];
+      
+      // Filter the data based on the selected tab/category
+      const filteredPlaces = placesArray.filter(place => place.category === activeTab); 
+
+      setPlaces(filteredPlaces);
+      setLoading(false); // Stop loading after data is fetched
+    });
+
+    // Clean up the listener on unmount
+    return () => unsubscribe();
+  }, [activeTab]); // Re-fetch when activeTab changes
+
+  // Handle pressing a place card to navigate to its details, passing all place data
+  const handlePlacePress = (place) => {
+    router.push({
+      pathname: '(tabs)/(explore)/details',
+      params: { ...place }, // Pass all the place data as route params
+    });
+  };
 
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
@@ -34,11 +73,11 @@ const Explore = () => {
   };
 
   return (
-    <SafeAreaView
-    className="bg-white h-full flex-1 px-5 items-center justify-start"
+    <View
+    className="bg-white h-full flex-1 p-5 items-center justify-start"
     >
      <View
-     className="flex-row items-center -mt-2"
+     className="flex-row items-center"
      >
       <Search 
       width="w-5/6"
@@ -52,23 +91,37 @@ const Explore = () => {
       </TouchableOpacity>
 
      </View>  
-     <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />    
+     {/* Category Tabs */}
+     <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 
+      {/* Places List or Loading Indicator */}
+      <View className="h-full w-full mt-5">
+        {loading ? (
+          <ActivityIndicator size="large" color="#A91D1D" />
+        ) : (
+          <FlatList
+            data={places}
+            renderItem={({ item }) => (
+              <PlaceCard
+                name={item.name} // Display place name
+                image={item.poster ? item.poster[0] : null} // Display poster image
+                handlePress={() => handlePlacePress(item)} // Pass all item data to the details page
+              />
+            )}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={{ justifyContent: 'space-between' }}
+          />
+        )}
+      </View>
+      
       <TouchableOpacity
         className="absolute bottom-5 right-5 bg-primary p-4 rounded-full shadow-sm shadow-black"
         onPress={handleAdd}
       >
         <Image source={icons.plus} tintColor="#fff" className="w-7 h-7"/>
       </TouchableOpacity>   
-      <View className="flex-row justify-evenly mt-7 w-full">
-      <PlaceCard
-      name="Petronas Twin Tower"
-      handlePress={() => router.push('(tabs)/(explore)/details')} 
-      />
-      <PlaceCard
-      name="KLCC" 
-      />
-      </View> 
+      
       <Modal
         visible={isModalVisible}
         transparent={true}
@@ -118,7 +171,7 @@ const Explore = () => {
         </View>
       </Modal>
 
-    </SafeAreaView>
+    </View>
   )
 }
 
