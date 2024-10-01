@@ -1,11 +1,38 @@
 import { View, Text, Image, FlatList } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { icons } from "../../../constants";
+import { getAuth } from 'firebase/auth';
+import { getDatabase, ref, get } from 'firebase/database';
+
 const Home = () => {
+  const [userData, setUserData] = useState([]);
+
+  const auth = getAuth();
+  const db = getDatabase();
+  const userId = auth.currentUser?.uid;
+
+  const userRef = ref(db, `users/${userId}`);
+  get(userRef).then((snapshot) => {
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      setUserData(userData);
+      // console.log(userData);
+      // // You can access the data like this:
+      // console.log(userData.email);
+      // console.log(userData.username);
+      // console.log(userData.userPreference);
+      // console.log(userData.profilePicture);
+    } else {
+      console.log("No data available");
+    }
+  }).catch((error) => {
+    console.error(error);
+  });
+
   return (
-    <SafeAreaView
-    className="bg-white h-full flex-1 px-5"
+    <View
+    className="bg-white h-full flex-1 p-5"
     >
       <View
       className="flex-row justify-center items-center"
@@ -15,8 +42,8 @@ const Home = () => {
         >
           {/* get profile photo from database */}
           <Image
-          source={icons.profile}
-          className="rounded-full w-24 h-24"
+          source={{uri: userData.profilePicture} || icons.profile}
+          className="rounded-full w-32 h-32"
           />
         </View>
         <View
@@ -31,13 +58,13 @@ const Home = () => {
           className="mt-4 font-ksemibold text-2xl"
           >
             {/* get name from database */}
-            PUTRI
+            {userData.username}
           </Text>
         </View>
       </View>
       {/* get recommended places from database */}
       <View
-      className="m-4 bg-secondary h-full"
+      className="m-4 h-full"
       >
         <Text
         className="font-kregular text-xl"
@@ -51,7 +78,7 @@ const Home = () => {
           />
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   )
 }
 

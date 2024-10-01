@@ -22,37 +22,6 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
 
-  // Photo
-  const uploadDefaultProfileImage = async (userUid) => {
-    try {
-      // Load the asset (local image)
-      const asset = Asset.fromModule(icons.profile); // Load the local image asset
-      await asset.downloadAsync(); // Ensure the asset is downloaded
-  
-      // Get the URI of the asset
-      const fileUri = asset.localUri || asset.uri; // This will give the local path to the asset
-  
-      // Use fetch to convert the local image to a Blob
-      const response = await fetch(fileUri);
-      const blob = await response.blob(); // Convert the file into a blob
-  
-      // Set up a reference to the Firebase Storage location
-      const storageReference = storageRef(getStorage(), `profilePictures/${userUid}`);
-  
-      // Upload the blob to Firebase Storage
-      await uploadBytes(storageReference, blob);
-  
-      // Get the download URL of the uploaded image
-      const profilePictureURL = await getDownloadURL(storageReference);
-  
-      return profilePictureURL; // Return the URL of the uploaded image
-      
-    } catch (error) {
-      console.error("Error uploading default profile picture:", error);
-      throw error; // Rethrow the error for further handling
-    }
-  };
-
   // Define the OnCreateAccount function to handle the sign-up process
   const OnCreateAccount = async () => {
     // Check if all fields are filled in
@@ -75,7 +44,7 @@ const SignUp = () => {
         email: email,
         username: username,
         userPreference: '',
-        profilePicture: profilePictureURL, // Store the default profile picture URL
+        profilePicture: '', // Store the default profile picture URL
       });
 
       // Navigate to the sign-in page

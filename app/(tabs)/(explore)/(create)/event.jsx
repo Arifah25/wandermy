@@ -111,6 +111,7 @@ const CreateEvent = () => {
         poster: posterUrls, // Use uploaded URLs
         price_or_menu: priceUrls,
         tags: form.tags,
+        description: form.description,
         category: 'event',
         status: 'pending',
         user: userId,

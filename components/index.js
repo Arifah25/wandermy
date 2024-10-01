@@ -11,6 +11,8 @@ import PlaceCard from "./PlacesCard";
 import Poster from "./Poster";
 import Map from "./Map";
 import DetailTab from "./detailsTab";
+import Rating from "./Rating";
+import Visit from "./Visit";
 
 export{
     FormField,
@@ -26,4 +28,6 @@ export{
     Poster,
     Map,
     DetailTab,
+    Rating,
+    Visit,
 };

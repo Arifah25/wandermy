@@ -144,11 +144,10 @@ const CreateDining = () => {
       await set(newPlaceRef, placeData);
 
       // Save opening hours
-      const operatingHoursRef = ref(db, `operatingHours/${placeID}`);
       form.operatingHours.forEach(async (day) => {
-        const newOpeningHourRef = push(operatingHoursRef);
-        await set(newOpeningHourRef, {
-          dayOfWeek: day.dayOfWeek,
+        const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
+        await set(operatingHoursRef, {
+          // dayOfWeek: day.dayOfWeek,
           isOpen: day.isOpen,
           openingTime: day.isOpen ? day.openingTime : 'null',
           closingTime: day.isOpen ? day.closingTime : null,
@@ -269,7 +268,7 @@ const CreateDining = () => {
         {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
           <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
             <View className="flex-row items-center w-1/3 justify-start mb-2">
-              <Text className="text-base font-semibold w-1/2">{dayOfWeek}</Text>
+              <Text className="text-base font-semibold w-1/3">{dayOfWeek}</Text>
               <Switch 
                 value={isOpen}
                 onValueChange={() => handleToggleDayOpen(dayOfWeek)}

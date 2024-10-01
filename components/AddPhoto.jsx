@@ -18,7 +18,7 @@ const AddPhoto = ({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: isMultiple || false, // Allow multiple selections if it's for price
       allowsEditing: !isMultiple, // Disable editing when multiple selection is enabled
-      aspect: [4, 3],
+      aspect: [3, 2],
       quality: 1,
     });
 

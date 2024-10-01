@@ -1,19 +1,49 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../../constants';
 import { useRouter } from 'expo-router';
+import { getAuth } from 'firebase/auth';
+import { getDatabase, ref, get } from 'firebase/database';
 
 const Profile = () => {
   const router = useRouter();
+
+  const [userData, setUserData] = useState([]);
+
+  const auth = getAuth();
+  const db = getDatabase();
+  const userId = auth.currentUser?.uid;
+
+  const userRef = ref(db, `users/${userId}`);
+  get(userRef).then((snapshot) => {
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      setUserData(userData);
+      // console.log(userData);
+      // // You can access the data like this:
+      // console.log(userData.email);
+      // console.log(userData.username);
+      // console.log(userData.userPreference);
+      // console.log(userData.profilePicture);
+    } else {
+      console.log("No data available");
+    }
+  }).catch((error) => {
+    console.error(error);
+  });
 
   // handle Delete Account process
   const handleDeleteAcc = () => {
 
   }
 
+  const handlePress = (route) ={
+    
+  }
+
   return (
-    <SafeAreaView
+    <View
       className="bg-white h-full flex-1 p-5 items-center justify-start"
     >
       <View
@@ -21,13 +51,13 @@ const Profile = () => {
       >
         {/* get profile photo from database */}
         <Image
-          source={icons.profile}
-          className="w-16 h-16 rounded-full"
+          source={{uri:userData.profilePicture} || icons.profile}
+          className="w-40 h-40 rounded-full"
         />
         <Text
-          className="font-kregular text-2xl text-center"
+          className="font-kregular text-2xl text-center lowercase"
         >
-          @putri
+          @{userData.username}
         </Text>
         {/* tags */}
         <View
@@ -37,7 +67,7 @@ const Profile = () => {
           <Text
             className="font-pregular"
           >
-            #photography
+            {userData.userPreference}
           </Text>
         </View>
       </View>
@@ -96,7 +126,7 @@ const Profile = () => {
         </TouchableOpacity>
       </View>
 
-    </SafeAreaView>
+    </View>
   )
 }
 

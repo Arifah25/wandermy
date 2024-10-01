@@ -15,8 +15,9 @@ const PlaceCard = ({
         <View
         className="bg-white w-full items-center h-36 justify-center rounded-t-lg">
           <Image 
-          // source={{ uri: image }}
-            source={icons.bookmark}
+           source={{ uri: image }}
+            // source={images.logo}
+            className="bg-white w-full items-center h-36 justify-center rounded-t-lg"
           />
         </View>
         <View

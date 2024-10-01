@@ -3,9 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const DetailTab = ({ activeTab, setActiveTab }) => {
   return (
-    <View className="flex-row justify-evenly mx-2 py-3">
+    <View className="flex-row justify-between  py-3 h-16">
       <TouchableOpacity 
-        className="flex-1 py-[10px] bg-secondary items-center rounded-[10px] mx-[5px] active? bg-secondary : bg-gray-200"
+        className="flex-1 justify-center bg-secondary items-center rounded-lg mx-3 active? bg-secondary : bg-gray-200"
         style={[activeTab === 'details' && styles.activeTab]} 
         onPress={() => setActiveTab('details')}
       >
@@ -14,7 +14,7 @@ const DetailTab = ({ activeTab, setActiveTab }) => {
         </Text>
       </TouchableOpacity>
       <TouchableOpacity 
-        className="flex-1 py-[10px] bg-secondary items-center rounded-[10px] mx-[5px] active? bg-secondary : bg-gray-200"
+        className="flex-1 justify-center bg-secondary items-center rounded-lg mx-3 active? bg-secondary : bg-gray-200"
         style={[activeTab === 'reviews' && styles.activeTab]} 
         onPress={() => setActiveTab('reviews')}
       >
