@@ -44,7 +44,7 @@ const Profile = () => {
 
   return (
     <View
-      className="bg-white h-full flex-1 p-5 items-center justify-start"
+      className="bg-white h-full flex-1 px-5 items-center justify-start"
     >
       <View
         className="w-full justify-center items-center gap-4 px-5"

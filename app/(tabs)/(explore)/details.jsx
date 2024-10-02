@@ -103,20 +103,24 @@ const Details = () => {
   }, [placeID]);
 
   // Fetch bookmark status
-  useEffect(() => {
-    const checkBookmarkStatus = async () => {
-      if (!userId) return;
-      const bookmarkRef = ref(db, `bookmarks/${userId}/${placeID}`);
-      const snapshot = await get(bookmarkRef);
-      setBookmark(snapshot.exists());
-    };
-    
-    checkBookmarkStatus();
-  }, [userId, placeID]);
+  const [bookmarkLoading, setBookmarkLoading] = useState(true);
+
+useEffect(() => {
+  const checkBookmarkStatus = async () => {
+    setBookmarkLoading(true);
+    if (!userId || !placeID) return;
+    const bookmarkRef = ref(db, `bookmark/${userId}/${placeID}`);
+    const snapshot = await get(bookmarkRef);
+    setBookmark(snapshot.exists());
+    setBookmarkLoading(false);
+  };
+
+  checkBookmarkStatus();
+}, [userId, placeID]);
 
   // Handle bookmark press
   const handleBookmarkPress = async () => {
-    console.log(price_or_menu);
+    // console.log(price_or_menu);
     if (!userId) return;
     const bookmarkRef = ref(db, `bookmark/${userId}/${placeID}`);
     if (bookmark) {
@@ -145,7 +149,7 @@ const Details = () => {
   const handleAddReview = () => {
     router.push({
       pathname: '(tabs)/(explore)/addreview',
-      params: { placeID },
+      params: { placeID, name },
     });
   };
 
@@ -203,17 +207,24 @@ const Details = () => {
           <View>
             <View className="w-full items-start mt-3">
               <Text className="text-lg font-ksemibold">Ticket Fee:</Text>
-              <Image 
-              source={{uri:price_or_menu}}
-              className="w-64 h-52"
-              resizeMode='contain'
-              />
+              <View classname="w-full">
+                <Image 
+                source={{uri:price_or_menu}}
+                className="w-64 h-52"
+                resizeMode='contain'
+                />
+                </View>
             </View>
             <View className="w-full items-start mt-3">
               <Text className="text-lg font-ksemibold">Description:</Text>
               <Text className="font-kregular">{description}</Text>
             </View>
-          </View>          
+            <View className="w-full items-start my-3">
+              <Text className="text-lg font-ksemibold">Tags:</Text>
+              <Text className=" font-kregular">{tags}</Text>
+            </View>
+          </View>   
+                 
         ):(
         <View className="w-full items-start mt-3">
           {category === 'attraction' ? (
@@ -228,24 +239,31 @@ const Details = () => {
             resizeMode='contain'
             />
           </View>
+          <View className="w-full items-start my-3">
+            <Text className="text-lg font-ksemibold">Tags:</Text>
+            <Text className=" font-kregular">{tags}</Text>
+          </View>
         </View>
-        )}
-        <View className="w-full items-start my-3">
-          <Text className="text-lg font-ksemibold">Tags:</Text>
-          <Text className="font-kregular">{tags}</Text>
-        </View>
+        )}        
       </View>
     </View>
   );
 
   // Render reviews (currently empty)
   const renderReview = () => (
-    <View>
-      {/* Add review components here */}
+    <View className="h-full mt-1 mx-5">
+      {reviews.length === 0 ? (
+        <Text>No reviews available</Text>
+      ) : (
+        <View>
+
+        </View>  
+      )}
+       
     </View>
   );
 
-  if (loading) {
+  if (loading || bookmarkLoading) {
     return <ActivityIndicator size="large" color="#A91D1D" />;
   }
 
@@ -258,6 +276,7 @@ const Details = () => {
 
           {category !== 'event' && (
             <DetailTab activeTab={activeTab} setActiveTab={setActiveTab} />
+            
           )}
 
           <View>
@@ -265,6 +284,14 @@ const Details = () => {
           </View>
        </View>
       </ScrollView>
+      {activeTab === 'reviews' && (
+        <TouchableOpacity
+          onPress={handleAddReview}
+          className="absolute bottom-5 right-5 bg-primary h-10 rounded-md items-center justify-center w-1/3"
+        >
+          <Text className="text-white font-kregular text-sm">Add Review</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

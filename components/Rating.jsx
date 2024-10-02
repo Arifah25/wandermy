@@ -16,9 +16,9 @@ const Rating = ({ rating, onRatingPress }) => {
     }
 
     return (
-        <View className="mt-4">
+        <View className="w-full">
             <Text className="font-kregular text-xl text-black">Overall Rating:</Text>
-            <View className="flex-row justify-evenly gap-3 center mt-3">
+            <View className="flex-row justify-evenly center mt-3">
                 {starComponents}
             </View>
         </View>

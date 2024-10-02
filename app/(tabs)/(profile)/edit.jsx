@@ -108,7 +108,7 @@ const EditProfile = () => {
     <View className="bg-white h-full flex-1 p-5 justify-start">
       <TouchableOpacity onPress={handleChangeProfilePicture} className="items-center">
         <Image
-          source={{ uri: profilePicture || icons.profile }}
+          source={{ uri: profilePicture } || icons.profile}
           className="w-40 h-40 rounded-full"
         />
       </TouchableOpacity>
