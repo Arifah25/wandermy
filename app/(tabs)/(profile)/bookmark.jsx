@@ -105,7 +105,7 @@ const BookmarkPlaces = () => {
         )}
         keyExtractor={item => item.id}
         numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        columnWrapperStyle={{ justifyContent: 'space-around' }}
         ListEmptyComponent={() => (
           <View className="justify-center items-center mt-7">
             <Text className="font-kbold text-xl">No Bookmark Found</Text>

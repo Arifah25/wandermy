@@ -1,15 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { router, usePathname } from "expo-router";
-import { View, TouchableOpacity, Image, TextInput, Alert } from "react-native";
+import { View, TouchableOpacity, Image, TextInput, Alert, FlatList } from "react-native";
 
 import { icons } from "../constants";
 
 const SearchInput = ({ 
   initialQuery,
   width, 
+  activeTab, 
+  places, 
+  setFilteredPlaces, // Add this prop
 }) => {
-  const pathname = usePathname();
   const [query, setQuery] = useState(initialQuery || "");
+
+  useEffect(() => {
+    const filtered = places.filter((place) => {
+      return (
+        place.category === activeTab && 
+        (place.name?.toLowerCase().includes(query.toLowerCase()) || 
+         place.tags?.toLowerCase().includes(query.toLowerCase()))
+      );
+    });
+
+    setFilteredPlaces(filtered); // Update the filteredPlaces state
+  }, [query, activeTab, places]); // Update the filteredPlaces state when query, activeTab, or places change
 
   return (
     <View className={`flex-row items-center h-14 px-4 ${width} rounded-md border-2 border-secondary focus:border-black`}>
@@ -21,22 +35,10 @@ const SearchInput = ({
         onChangeText={(e) => setQuery(e)}
       />
 
-      <TouchableOpacity
-        onPress={() => {
-          if (query === "")
-            return Alert.alert(
-              "Missing Query",
-              "Please input something to search results across database"
-            );
-
-          if (pathname.startsWith("/search")) router.setParams({ query });
-          else router.push(`/search/${query}`);
-        }}
-      >
+      <TouchableOpacity>
         <Image source={icons.search} className="w-5 h-5" resizeMode="contain" tintColor='black' />
       </TouchableOpacity>
     </View>
-    
   );
 };
 

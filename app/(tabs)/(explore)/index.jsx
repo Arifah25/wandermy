@@ -11,6 +11,7 @@ const Explore = () => {
   const [loading, setLoading] = useState(true); // Loading state for data fetching
   const [activeTab, setActiveTab] = useState('attraction'); // Active category tab
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [filteredPlaces, setFilteredPlaces] = useState([]); // State to store filtered places
   const router = useRouter(); // Navigation handler
 
   // Fetch data based on the active category
@@ -77,15 +78,19 @@ const Explore = () => {
     className="bg-white h-full flex-1 p-5 items-center justify-start"
     >
      <View
-     className="flex-row items-center"
+     className="flex-row items-center w-full justify-evenly"
      >
       <Search 
       width="w-5/6"
+      places={places} // Pass the places data
+      activeTab={activeTab} // Pass the active category
+      setFilteredPlaces={setFilteredPlaces}
       />
-      <TouchableOpacity>
+      <TouchableOpacity
+      className="w-1/6 items-center">
         <Image
           source={icons.filter}
-          className="w-8 h-8 ml-3"
+          className="w-8 h-8"
           tintColor='black'
         />
       </TouchableOpacity>
@@ -100,7 +105,7 @@ const Explore = () => {
           <ActivityIndicator size="large" color="#A91D1D" />
         ) : (
           <FlatList
-            data={places}
+            data={filteredPlaces.length > 0 ? filteredPlaces : places}
             renderItem={({ item }) => (
               <PlaceCard
                 name={item.name} // Display place name
