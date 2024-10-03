@@ -74,33 +74,36 @@ const Details = () => {
   }, [placeID, category]);
 
   // Fetch reviews and user profiles
-  useEffect(() => {
-    const fetchReviewsAndProfiles = async () => {
-      const refToUse = ref(db, `reviews/${placeID}`);
-      onValue(refToUse, (snapshot) => {
-        const data = snapshot.val();
-        const reviewList = data ? Object.values(data) : [];
-        setReviews(reviewList);
-        
-        const fetchUserProfiles = async (reviewList) => {
-          const profiles = {};
-          for (const review of reviewList) {
-            if (!profiles[review.userId]) {
-              const userRef = ref(db, `users/${review.userId}`);
-              const userSnapshot = await get(userRef);
-              profiles[review.userId] = userSnapshot.val();
-            }
+useEffect(() => {
+  const fetchReviewsAndProfiles = async () => {
+    const refToUse = ref(db, `reviews/${placeID}`);
+    onValue(refToUse, (snapshot) => {
+      const data = snapshot.val();
+      const reviewList = data ? Object.values(data) : [];
+      setReviews(reviewList);  // Set the fetched reviews in state
+
+      // Now fetch user profiles for each review
+      const fetchUserProfiles = async (reviewList) => {
+        const profiles = {};  // Store fetched profiles here
+        for (const review of reviewList) {
+          const userId = review.user;  // Use review.user to get the userId
+          if (!profiles[userId]) {     // Check if this user's profile has not been fetched yet
+            const userRef = ref(db, `users/${userId}`);  // Correct path to user data
+            const userSnapshot = await get(userRef);     // Fetch user data from Firebase
+            profiles[userId] = userSnapshot.val();       // Store the fetched profile data
           }
-          setUserProfiles(profiles);
-        };
+        }
+        setUserProfiles(profiles);  // Set the user profiles in state
+      };
 
-        fetchUserProfiles(reviewList);
-        setLoading(false);
-      });
-    };
+      fetchUserProfiles(reviewList);  // Fetch profiles after getting the reviews
+      setLoading(false);
+    });
+  };
 
-    fetchReviewsAndProfiles();
-  }, [placeID]);
+  fetchReviewsAndProfiles();
+}, [placeID]);  // Dependency on placeID
+
 
   // Fetch bookmark status
   const [bookmarkLoading, setBookmarkLoading] = useState(true);
@@ -191,7 +194,7 @@ useEffect(() => {
                     {hour[index].openingTime} - {hour[index].closingTime}
                   </Text>
                 ) : (
-                  <Text className="text-right w-[34%] font-kregular">Closed</Text>
+                  <Text className="text-right w-[30%] font-kregular">Closed</Text>
                 )}
               </View>
             ))}
@@ -251,13 +254,56 @@ useEffect(() => {
 
   // Render reviews (currently empty)
   const renderReview = () => (
-    <View className="h-full mt-1 mx-5">
+    <View className="h-full mx-5 ">
       {reviews.length === 0 ? (
         <Text>No reviews available</Text>
       ) : (
-        <View>
-
-        </View>  
+        reviews.map((review, index) => {
+          const userProfile = userProfiles[reviews[index].user] || {};
+          return (
+            <View key={index} 
+            className="items-start mb-3"
+            >
+              <View className="flex-row items-center">
+                <Image source={{ uri: userProfile.profilePicture}} className="w-12 h-12 rounded-full" />
+                <View className="ml-3 justify-start p-3">
+                  <Text>{userProfile.username}</Text>
+                  <Text>{new Date(review.datePosted).toLocaleDateString()}</Text>
+                </View>
+              </View>
+              <View className="flex-row justify-start center mt-1 ">
+                {[...Array(5)].map((_, i) => (
+                  <Image
+                    key={i}
+                    source={icons.star}
+                    className={`w-[30px] h-[35px] mx-2`}
+                    resizeMode='cover'
+                    tintColor={i < review.rating ? "#FFB655" : "gray"}
+                  />
+                ))}
+              </View>
+              <View className="w-full mt-5 flex-row justify-start">
+                {review.photo && review.photo.map((photo, index) => (
+                  <Image key={index} source={{ uri: photo }} className="w-32 h-36 " resizeMode='contain' />
+                ))}
+              </View>
+              <View className="mt-5 w-5/6">
+                <Text className="font-kregular text-sm">
+                  {review.comment}
+                </Text>
+              </View>
+              <View className="mt-5">
+                <Text className="font-bold text-sm">Visited on:</Text>
+                <Text className="p-2 bg-secondary mt-1 uppercase font-kbold text-justify">
+                  {review.choiceQuestion }
+                </Text>
+              </View>
+              <View className="w-full border-b-0.5 border-[#808080] mt-5">
+                
+              </View>
+            </View>
+          );
+        })
       )}
        
     </View>
