@@ -5,6 +5,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Home from './index';
 import { useRouter } from 'expo-router';
+import CreateLayout from './(create)/_layout';
+import CreateAttraction from './(create)/attraction';
+import CreateDining from './(create)/dining';
+import CreateEvent from './(create)/event';
+import Details from './details';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +36,24 @@ const AdminLayout = () => {
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
           headerRight: () => <HeaderIcon icon={icons.bell} />,
+        }}
+      />
+      <Stack.Screen 
+        name="details"
+        component={Details}
+        options={{
+          headerTitle: 'Listings',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen
+        name="(create)"
+        component={CreateLayout}
+        options={{ 
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

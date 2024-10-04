@@ -28,11 +28,20 @@ const SignIn = () => {
           // Signed in 
           const user = userCredential.user;
           // Display a toast message for 3 seconds
-          ToastAndroid.show('Sign In Successful', ToastAndroid.BOTTOM, ToastAndroid.LONG);
-          // Navigate to the home index under tabs after 3 seconds
-          setTimeout(() => {
-            router.push("(tabs)/(home)/");
-          }, 1500);
+          //check if the user is admin
+          if(email === 'admin@gmail.com' && password === 'admin123'){
+            console.log('Sign In Admin Successful');
+            // Navigate to the home index under tabs after 3 seconds
+            setTimeout(() => {
+              router.push("(admin)/");
+            }, 1500);
+          }else{
+            ToastAndroid.show('Sign In Successful', ToastAndroid.BOTTOM, ToastAndroid.LONG);
+            // Navigate to the home index under tabs after 3 seconds
+            setTimeout(() => {
+              router.push("(tabs)/(home)/");
+            }, 1500);
+          }
         })
         .catch((error) => {
           // If there's an error, get the error code and message
