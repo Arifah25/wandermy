@@ -35,6 +35,10 @@ export default function RootLayout() {
       name="(tabs)" 
       options={{headerShown: false}}
       />
+      <Stack.Screen 
+      name="(admin)" 
+      options={{headerShown: false}}
+      />
     </Stack>
   );
 }

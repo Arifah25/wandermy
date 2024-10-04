@@ -20,7 +20,8 @@ export default function Index() {
       router.replace("/(tabs)/(home)/");
     } else {
       // No user is signed in.
-      router.push("(auth)/sign-in")
+      // router.push("(auth)/sign-in");
+      router.push("(admin)/")
     }
   }
 
