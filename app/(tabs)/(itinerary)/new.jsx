@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, DateField, Search } from '../../../components';
 
-
 const NewItinerary = () => {
     const router = useRouter();
   return (
@@ -37,9 +36,7 @@ const NewItinerary = () => {
         className="font-kregular text-xl">
           Select A Destination
         </Text>
-        <Search 
-        width="w-11/12 mt-5"
-        />
+        
       </View> 
       <View
       className="w-full items-center mt-7">
@@ -59,7 +56,8 @@ const NewItinerary = () => {
       title="Start Crafting"
       textColor="text-white"
       style="bg-primary my-20 w-3/5"
-      handlePress={() => router.push('')}/>        
+      // handlePress={() => router.push('')}
+      />        
     </SafeAreaView>
   )
 }

@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../../constants';
@@ -33,14 +33,44 @@ const Profile = () => {
     console.error(error);
   });
 
-  // handle Delete Account process
   const handleDeleteAcc = () => {
-
-  }
-
-  const handlePress = (route) ={
-    
-  }
+    Alert.alert(
+      "Are you sure you want to delete your account?",
+      "",
+      [
+        {
+          text: "No",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: () => {
+            const user = auth.currentUser;
+            const userId = user.uid;
+  
+            // Delete user data from Realtime Database
+            getDatabase().ref(`users/${userId}`).remove()
+              .then(() => {
+                // Delete user account from Firebase Authentication
+                user.delete()
+                  .then(() => {
+                    // Account deleted successfully, redirect to login page or show success message
+                    router.replace('(auth)/sign-in');
+                    // or
+                    alert('Account deleted successfully!');
+                  })
+                  .catch(error => {
+                    console.error('Error deleting user account:', error);
+                  });
+              })
+              .catch(error => {
+                console.error('Error deleting user data:', error);
+              });
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <View
