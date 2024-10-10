@@ -2,14 +2,10 @@ import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 import {icons} from '../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import Home from './index';
 import { useRouter } from 'expo-router';
-import CreateLayout from './(create)/_layout';
-import CreateAttraction from './(create)/attraction';
-import CreateDining from './(create)/dining';
-import CreateEvent from './(create)/event';
-import Details from './details';
+import HomeLayout from './(home)/_layout';
+import PendingLayout from './(pending)/_layout';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -28,32 +24,27 @@ const AdminLayout = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="index"
-        component={Home}
+        name="(home)"
+        component={HomeLayout}
         options={{ 
-          headerTitle: 'Admin',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-          headerRight: () => <HeaderIcon icon={icons.bell} />,
+          headerShown: false,
+          // headerTitle: 'Admin',
+          // headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          // headerTitleAlign: 'center',
+          // headerStyle: { backgroundColor: '#A91D1D' },
+          // headerRight: () => <HeaderIcon icon={icons.bell} />,
         }}
       />
       <Stack.Screen 
-        name="details"
-        component={Details}
+        name="(pending)"
+        component={PendingLayout}
         options={{
+          headerShown: false,
           headerTitle: 'Listings',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-        }}
-      />
-      <Stack.Screen
-        name="(create)"
-        component={CreateLayout}
-        options={{ 
-          headerShown: false,
         }}
       />
     </Stack.Navigator>

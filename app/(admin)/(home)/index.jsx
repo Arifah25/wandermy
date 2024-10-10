@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, ActivityIndicator, TouchableOpacity, Image, Modal, Text, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getDatabase, ref, onValue } from 'firebase/database';
-import { PlaceCard, Search, TabPlace } from '../../components';
-import { icons } from '../../constants';
+import { PlaceCard, Search, TabPlace } from '../../../components';
+import { icons } from '../../../constants';
 
 const HomeAdmin = () => {
 
@@ -46,7 +46,7 @@ const HomeAdmin = () => {
   const handlePlacePress = (place) => {
     console.log('Navigating to:', place); // Log the place details
     router.push({
-      pathname: '(admin)/details',
+      pathname: '(admin)/(home)/details',
       params: { ...place }, // Pass all the place data as route params
     });
   };
@@ -60,19 +60,20 @@ const HomeAdmin = () => {
   };
 
   const addAttraction = () => {
-    router.push("(admin)/(create)/attraction");
+    router.push("(admin)/(home)/(create)/attraction");
     toggleModalVisibility();
   };
 
   const addDining = () => {
-    router.push("(admin)/(create)/dining");
+    router.push("(admin)/(home)/(create)/dining");
     toggleModalVisibility();
   };
 
   const addEvent = () => {
-    router.push("(admin)/(create)/event");
+    router.push("(admin)/(home)/(create)/event");
     toggleModalVisibility();
   };
+
   
 
 return (

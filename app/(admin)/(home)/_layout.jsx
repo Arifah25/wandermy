@@ -1,11 +1,13 @@
 import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
+import {icons} from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Home from './index';
 import { useRouter } from 'expo-router';
-import CreateAttraction from './attraction';
-import CreateDining from './dining';
-import CreateEvent from './event';
-import { icons } from '../../../constants';
+import CreateLayout from './(create)/_layout';
+import Details from '../(home)/details';
+import Edit from '../(home)/edit';
+import HomeAdmin from './index';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,7 +17,7 @@ const HeaderIcon = ({ onPress, icon }) => (
   </TouchableOpacity>
 );
 
-const CreateLayout = () => {
+const HomeLayout = () => {
   const router = useRouter();
   const handleBack = () => {
     router.back();
@@ -24,43 +26,50 @@ const CreateLayout = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="attraction"
-        component={CreateAttraction}
-        options={{
-          headerShown: true,
-          headerTitle: 'Create Attraction',
+        name="index"
+        component={HomeAdmin}
+        options={{ 
+          // headerShown: false,
+          headerTitle: 'Admin',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D', height: 95 },
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerRight: () => <HeaderIcon icon={icons.bell} />,
+        }}
+      />
+      <Stack.Screen 
+        name="details"
+        component={Details}
+        options={{
+          // headerShown: false,
+          headerTitle: 'Listings',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
       />
-      <Stack.Screen
-        name="dining"
-        component={CreateDining}
+      <Stack.Screen 
+        name="edit"
+        component={Edit}
         options={{
-          headerShown: true,
-          headerTitle: 'Create Dining',
+          // headerShown: false,
+          headerTitle: 'edit',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D', height: 95 },
-          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+          headerStyle: { backgroundColor: '#A91D1D' },
         }}
       />
+
       <Stack.Screen
-        name="event"
-        component={CreateEvent}
-        options={{
-          headerShown: true,
-          headerTitle: 'Create Event',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D', height: 95 },
-          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        name="(create)"
+        component={CreateLayout}
+        options={{ 
+          headerShown: false,
         }}
-        />
+      />
     </Stack.Navigator>
   )
 }
 
-export default CreateLayout
+export default HomeLayout

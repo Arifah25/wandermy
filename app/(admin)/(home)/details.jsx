@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { DetailTab, Poster } from '../../components';
-import { images, icons } from '../../constants';
+import { DetailTab, Poster } from '../../../components';
+import { images, icons } from '../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, onValue, set, remove, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
@@ -27,6 +27,18 @@ const Details = () => {
   const userId = auth.currentUser?.uid;
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
+  // Handle pressing a place card to navigate to its details, passing all place data
+  const handleEditPress = (place) => {
+    console.log('Navigating to:', place); // Log the place details
+    router.push({
+      pathname: '(admin)/(home)/edit',
+      params: { ...place }, // Pass all the place data as route params
+    });
+  };
+
+  const toggleModalVisibility = () => {
+    setIsModalVisible(!isModalVisible);
+  };
 
   // Fetch operating hours
   useEffect(() => {
@@ -148,6 +160,13 @@ useEffect(() => {
 //     });
 //   }, [bookmark]);
 
+//  // Handle review add
+//   const handleAddReview = () => {
+//     router.push({
+//       pathname: '(tabs)/(explore)/addreview',
+//       params: { placeID, name },
+//     });
+//   };
   // Render details
   const renderDetails = () => (
     <View className="mt-1 mx-5 ">
@@ -319,17 +338,33 @@ useEffect(() => {
 
           <View>
             {activeTab === 'details' ? renderDetails() : renderReview()}
+            <TouchableOpacity
+              onPress={() => handleEditPress()}
+              style={{
+                padding: 15,
+                borderBottomWidth: 1,
+                borderBottomColor: '#ccc',
+              }} // Styling for list items
+              
+              className="border-t-[0.5px] border-gray-300" // Updated border size and color
+            >
+              <Text 
+                className="font-kregular text-xl my-4 text-center"
+              >
+                Edit
+              </Text>
+            </TouchableOpacity>
           </View>
        </View>
       </ScrollView>
-      {activeTab === 'reviews' && (
+      {/* {activeTab === 'reviews' && (
         <TouchableOpacity
           onPress={handleAddReview}
           className="absolute bottom-5 right-5 bg-primary h-10 rounded-md items-center justify-center w-1/3"
         >
           <Text className="text-white font-kregular text-sm">Add Review</Text>
         </TouchableOpacity>
-      )}
+      )} */}
     </View>
   );
 };

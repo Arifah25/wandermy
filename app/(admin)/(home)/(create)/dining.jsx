@@ -1,13 +1,13 @@
 import { View, Text, ScrollView, Modal, Switch } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
-import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../components'
+import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../../components'
 import { getDatabase, ref, push, set } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
-const CreateAttraction = () => {
+const CreateDining = () => {
   
   // Use the useRouter hook to get the router object for navigation
   const router = useRouter();
@@ -18,7 +18,7 @@ const CreateAttraction = () => {
   const auth = getAuth();
   const userId = auth.currentUser.uid;
 
-  // Initialize state variables for attributes in attraction
+  // Initialize state variables for attributes in dining
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newPlaceRef, setNewPlaceRef] = useState(null);
@@ -53,7 +53,7 @@ const CreateAttraction = () => {
     const uploadedUrls = [];
     
     for (const uri of images) {
-      const storageRef1 = storageRef(storage, `places/attraction/${placeID}/${folderName}/${new Date().toISOString()}`);
+      const storageRef1 = storageRef(storage, `places/dining/${placeID}/${folderName}/${new Date().toISOString()}`);
       const response = await fetch(uri);
       const blob = await response.blob();
       
@@ -124,7 +124,7 @@ const CreateAttraction = () => {
     try {
       // Upload images and get the URLs
       const posterUrls = await uploadImages(posterImages, 'poster');
-      const priceUrls = await uploadImages(priceImages, 'price');
+      const priceUrls = await uploadImages(priceImages, 'menu');
 
       const placeData = {
         placeID,
@@ -137,7 +137,7 @@ const CreateAttraction = () => {
         poster: posterUrls, // Use uploaded URLs
         price_or_menu: priceUrls,
         tags: form.tags,
-        category: 'attraction',
+        category: 'dining',
         status: 'pending',
         user: userId,
       };
@@ -162,7 +162,6 @@ const CreateAttraction = () => {
         setIsSubmitting(false);
     }
   };
-  
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -227,10 +226,9 @@ const CreateAttraction = () => {
             setImages={setPosterImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
-
         </View>
         <CreateForm 
-        title="Attraction name :"
+        title="Restaurant name :"
         value={form.name}
         handleChangeText={(e) => setForm({ ...form, name: e })}      />
         <View
@@ -299,7 +297,7 @@ const CreateAttraction = () => {
           <Text
           className="font-kregular text-xl"
           >
-            Price :
+            Menu :
           </Text>
           {/* image picker for price */}
           <AddPhoto
@@ -336,4 +334,4 @@ const CreateAttraction = () => {
   )
 }
 
-export default CreateAttraction
+export default CreateDining
