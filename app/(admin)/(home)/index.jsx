@@ -174,7 +174,6 @@ return (
         </View>
       </View>
     </Modal>
-
   </View>
 )
 }

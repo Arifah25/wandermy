@@ -13,6 +13,7 @@ import Map from "./Map";
 import DetailTab from "./detailsTab";
 import Rating from "./Rating";
 import Visit from "./Visit";
+import SearchPlace from "./SearchPlace";
 
 export{
     FormField,
@@ -30,4 +31,5 @@ export{
     DetailTab,
     Rating,
     Visit,
+    SearchPlace,
 };

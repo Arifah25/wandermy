@@ -615,7 +615,9 @@ return (
   //     </View> 
   //     (false))
   // </ScrollView> 
-  console.log("edit page")
+  <View>
+    
+  </View>
 )  
 }
 
