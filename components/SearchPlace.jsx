@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { Image, Text } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import Geolocation from 'react-native-geolocation-service'; // or 'react-native-geolocation-service'
+//import Geolocation from 'react-native-geolocation-service'; // or 'react-native-geolocation-service'
 import { CreateItineraryContext } from './../context/CreateItineraryContext';
 
 const homePlace = {
@@ -13,7 +13,7 @@ const workPlace = {
   geometry: { location: { lat: 48.8496818, lng: 2.2940881 } },
 };
 
-navigator.geolocation = Geolocation; // Set navigator.geolocation
+//navigator.geolocation = Geolocation; // Set navigator.geolocation
 
 const SearchPlace = () => {
     const {itineraryData, setItineraryData}=useContext(CreateItineraryContext);
