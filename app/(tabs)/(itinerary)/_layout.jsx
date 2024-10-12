@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Itinerary from './index';
 import NewItinerary from './new';
 import { useRouter } from 'expo-router';
-import Traveller from './traveller';
+import Traveler from './traveler';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,8 +48,8 @@ const ItineraryLayout = () => {
         }}
       />
       <Stack.Screen
-        name="traveller"
-        component={Traveller}
+        name="traveler"
+        component={Traveler}
         options={{ 
           headerTitle: 'Itinerary Crafting',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },

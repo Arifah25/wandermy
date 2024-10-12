@@ -28,11 +28,11 @@ const Details = () => {
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   // Handle pressing a place card to navigate to its details, passing all place data
-  const handleEditPress = (place) => {
-    console.log('Navigating to:', place); // Log the place details
+  const handleEditPress = (placeID, category) => {
+    // console.log('Navigating to:', placeID, category); // Log the place details
     router.push({
       pathname: '(admin)/(home)/edit',
-      params: { ...place }, // Pass all the place data as route params
+      params: {placeID, category}, // Pass all the place data as route params
     });
   };
 
@@ -264,61 +264,7 @@ useEffect(() => {
   );
 
   // Render reviews (currently empty)
-  const renderReview = () => (
-    <View className="h-full mx-5 ">
-      {reviews.length === 0 ? (
-        <Text>No reviews available</Text>
-      ) : (
-        reviews.map((review, index) => {
-          const userProfile = userProfiles[reviews[index].user] || {};
-          return (
-            <View key={index} 
-            className="items-start mb-3"
-            >
-              <View className="flex-row items-center">
-                <Image source={{ uri: userProfile.profilePicture}} className="w-12 h-12 rounded-full" />
-                <View className="ml-3 justify-start p-3">
-                  <Text>{userProfile.username}</Text>
-                  <Text>{new Date(review.datePosted).toLocaleDateString()}</Text>
-                </View>
-              </View>
-              <View className="flex-row justify-start center mt-1 ">
-                {[...Array(5)].map((_, i) => (
-                  <Image
-                    key={i}
-                    source={icons.star}
-                    className={`w-[30px] h-[35px] mx-2`}
-                    resizeMode='cover'
-                    tintColor={i < review.rating ? "#FFB655" : "gray"}
-                  />
-                ))}
-              </View>
-              <View className="w-full mt-5 flex-row justify-start">
-                {review.photo && review.photo.map((photo, index) => (
-                  <Image key={index} source={{ uri: photo }} className="w-32 h-36 " resizeMode='contain' />
-                ))}
-              </View>
-              <View className="mt-5 w-5/6">
-                <Text className="font-kregular text-sm">
-                  {review.comment}
-                </Text>
-              </View>
-              <View className="mt-5">
-                <Text className="font-bold text-sm">Visited on:</Text>
-                <Text className="p-2 bg-secondary mt-1 uppercase font-kbold text-justify">
-                  {review.choiceQuestion }
-                </Text>
-              </View>
-              <View className="w-full border-b-0.5 border-[#808080] mt-5">
-                
-              </View>
-            </View>
-          );
-        })
-      )}
-       
-    </View>
-  );
+  
 
   // if (loading || bookmarkLoading) {
   //   return <ActivityIndicator size="large" color="#A91D1D" />;
@@ -339,7 +285,7 @@ useEffect(() => {
           <View>
             {activeTab === 'details' ? renderDetails() : renderReview()}
             <TouchableOpacity
-              onPress={() => handleEditPress()}
+              onPress={() => handleEditPress(placeID, category)}
               style={{
                 padding: 15,
                 borderBottomWidth: 1,
