@@ -14,6 +14,7 @@ import DetailTab from "./detailsTab";
 import Rating from "./Rating";
 import Visit from "./Visit";
 import SearchPlace from "./SearchPlace";
+import OptionCard from "./OptionCard";
 
 export{
     FormField,
@@ -32,4 +33,5 @@ export{
     Rating,
     Visit,
     SearchPlace,
+    OptionCard,
 };

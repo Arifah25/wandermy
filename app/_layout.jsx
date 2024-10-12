@@ -1,10 +1,13 @@
 import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
+import {CreateItineraryContext} from '../context/CreateItineraryContext'
+import { useEffect, useState } from "react";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [itineraryData, setItineraryData]=useState([]);
+  
   const [fontsLoaded, error] = useFonts({
     "Kanit-Regular": require("../assets/fonts/Kanit-Regular.ttf"),
     "Kanit-Bold": require("../assets/fonts/Kanit-Bold.ttf"),
@@ -21,7 +24,9 @@ export default function RootLayout() {
 
   if (!fontsLoaded && !error) return null;
   
+
   return (
+    <CreateItineraryContext.Provider value={{itineraryData, setItineraryData}}>
     <Stack>
       <Stack.Screen 
       name="index" 
@@ -40,5 +45,6 @@ export default function RootLayout() {
       options={{headerShown: false}}
       />
     </Stack>
+    </CreateItineraryContext.Provider>
   );
 }

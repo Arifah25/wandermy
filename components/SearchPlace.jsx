@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Image, Text } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-// import { icons } from '../../../constants';
+import Geolocation from 'react-native-geolocation-service'; // or 'react-native-geolocation-service'
+import { CreateItineraryContext } from './../context/CreateItineraryContext';
 
 const homePlace = {
   description: 'Home',
@@ -12,7 +13,15 @@ const workPlace = {
   geometry: { location: { lat: 48.8496818, lng: 2.2940881 } },
 };
 
+navigator.geolocation = Geolocation; // Set navigator.geolocation
+
 const SearchPlace = () => {
+    const {itineraryData, setItineraryData}=useContext(CreateItineraryContext);
+
+    useEffect(() => {
+        console.log(itineraryData); 
+    }),[itineraryData]
+     
   return (
     <GooglePlacesAutocomplete
       placeholder='Search'
@@ -25,42 +34,61 @@ const SearchPlace = () => {
       renderDescription={(row) => row.description} // custom description render
       onPress={(data, details = null) => {
         // 'details' is provided when fetchDetails = true
-        console.log(data, details);
+        console.log(details);
+        setItineraryData({
+            locationInfo:{
+                name: data.description,
+                coordinates: details?.geometry.location,
+                photoRef: details?.photos[0]?.photo_reference,
+                url: details?.url,
+            }
+        })
       }}
       getDefaultValue={() => ''}
       query={{
         // available options: https://developers.google.com/places/web-service/autocomplete
         key: 'AIzaSyASIQrA9EF_TCNoezobCyKCksCcW283mjU',
         language: 'en', // language of the results
-        types: '(cities)', // default: 'geocode'
+        // types: '(cities)', // default: 'geocode'
       }}
       styles={{
         container: {
-          width: `${91.6667}%`,
-          height: 16,
-        //   borderColor: '#d9d9d9',
-        //   borderWidth: 2,
-          borderRaAdius: 6,
-          alignItems: 'center',
-          marginTop: 10,
-
-        },
-        textInputContainer: {
-          width: `${100}%`,
-          height: 16,
-          borderColor: '#d9d9d9',
-          borderWidth: 2,
-          borderRadius: 6,
-        //   alignItems: 'center',
-        //   marginTop: 10,
-
-        },
-        description: {
-          fontWeight: 'bold',
-        },
-        predefinedPlacesDescription: {
-          color: '#1faadb',
-        },
+            width: '91.6667%',
+            alignItems: 'center',
+          },
+          textInputContainer: {
+            width: '100%',
+            borderColor: '#d9d9d9',
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+          description: {
+            fontWeight: 'bold',
+          },
+          predefinedPlacesDescription: {
+            color: '#1faadb',
+          },
+          listView: {
+            position: 'absolute', // Make sure the listView is positioned absolutely
+            top: 50, // Adjust based on your layout
+            zIndex: 9999, // High zIndex to ensure it appears on top of other components
+            elevation: 5, // For Android elevation
+            backgroundColor: '#fff', // Ensure the background is white to overlay properly
+            width: '100%', // Adjust width based on your needs
+          },
+          row: {
+            backgroundColor: '#fff', // Ensure the row background color is visible
+            padding: 13,
+            height: 44,
+            flexDirection: 'row',
+            alignItems: 'center',
+            zIndex: 9999, // High zIndex for rows
+            elevation: 5, // For Android
+          },
+          separator: {
+            height: 1,
+            backgroundColor: '#c8c7cc',
+          },          
       }}
       currentLocation={true} // Will add a 'Current location' button at the top of the predefined places list
       currentLocationLabel='Current location'
@@ -74,10 +102,6 @@ const SearchPlace = () => {
         // available options for GooglePlacesSearch API : https://developers.google.com/places/web-service/search
         rankby: 'distance',
         type: 'cafe',
-      }}
-      GooglePlacesDetailsQuery={{
-        // available options for GooglePlacesDetails API : https://developers.google.com/places/web-service/details
-        fields: 'formatted_address',
       }}
       filterReverseGeocodingByTypes={[
         // filter the reverse geocoding results by types - ['locality', 'administrative_area_level_3'] if you want to display only cities
