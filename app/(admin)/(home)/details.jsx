@@ -28,11 +28,19 @@ const Details = () => {
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   // Handle pressing a place card to navigate to its details, passing all place data
+<<<<<<< Updated upstream
   const handleEditPress = (placeID, category) => {
     // console.log('Navigating to:', placeID, category); // Log the place details
     router.push({
       pathname: '(admin)/(home)/edit',
       params: {placeID, category}, // Pass all the place data as route params
+=======
+  const handleEditPress = (placeID) => {
+    console.log('Navigating to:', place); // Log the place details
+    router.push({
+      pathname: '(admin)/(home)/edit',
+      params: {placeID}, // Pass all the place data as route params
+>>>>>>> Stashed changes
     });
   };
 
@@ -285,7 +293,11 @@ useEffect(() => {
           <View>
             {activeTab === 'details' ? renderDetails() : renderReview()}
             <TouchableOpacity
+<<<<<<< Updated upstream
               onPress={() => handleEditPress(placeID, category)}
+=======
+              onPress={() => handleEditPress(placeID)}
+>>>>>>> Stashed changes
               style={{
                 padding: 15,
                 borderBottomWidth: 1,
