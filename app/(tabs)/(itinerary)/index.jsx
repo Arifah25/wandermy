@@ -34,7 +34,7 @@ const Itinerary = () => {
        }
        <TouchableOpacity
         className=" absolute bottom-5 right-5 bg-primary p-4 rounded-full shadow-sm shadow-black"
-        onPress={() => router.push("(tabs)/(itinerary)/new")}
+        onPress={() => router.push("(tabs)/(itinerary)/(create-itinerary)/new")}
       >
         <Image source={icons.plus} tintColor="#fff" className="w-7 h-7"/>
       </TouchableOpacity> 

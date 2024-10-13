@@ -2,11 +2,12 @@ import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useRouter } from 'expo-router';
 
 import Itinerary from './index';
-import NewItinerary from './new';
-import { useRouter } from 'expo-router';
-import Traveler from './traveler';
+import NewItinerary from './(create-itinerary)/new';
+import Traveler from './(create-itinerary)/traveler';
+import CreateItineraryLayout from './(create-itinerary)/_layout';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,7 +25,6 @@ const ItineraryLayout = () => {
 
   return (
     <Stack.Navigator>
-      
       <Stack.Screen
         name="index"
         component={Itinerary}
@@ -35,29 +35,14 @@ const ItineraryLayout = () => {
           headerStyle: { backgroundColor: '#A91D1D' },
           // headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
+      />  
+      <Stack.Screen 
+        name="(create-itinerary)"
+        component={CreateItineraryLayout}
+        options={{
+          headerShown: false,
+        }}
       />      
-      <Stack.Screen
-        name="new"
-        component={NewItinerary}
-        options={{ 
-          headerTitle: 'Itinerary Crafting',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-        }}
-      />
-      <Stack.Screen
-        name="traveler"
-        component={Traveler}
-        options={{ 
-          headerTitle: 'Itinerary Crafting',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-        }}
-      />
     </Stack.Navigator>
 
   )
