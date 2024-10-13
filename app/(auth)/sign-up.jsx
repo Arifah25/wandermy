@@ -37,7 +37,7 @@ const SignUp = () => {
       const user = userCredential.user;
 
       // Upload the default profile image (icons.profile) to Firebase Storage
-      const profilePictureURL = uploadDefaultProfileImage(user.uid); 
+      // const profilePictureURL = uploadDefaultProfileImage(user.uid); 
 
       // Save the user data to Firebase Realtime Database
       await set(databaseRef(database, 'users/' + user.uid), {
