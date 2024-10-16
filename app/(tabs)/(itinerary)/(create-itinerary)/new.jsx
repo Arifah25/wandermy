@@ -2,7 +2,7 @@ import { View, Text, TextInput } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, DateField, SearchPlace } from '../../../components';
+import { Button, DateField, SearchPlace } from '../../../../components';
 import 'react-native-get-random-values';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
@@ -75,7 +75,7 @@ const NewItinerary = () => {
       title="Start Crafting"
       textColor="text-white"
       style="bg-primary my-10 w-3/5"
-      handlePress={() => router.push('(tabs)/(itinerary)/traveler')}
+      handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/traveler')}
       />        
     </View>
   )

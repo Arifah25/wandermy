@@ -1,9 +1,9 @@
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import { SelectTravelList } from "../../../constants/option";
-import { Button, OptionCard } from '../../../components';
+import { Button, OptionCard } from '../../../../components';
 import { useRouter } from 'expo-router';
-import { CreateItineraryContext } from '../../../context/CreateItineraryContext';
+import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
+import { SelectTravelList } from '../../../../constants/option';
 
 const Traveler = () => {
   const router = useRouter();
@@ -18,7 +18,7 @@ const Traveler = () => {
 
   return (
     <View
-    className="bg-white flex-1 p-5 h-full items-center justify-center"
+    className="bg-white flex-1 p-5 h-full items-center justify-start"
     >
       <Text
       className="text-3xl font-ksemibold"
@@ -51,7 +51,7 @@ const Traveler = () => {
       title="Next"
       textColor="text-white"
       style="bg-primary w-3/4 mt-5"
-      onPress={() => router.push("/create-itinerary/destination")}
+      handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
       />
     </View>
   )
