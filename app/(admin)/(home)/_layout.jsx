@@ -4,8 +4,8 @@ import {icons} from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 import CreateLayout from './(create)/_layout';
+import EditLayout from './(edit)/_layout';
 import Details from './details';
-import Edit from './edit';
 import HomeAdmin from './index';
 
 const Stack = createNativeStackNavigator();
@@ -48,21 +48,18 @@ const HomeLayout = () => {
           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
       />
-      <Stack.Screen 
-        name="edit"
-        component={Edit}
-        options={{
-          // headerShown: false,
-          headerTitle: 'edit',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-        }}
-      />
 
       <Stack.Screen
         name="(create)"
         component={CreateLayout}
+        options={{ 
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="(edit)"
+        component={EditLayout}
         options={{ 
           headerShown: false,
         }}
