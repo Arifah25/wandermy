@@ -67,12 +67,14 @@ const SignUp = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      const defaultProfileImage = 'https://firebasestorage.googleapis.com/v0/b/wandermy2.appspot.com/o/profilePictures%2Fprofile.png?alt=media&token=b7276cbe-a499-48d9-a723-1a643899f971';
+      uploadDefaultProfileImage(user.uid);
       // Save the user data to Firebase Realtime Database
       await set(databaseRef(database, 'users/' + user.uid), {
         email: email,
         username: username,
         userPreference: '',
-        profilePicture: uploadDefaultProfileImage(user.uid), // Store the default profile picture URL
+        profilePicture: defaultProfileImage, // Store the default profile picture URL
       });
 
       // Navigate to the sign-in page

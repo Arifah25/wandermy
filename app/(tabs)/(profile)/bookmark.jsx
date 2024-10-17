@@ -93,7 +93,7 @@ const BookmarkPlaces = () => {
   }
 
   return (
-    <View className="flex-1 p-5 justify-center">
+    <View className="flex-1 p-5 justify-start bg-white">
       <FlatList
         data={places}
         renderItem={({ item }) => (
