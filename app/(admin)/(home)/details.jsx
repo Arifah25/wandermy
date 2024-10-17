@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { DetailTab, Poster } from '../../../components';
+import { DetailTab, Poster, Button} from '../../../components';
 import { images, icons } from '../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, onValue, set, remove, get } from 'firebase/database';
@@ -29,11 +29,25 @@ const Details = () => {
 
   // Handle pressing a place card to navigate to its details, passing all place data
   const handleEditPress = (placeID, category) => {
-    // console.log('Navigating to:', placeID, category); // Log the place details
-    router.push({
-      pathname: '(admin)/(home)/edit',
-      params: {placeID, category}, // Pass all the place data as route params
-    });
+    if (category === 'dining') {
+      router.push({
+        pathname: '(admin)/(home)/(edit)/editdining',
+        params: {placeID}, // Pass all the place data as route params
+      });
+    } else if (category === 'attraction') {
+      router.push({
+        pathname: '(admin)/(home)/(edit)/editattraction',
+        params: {placeID}, // Pass all the place data as route params
+      });
+    } else if (category === 'event') {
+      router.push({
+        pathname: '(admin)/(home)/(edit)/editevent',
+        params: {placeID}, // Pass all the place data as route params
+      });
+    }
+    console.log('Route params:', route.params);
+    console.log('PlaceID:', placeID);
+    
   };
 
   const toggleModalVisibility = () => {
@@ -116,57 +130,6 @@ useEffect(() => {
   fetchReviewsAndProfiles();
 }, [placeID]);  // Dependency on placeID
 
-
-  // Fetch bookmark status
-  // const [bookmarkLoading, setBookmarkLoading] = useState(true);
-
-// useEffect(() => {
-//   const checkBookmarkStatus = async () => {
-//     setBookmarkLoading(true);
-//     if (!userId || !placeID) return;
-//     const bookmarkRef = ref(db, `bookmark/${userId}/${placeID}`);
-//     const snapshot = await get(bookmarkRef);
-//     setBookmark(snapshot.exists());
-//     setBookmarkLoading(false);
-//   };
-
-//   checkBookmarkStatus();
-// }, [userId, placeID]);
-
-//   // Handle bookmark press
-//   const handleBookmarkPress = async () => {
-//     // console.log(price_or_menu);
-//     if (!userId) return;
-//     const bookmarkRef = ref(db, `bookmark/${userId}/${placeID}`);
-//     if (bookmark) {
-//       await remove(bookmarkRef);
-//     } else {
-//       await set(bookmarkRef, { dateBookmarked: new Date().toISOString() });
-//     }
-//     setBookmark(!bookmark);
-//   };
-
-//   // Navigation header for bookmark
-//   useEffect(() => {
-//     navigation.setOptions({
-//       headerRight: () => (
-//         <TouchableOpacity onPress={handleBookmarkPress} style={{ marginRight: 10 }}>
-//           <Image
-//             source={bookmark ? icons.bookmarked : icons.bookmark}
-//             style={{ width: 24, height: 24, tintColor: 'white' }}
-//           />
-//         </TouchableOpacity>
-//       ),
-//     });
-//   }, [bookmark]);
-
-//  // Handle review add
-//   const handleAddReview = () => {
-//     router.push({
-//       pathname: '(tabs)/(explore)/addreview',
-//       params: { placeID, name },
-//     });
-//   };
   // Render details
   const renderDetails = () => (
     <View className="mt-1 mx-5 ">
@@ -264,7 +227,61 @@ useEffect(() => {
   );
 
   // Render reviews (currently empty)
-  
+  const renderReview = () => (
+    <View className="h-full mx-5 ">
+      {reviews.length === 0 ? (
+        <Text>No reviews available</Text>
+      ) : (
+        reviews.map((review, index) => {
+          const userProfile = userProfiles[reviews[index].user] || {};
+          return (
+            <View key={index} 
+            className="items-start mb-3"
+            >
+              <View className="flex-row items-center">
+                <Image source={{ uri: userProfile.profilePicture}} className="w-12 h-12 rounded-full" />
+                <View className="ml-3 justify-start p-3">
+                  <Text>{userProfile.username}</Text>
+                  <Text>{new Date(review.datePosted).toLocaleDateString()}</Text>
+                </View>
+              </View>
+              <View className="flex-row justify-start center mt-1 ">
+                {[...Array(5)].map((_, i) => (
+                  <Image
+                    key={i}
+                    source={icons.star}
+                    className={`w-[30px] h-[35px] mx-2`}
+                    resizeMode='cover'
+                    tintColor={i < review.rating ? "#FFB655" : "gray"}
+                  />
+                ))}
+              </View>
+              <View className="w-full mt-5 flex-row justify-start">
+                {review.photo && review.photo.map((photo, index) => (
+                  <Image key={index} source={{ uri: photo }} className="w-32 h-36 " resizeMode='contain' />
+                ))}
+              </View>
+              <View className="mt-5 w-5/6">
+                <Text className="font-kregular text-sm">
+                  {review.comment}
+                </Text>
+              </View>
+              <View className="mt-5">
+                <Text className="font-bold text-sm">Visited on:</Text>
+                <Text className="p-2 bg-secondary mt-1 uppercase font-kbold text-justify">
+                  {review.choiceQuestion }
+                </Text>
+              </View>
+              <View className="w-full border-b-0.5 border-[#808080] mt-5">
+                
+              </View>
+            </View>
+          );
+        })
+      )}
+       
+    </View>
+  );
 
   // if (loading || bookmarkLoading) {
   //   return <ActivityIndicator size="large" color="#A91D1D" />;
@@ -283,34 +300,18 @@ useEffect(() => {
           )}
 
           <View>
-            {activeTab === 'details' ? renderDetails() : renderReview()}
-            <TouchableOpacity
-              onPress={() => handleEditPress(placeID, category)}
-              style={{
-                padding: 15,
-                borderBottomWidth: 1,
-                borderBottomColor: '#ccc',
-              }} // Styling for list items
-              
-              className="border-t-[0.5px] border-gray-300" // Updated border size and color
-            >
-              <Text 
-                className="font-kregular text-xl my-4 text-center"
-              >
-                Edit
-              </Text>
-            </TouchableOpacity>
+            {activeTab === 'details' ? renderDetails() : null}
+            
+            <View className="flex-row items-center justify-evenly mt-5 mb-10">
+              <Button 
+              title="Edit"
+              handlePress={() => handleEditPress(placeID, category)}
+              style="bg-primary w-2/5"
+              textColor="text-white"/>
+            </View>
           </View>
        </View>
       </ScrollView>
-      {/* {activeTab === 'reviews' && (
-        <TouchableOpacity
-          onPress={handleAddReview}
-          className="absolute bottom-5 right-5 bg-primary h-10 rounded-md items-center justify-center w-1/3"
-        >
-          <Text className="text-white font-kregular text-sm">Add Review</Text>
-        </TouchableOpacity>
-      )} */}
     </View>
   );
 };
