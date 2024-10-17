@@ -8,6 +8,7 @@ import { auth } from "../../configs/firebaseConfig";
 import { getDatabase, ref as databaseRef, set } from "firebase/database";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { icons } from '../../constants';
+import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
 
 const SignUp = () => {
@@ -21,6 +22,36 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+
+  //Uploading profile picture
+  const uploadDefaultProfileImage = async (userUid) => {
+    try {
+      // Load the asset (local image)
+      const asset = Asset.fromModule(icons.profile); // Load the local image asset
+      await asset.downloadAsync(); // Ensure the asset is downloaded
+  
+      // Get the URI of the asset
+      const fileUri = asset.localUri || asset.uri; // This will give the local path to the asset
+  
+      // Use fetch to convert the local image to a Blob
+      const response = await fetch(fileUri);
+      const blob = await response.blob(); // Convert the file into a blob
+  
+      // Set up a reference to the Firebase Storage location
+      const storageReference = storageRef(getStorage(), `profilePictures/${userUid}`);
+  
+      // Upload the blob to Firebase Storage
+      await uploadBytes(storageReference, blob);
+  
+      // Get the download URL of the uploaded image
+      const profilePictureURL = await getDownloadURL(storageReference);
+  
+      return profilePictureURL; // Return the URL of the uploaded image
+    } catch (error) {
+      console.error("Error uploading default profile picture:", error);
+      throw error; // Rethrow the error for further handling
+    }
+  };
 
   // Define the OnCreateAccount function to handle the sign-up process
   const OnCreateAccount = async () => {
@@ -36,15 +67,12 @@ const SignUp = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Upload the default profile image (icons.profile) to Firebase Storage
-      // const profilePictureURL = uploadDefaultProfileImage(user.uid); 
-
       // Save the user data to Firebase Realtime Database
       await set(databaseRef(database, 'users/' + user.uid), {
         email: email,
         username: username,
         userPreference: '',
-        profilePicture: '', // Store the default profile picture URL
+        profilePicture: uploadDefaultProfileImage(user.uid), // Store the default profile picture URL
       });
 
       // Navigate to the sign-in page
