@@ -208,126 +208,113 @@ const CreateEvent = () => {
         handleChangeText={(e) => setForm({ ...form, name: e })}      />
 
         <View className="mb-5">
-        <Text
-          className="font-kregular text-xl"
-          >
-            When does the event start and end ? 
+        <Text className="font-kregular text-xl">
+          When does the event start and end ? 
+        </Text>
+        <View className="flex-row justify-start my-5 items-center">
+          <Text className="w-14 text-lg font-kregular">
+            Date :
           </Text>
-          <View 
-          className="flex-row justify-start my-5 items-center"
-          >
-            <Text
-            className="w-14 text-lg font-kregular">
-              Date :
-            </Text>
-            <View className="w-4/5 flex-row justify-evenly">
-              <DateField 
-              placeholder="Start Date"
-              value={form.startDate}
-              handleChangeText={(e) => setForm({ ...form, startDate: e })}
-              />
-              <DateField 
-              placeholder="End Date"
-              value={form.endDate}
-              handleChangeText={(e) => setForm({ ...form, endDate: e })}
-              />
-            </View>
-          </View>
-          <View className="flex-row justify-start items-center">
-          <Text
-            className="w-14 text-lg font-kregular">
-              Time :
-            </Text>
-            <View className="w-4/5 flex-row justify-evenly">
-              <TimeField 
-              placeholder="Start Time"
-              value={form.startTime}
-              handleChangeText={(e) => setForm({ ...form, startTime: e })}
-              />
-              <TimeField 
-              placeholder="End Time"
-              value={form.endTime}
-              handleChangeText={(e) => setForm({ ...form, endTime: e })}
-              />
-            </View>
+          <View className="w-4/5 flex-row justify-evenly">
+            <DateField 
+            placeholder="Start Date"
+            value={form.startDate}
+            handleChangeText={(e) => setForm({ ...form, startDate: e })}
+            />
+            <DateField 
+            placeholder="End Date"
+            value={form.endDate}
+            handleChangeText={(e) => setForm({ ...form, endDate: e })}
+            />
           </View>
         </View>
-
-        <View
-        className="items-center mb-5"
-        >
-          <CreateForm
-          title="Address :"
-          value={form.address}
-          tags="true"
-          handleChangeText={(e) => setForm({ ...form, address: e })}       
-           />
-          {/* pin location */}
-          <Button 
-          title="Pin Location"
-          handlePress={handleMap}
-          style="bg-secondary w-full"
-          textColor="text-black ml-5"
-          location="true"
-          />
-
-        </View>
-
-        <View
-        className="mb-5"
-        >
-          <Text
-          className="font-kregular text-xl"
-          >
-            Ticket Price :
+        <View className="flex-row justify-start items-center">
+          <Text className="w-14 text-lg font-kregular">
+            Time :
           </Text>
-          {/* image picker for price */}
-          <AddPhoto
-            isMultiple={true}
-            images={priceImages}
-            setImages={setPriceImages} // Pass the state setters to AddPhoto
-            isLoading={isSubmitting}
-          />
-
+          <View className="w-4/5 flex-row justify-evenly">
+            <TimeField 
+            placeholder="Start Time"
+            value={form.startTime}
+            handleChangeText={(e) => setForm({ ...form, startTime: e })}
+            />
+            <TimeField 
+            placeholder="End Time"
+            value={form.endTime}
+            handleChangeText={(e) => setForm({ ...form, endTime: e })}
+            />
+          </View>
         </View>
+      </View>
       
-        <CreateForm 
-        title="Contact Number :"
-        value={form.contactNum}
-        handleChangeText={(e) => setForm({ ...form, contactNum: e })}
-        keyboardType="phone-pad"
+      <View className="items-center mb-5">
+        <CreateForm
+        title="Address :"
+        value={form.address}
+        tags="true"
+        handleChangeText={(e) => setForm({ ...form, address: e })}       
+          />
+        {/* pin location */}
+        <Button 
+        title="Pin Location"
+        handlePress={handleMap}
+        style="bg-secondary w-full"
+        textColor="text-black ml-5"
+        location="true"
         />
 
-         <CreateForm
-         title="Description of the event :" 
-         value={form.description}
-         handleChangeText={(e) => setForm({ ...form, description: e })}
-         keyboardType="default"
-         tags="true"
-         /> 
-        
-        <CreateForm 
-        title="Tags :"
-        value={form.tags}
-        handleChangeText={(e) => setForm({ ...form, tags: e })}
-        keyboardType="default"
-        tags="true"
+      </View>
+
+      <View className="mb-5">
+        <Text className="font-kregular text-xl">
+          Ticket Price :
+        </Text>
+        {/* image picker for price */}
+        <AddPhoto
+          isMultiple={true}
+          images={priceImages}
+          setImages={setPriceImages} // Pass the state setters to AddPhoto
+          isLoading={isSubmitting}
         />
-        <View
-        className="flex-row items-center justify-evenly mt-5 mb-10">
-          <Button 
-          title="Cancel"
-          handlePress={() => router.back()}
-          style="bg-secondary w-2/5"
-          textColor="text-primary"
-          />
-          <Button 
-          title="POST"
-          handlePress={handlePost}
-          style="bg-primary w-2/5"
-          textColor="text-white"/>
-        </View>
-      </ScrollView>      
+      </View>
+      
+      <CreateForm 
+      title="Contact Number :"
+      value={form.contactNum}
+      handleChangeText={(e) => setForm({ ...form, contactNum: e })}
+      keyboardType="phone-pad"
+      />
+
+      <CreateForm
+      title="Description of the event :" 
+      value={form.description}
+      handleChangeText={(e) => setForm({ ...form, description: e })}
+      keyboardType="default"
+      tags="true"
+      /> 
+        
+      <CreateForm 
+      title="Tags :"
+      value={form.tags}
+      handleChangeText={(e) => setForm({ ...form, tags: e })}
+      keyboardType="default"
+      tags="true"
+      />
+        
+      <View className="flex-row items-center justify-evenly mt-5 mb-10">
+        <Button 
+        title="Cancel"
+        handlePress={() => router.back()}
+        style="bg-secondary w-2/5"
+        textColor="text-primary"
+        />
+        <Button 
+        title="POST"
+        handlePress={handlePost}
+        style="bg-primary w-2/5"
+        textColor="text-white"/>
+      </View>
+    </ScrollView>      
     // </SafeAreaView>
   )
 }

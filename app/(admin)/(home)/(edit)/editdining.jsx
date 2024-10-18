@@ -340,29 +340,20 @@ const EditDining = () => {
         </View>
 
         <View className="my-2">
-        <Text className="font-kregular text-xl mb-2">Address :</Text>
-        <View className="w-full bg-white rounded-md h-12 justify-center border-2 border-secondary">
-          <TextInput
-            className="font-pregular p-2"
-            value={address} // Controlled input
-            placeholder="Enter address"
-            placeholderTextColor="#7E6C6C"
-            onChangeText={(value) => setAddress(value)}
-            multiline={true}
-          />
+          <Text className="font-kregular text-xl mb-2">Address :</Text>
+          <View className="w-full bg-white rounded-md h-32 justify-center border-2 border-secondary">
+            <TextInput
+              className="font-pregular p-2 h-32"
+              value={address} // Controlled input
+              placeholder="Enter address"
+              placeholderTextColor="#7E6C6C"
+              onChangeText={(value) => setAddress(value)}
+              multiline={true}
+            />
+          </View>
         </View>
-      </View>
-
-        
-        
+ 
         <View className="items-center mb-5">
-          <CreateForm
-          title="Address :"
-          value={address}
-          tags="true"
-          handleChangeText={(value) => setForm({ ...form, address: value })}       
-          />
-
           {/* pin location */}
           <Button 
           title="Pin Location"
@@ -371,7 +362,6 @@ const EditDining = () => {
           textColor="text-black ml-5"
           location="true"
           />
-
         </View> 
 
         <View className="my-2">

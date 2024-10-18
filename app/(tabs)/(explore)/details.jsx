@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { DetailTab, Poster } from '../../../components';
+import { DetailTab, Poster, Button} from '../../../components';
 import { images, icons } from '../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, onValue, set, remove, get } from 'firebase/database';
@@ -13,7 +13,7 @@ const Details = () => {
   const [activeTab, setActiveTab] = useState('details');
   const [event, setEvent] = useState({});
   const [reviews, setReviews] = useState([]);
-  const [bookmark, setBookmark] = useState(false);
+  //const [bookmark, setBookmark] = useState(false);
   const [userProfiles, setUserProfiles] = useState({});
   const [hour, setOperatingHours] = useState([]);
   
@@ -27,6 +27,32 @@ const Details = () => {
   const userId = auth.currentUser?.uid;
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
+  // Handle pressing a place card to navigate to its details, passing all place data
+  const handleEditPress = (placeID, category) => {
+    if (category === 'dining') {
+      router.push({
+        pathname: '(admin)/(home)/(edit)/editdining',
+        params: {placeID}, // Pass all the place data as route params
+      });
+    } else if (category === 'attraction') {
+      router.push({
+        pathname: '(admin)/(home)/(edit)/editattraction',
+        params: {placeID}, // Pass all the place data as route params
+      });
+    } else if (category === 'event') {
+      router.push({
+        pathname: '(admin)/(home)/(edit)/editevent',
+        params: {placeID}, // Pass all the place data as route params
+      });
+    }
+    console.log('Route params:', route.params);
+    console.log('PlaceID:', placeID);
+    
+  };
+
+  const toggleModalVisibility = () => {
+    setIsModalVisible(!isModalVisible);
+  };
 
   // Fetch operating hours
   useEffect(() => {
@@ -104,58 +130,6 @@ useEffect(() => {
   fetchReviewsAndProfiles();
 }, [placeID]);  // Dependency on placeID
 
-
-  // Fetch bookmark status
-  const [bookmarkLoading, setBookmarkLoading] = useState(true);
-
-useEffect(() => {
-  const checkBookmarkStatus = async () => {
-    setBookmarkLoading(true);
-    if (!userId || !placeID) return;
-    const bookmarkRef = ref(db, `bookmark/${userId}/${placeID}`);
-    const snapshot = await get(bookmarkRef);
-    setBookmark(snapshot.exists());
-    setBookmarkLoading(false);
-  };
-
-  checkBookmarkStatus();
-}, [userId, placeID]);
-
-  // Handle bookmark press
-  const handleBookmarkPress = async () => {
-    // console.log(price_or_menu);
-    if (!userId) return;
-    const bookmarkRef = ref(db, `bookmark/${userId}/${placeID}`);
-    if (bookmark) {
-      await remove(bookmarkRef);
-    } else {
-      await set(bookmarkRef, { dateBookmarked: new Date().toISOString() });
-    }
-    setBookmark(!bookmark);
-  };
-
-  // Navigation header for bookmark
-  useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity onPress={handleBookmarkPress} style={{ marginRight: 10 }}>
-          <Image
-            source={bookmark ? icons.bookmarked : icons.bookmark}
-            style={{ width: 24, height: 24, tintColor: 'white' }}
-          />
-        </TouchableOpacity>
-      ),
-    });
-  }, [bookmark]);
-
-  // Handle review add
-  const handleAddReview = () => {
-    router.push({
-      pathname: '(tabs)/(explore)/addreview',
-      params: { placeID, name },
-    });
-  };
-
   // Render details
   const renderDetails = () => (
     <View className="mt-1 mx-5 ">
@@ -209,6 +183,10 @@ useEffect(() => {
         {category === 'event'? (
           <View>
             <View className="w-full items-start mt-3">
+              <Text className="text-lg font-ksemibold">Description:</Text>
+              <Text className="font-kregular">{description}</Text>
+            </View>
+            <View className="w-full items-start mt-3">
               <Text className="text-lg font-ksemibold">Ticket Fee:</Text>
               <View classname="w-full">
                 <Image 
@@ -217,10 +195,6 @@ useEffect(() => {
                 resizeMode='contain'
                 />
                 </View>
-            </View>
-            <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Description:</Text>
-              <Text className="font-kregular">{description}</Text>
             </View>
             <View className="w-full items-start my-3">
               <Text className="text-lg font-ksemibold">Tags:</Text>
@@ -309,9 +283,9 @@ useEffect(() => {
     </View>
   );
 
-  if (loading || bookmarkLoading) {
-    return <ActivityIndicator size="large" color="#A91D1D" />;
-  }
+  // if (loading || bookmarkLoading) {
+  //   return <ActivityIndicator size="large" color="#A91D1D" />;
+  // }
 
   return (
     <View className="h-full items-center">
@@ -326,18 +300,18 @@ useEffect(() => {
           )}
 
           <View>
-            {activeTab === 'details' ? renderDetails() : renderReview()}
+            {activeTab === 'details' ? renderDetails() : null}
+            
+            <View className="flex-row items-center justify-evenly mt-5 mb-10">
+              <Button 
+              title="Edit"
+              handlePress={() => handleEditPress(placeID, category)}
+              style="bg-primary w-2/5"
+              textColor="text-white"/>
+            </View>
           </View>
        </View>
       </ScrollView>
-      {activeTab === 'reviews' && (
-        <TouchableOpacity
-          onPress={handleAddReview}
-          className="absolute bottom-5 right-5 bg-primary h-10 rounded-md items-center justify-center w-1/3"
-        >
-          <Text className="text-white font-kregular text-sm">Add Review</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 };

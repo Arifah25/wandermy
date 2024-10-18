@@ -73,7 +73,6 @@ const HomeAdmin = () => {
     router.push("(admin)/(home)/(create)/event");
     toggleModalVisibility();
   };
-
   
 
 return (

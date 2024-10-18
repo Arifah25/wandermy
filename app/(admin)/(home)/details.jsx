@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, Modal, Linking } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { DetailTab, Poster, Button} from '../../../components';
 import { images, icons } from '../../../constants';
@@ -16,6 +16,7 @@ const Details = () => {
   //const [bookmark, setBookmark] = useState(false);
   const [userProfiles, setUserProfiles] = useState({});
   const [hour, setOperatingHours] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   
   const router = useRouter();
   const route = useRoute();
@@ -50,8 +51,28 @@ const Details = () => {
     
   };
 
+  const handleDelete = () => {
+    toggleModalVisibility();
+  };
+
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
+  };
+
+  const deletePlace = (placeID, category) => {
+    const db = getDatabase();
+  
+    // Construct the path to the place using the category and placeID
+    const placeRef = ref(db, `places/${placeID}`);
+  
+    // Perform the deletion
+    remove(placeRef)
+      .then(() => {
+        console.log(`Place with ID ${placeID} in category ${category} deleted successfully.`);
+      })
+      .catch((error) => {
+        console.error("Error deleting place:", error);
+      });
   };
 
   // Fetch operating hours
@@ -146,20 +167,20 @@ useEffect(() => {
       
       <View className="items-center mx-10 justify-center">
         <View className="w-full items-start">
-          <Text className="text-lg font-ksemibold">Address:</Text>
+          <Text className="text-lg font-ksemibold">Address :</Text>
           <Text className="font-kregular">{address}</Text>
         </View>
 
         {category === 'event' ? (
           <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Event date & time:</Text>
+            <Text className="text-lg font-ksemibold">Event date & time :</Text>
             <Text className="font-kregular">
               {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
             </Text>
           </View>
         ) : (
           <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Operating Hours:</Text>
+            <Text className="text-lg font-ksemibold">Operating Hours :</Text>
             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
               <View key={index} className="flex-row">
                 <Text className="w-1/3 font-kregular">{day}</Text>
@@ -176,14 +197,18 @@ useEffect(() => {
         )}         
 
         <View className="w-full items-start mt-3">
-          <Text className="text-lg font-ksemibold">Contact Number:</Text>
+          <Text className="text-lg font-ksemibold">Contact Number :</Text>
           <Text className="font-kregular">{contactNum}</Text>
         </View>
 
         {category === 'event'? (
           <View>
             <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Ticket Fee:</Text>
+              <Text className="text-lg font-ksemibold">Description :</Text>
+              <Text className="font-kregular">{description}</Text>
+            </View>
+            <View className="w-full items-start mt-3">
+              <Text className="text-lg font-ksemibold">Ticket Fee :</Text>
               <View classname="w-full">
                 <Image 
                 source={{uri:price_or_menu}}
@@ -192,12 +217,8 @@ useEffect(() => {
                 />
                 </View>
             </View>
-            <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Description:</Text>
-              <Text className="font-kregular">{description}</Text>
-            </View>
             <View className="w-full items-start my-3">
-              <Text className="text-lg font-ksemibold">Tags:</Text>
+              <Text className="text-lg font-ksemibold">Tags :</Text>
               <Text className=" font-kregular">{tags}</Text>
             </View>
           </View>   
@@ -205,9 +226,9 @@ useEffect(() => {
         ):(
         <View className="w-full items-start mt-3">
           {category === 'attraction' ? (
-            <Text className="text-lg font-ksemibold">Price:</Text>
+            <Text className="text-lg font-ksemibold">Price :</Text>
           ):(
-            <Text className="text-lg font-ksemibold">Menu:</Text>
+            <Text className="text-lg font-ksemibold">Menu :</Text>
           )}
           <View className="w-full">
             <Image 
@@ -217,7 +238,7 @@ useEffect(() => {
             />
           </View>
           <View className="w-full items-start my-3">
-            <Text className="text-lg font-ksemibold">Tags:</Text>
+            <Text className="text-lg font-ksemibold">Tags :</Text>
             <Text className=" font-kregular">{tags}</Text>
           </View>
         </View>
@@ -290,19 +311,23 @@ useEffect(() => {
   return (
     <View className="h-full items-center">
       <ScrollView className=" w-full">
-       <View className="m-5">
-        <Poster image={poster} />
+        <View className="m-5">
+          <Poster image={poster} />
           <Text className="mt-3 ml-3 font-kregular text-xl">{name}</Text>
 
           {category !== 'event' && (
             <DetailTab activeTab={activeTab} setActiveTab={setActiveTab} />
-            
           )}
 
           <View>
             {activeTab === 'details' ? renderDetails() : null}
-            
             <View className="flex-row items-center justify-evenly mt-5 mb-10">
+              <Button 
+              title="Delete"
+              handlePress={handleDelete}
+              style="bg-primary w-2/5"
+              textColor="text-white"/>        
+
               <Button 
               title="Edit"
               handlePress={() => handleEditPress(placeID, category)}
@@ -310,8 +335,40 @@ useEffect(() => {
               textColor="text-white"/>
             </View>
           </View>
-       </View>
+        </View>
       </ScrollView>
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="fade"
+      >
+        <View className=" flex-1 justify-center items-center blur-xl">
+          <View className="border bg-secondary w-[295px] h-[250px] p-[20px] rounded-[8px]">
+            <TouchableOpacity 
+              onPress={toggleModalVisibility}
+              className=" absolute top-6 right-6"
+            >
+              <Image source={icons.close} className="w-5 h-5 align-top"/>
+            </TouchableOpacity> 
+            <Text className="mt-9 font-kregular text-2xl text-center">
+              Delete the place from the database?
+            </Text>
+            <View className="flex-row items-center justify-evenly mt-5 mb-10">
+              <Button 
+              title="No"
+              handlePress={toggleModalVisibility}
+              style="bg-primary w-2/5"
+              textColor="text-white"/>        
+
+              <Button 
+              title="Yes"
+              handlePress={() => deletePlace(placeID, category)}
+              style="bg-primary w-2/5"
+              textColor="text-white"/>
+            </View>
+          </View>
+        </View>
+      </Modal> 
     </View>
   );
 };
