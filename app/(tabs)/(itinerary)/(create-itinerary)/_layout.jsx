@@ -4,8 +4,10 @@ import { icons } from '../../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 import NewItinerary from './new';
-import Traveler from './traveler';
 import SelectDate from './date';
+import SelectTraveler from './traveler';
+import SelectBudget from './budget';
+import ReviewItinerary from './reviewiti';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,7 +38,7 @@ const CreateItineraryLayout = () => {
         />
         <Stack.Screen
             name="traveler"
-            component={Traveler}
+            component={SelectTraveler}
             options={{ 
             headerTitle: 'Itinerary Crafting',
             headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
@@ -48,6 +50,28 @@ const CreateItineraryLayout = () => {
         <Stack.Screen
             name="date"
             component={SelectDate}
+            options={{ 
+            headerTitle: 'Itinerary Crafting',
+            headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+            headerTitleAlign: 'center',
+            headerStyle: { backgroundColor: '#A91D1D' },
+            headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+            }}
+        />
+        <Stack.Screen
+            name="budget"
+            component={SelectBudget}
+            options={{ 
+            headerTitle: 'Itinerary Crafting',
+            headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+            headerTitleAlign: 'center',
+            headerStyle: { backgroundColor: '#A91D1D' },
+            headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+            }}
+        />
+        <Stack.Screen
+            name="reviewiti"
+            component={ReviewItinerary}
             options={{ 
             headerTitle: 'Itinerary Crafting',
             headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },

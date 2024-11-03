@@ -51,7 +51,7 @@ const NewItinerary = () => {
           />  
         </View>      
       </View> 
-      <View
+      {/* <View
       className="w-full items-center mt-7">
         <Text
         className="font-kregular text-xl">
@@ -70,7 +70,7 @@ const NewItinerary = () => {
           handleChangeText={(e) => setForm({ ...form, endDate: e })}
           />
         </View>
-      </View>  
+      </View>   */}
       <Button 
       title="Start Crafting"
       textColor="text-white"

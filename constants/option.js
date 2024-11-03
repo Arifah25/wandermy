@@ -28,3 +28,24 @@ export const SelectTravelList=[
         icon: '✈️'
     }
 ]
+
+export const SelectBudgetList=[
+    {
+        id: 1,
+        title: 'Cheap',
+        desc: 'Budget friendly trip',
+        icon: '💵'
+    },
+    {
+        id: 2,
+        title: 'Standard',
+        desc: 'Keep cost on the average',
+        icon: '💰'
+    },
+    {
+        id: 3,
+        title: 'Luxury',
+        desc: "Don't worry about cost",
+        icon: '💎'
+    }
+]

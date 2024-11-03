@@ -1,18 +1,27 @@
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { Button, OptionCard } from '../../../../components';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { SelectTravelList } from '../../../../constants/option';
 
-const Traveler = () => {
+const SelectTraveler = () => {
   const router = useRouter();
+  const navigation = useNavigation();
   const [selectedTraveler, setSelectedTraveler] = useState();
   const {itineraryData, setItineraryData} = useContext(CreateItineraryContext);
 
+  // useEffect(()=>{
+  //   navigation.setOptions({
+  //     headerShown: true,
+  //     // headerTransparent: true,
+  //     headerTitle:'Test'
+  //   })
+  // },[])
+  
   useEffect(() =>{
     setItineraryData({...itineraryData,
-      travelerCount: selectedTraveler
+      traveler: selectedTraveler
     })
   },[selectedTraveler])
 
@@ -57,4 +66,4 @@ const Traveler = () => {
   )
 }
 
-export default Traveler
+export default SelectTraveler
