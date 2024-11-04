@@ -5,8 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 import CreateLayout from './(create)/_layout';
 import EditLayout from './(edit)/_layout';
-import Details from './details';
 import HomeAdmin from './index';
+import DetailsH from './details';
+import HomeDetails from './homedetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,7 +39,19 @@ const HomeLayout = () => {
       />
       <Stack.Screen 
         name="details"
-        component={Details}
+        component={DetailsH}
+        options={{
+          // headerShown: false,
+          headerTitle: 'Listings',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen 
+        name="homedetails"
+        component={HomeDetails}
         options={{
           // headerShown: false,
           headerTitle: 'Listings',

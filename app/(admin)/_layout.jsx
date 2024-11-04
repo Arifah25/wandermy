@@ -69,7 +69,7 @@ const HomeTabs = () => {
       }}
     >
       <Tabs.Screen
-        name="Pending"
+        name="(pending)"
         component={PendingLayout}
         options={{
           headerShown: false,
@@ -86,7 +86,7 @@ const HomeTabs = () => {
         }}
       />
       <Tabs.Screen
-        name="Home"
+        name="(home)"
         component={HomeLayout}
         options={{
           headerShown: false,
@@ -115,12 +115,12 @@ const AdminLayout = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="HomeTabs"
+        name="(home)"
         component={HomeTabs}
         options={{ headerShown: false }}
       />
       <Stack.Screen 
-        name="PendingDetails"
+        name="(pending)"
         component={PendingLayout}
         options={{
           headerShown: true,
