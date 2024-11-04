@@ -3,55 +3,44 @@ import { useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, Modal, Linking } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { DetailTab, Poster, Button} from '../../../components';
-import { images, icons } from '../../../constants';
+import { icons } from '../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getDatabase, ref, onValue, set, remove, get } from 'firebase/database';
+import { getDatabase, ref, onValue, set, remove, get,update } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 
 const Details = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const [event, setEvent] = useState({});
-  const [reviews, setReviews] = useState([]);
-  //const [bookmark, setBookmark] = useState(false);
   const [userProfiles, setUserProfiles] = useState({});
   const [hour, setOperatingHours] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   
-  const router = useRouter();
   const route = useRoute();
-  const navigation = useNavigation();
   
-  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description,status } = route.params;
+  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description } = route.params;
   const auth = getAuth();
   const db = getDatabase();
-  const userId = auth.currentUser?.uid;
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   // Handle pressing a place card to navigate to its details, passing all place data
-  const handleEditPress = (placeID, category) => {
-    if (category === 'dining') {
-      router.push({
-        pathname: '(admin)/(home)/(edit)/editdining',
-        params: {placeID}, // Pass all the place data as route params
+  const handleAddToListing = (placeID) => {
+    // Reference the place in the database using its ID
+    const placeRef = ref(db, `places/${placeID}`);
+  
+    // Update the status from "pending" to "approved"
+    update(placeRef, {
+      status: 'approved',
+    })
+      .then(() => {
+        console.log(`Place with ID ${placeID} has been approved.`);
+      })
+      .catch((error) => {
+        console.error('Error updating status:', error);
       });
-    } else if (category === 'attraction') {
-      router.push({
-        pathname: '(admin)/(home)/(edit)/editattraction',
-        params: {placeID}, // Pass all the place data as route params
-      });
-    } else if (category === 'event') {
-      router.push({
-        pathname: '(admin)/(home)/(edit)/editevent',
-        params: {placeID}, // Pass all the place data as route params
-      });
-    }
-    console.log('Route params:', route.params);
-    console.log('PlaceID:', placeID);
-    
   };
 
-  const handleDelete = () => {
+  const handleReject = () => {
     toggleModalVisibility();
   };
 
@@ -117,8 +106,7 @@ const Details = () => {
       setLoading(false);
     };
 
-    
-    if (category === 'event' && status == 'approved') fetchEvent();
+    if (category === 'event') fetchEvent();
   }, [placeID, category]);
 
   // Fetch reviews and user profiles
@@ -248,62 +236,6 @@ useEffect(() => {
     </View>
   );
 
-  // Render reviews (currently empty)
-  const renderReview = () => (
-    <View className="h-full mx-5 ">
-      {reviews.length === 0 ? (
-        <Text>No reviews available</Text>
-      ) : (
-        reviews.map((review, index) => {
-          const userProfile = userProfiles[reviews[index].user] || {};
-          return (
-            <View key={index} 
-            className="items-start mb-3"
-            >
-              <View className="flex-row items-center">
-                <Image source={{ uri: userProfile.profilePicture}} className="w-12 h-12 rounded-full" />
-                <View className="ml-3 justify-start p-3">
-                  <Text>{userProfile.username}</Text>
-                  <Text>{new Date(review.datePosted).toLocaleDateString()}</Text>
-                </View>
-              </View>
-              <View className="flex-row justify-start center mt-1 ">
-                {[...Array(5)].map((_, i) => (
-                  <Image
-                    key={i}
-                    source={icons.star}
-                    className={`w-[30px] h-[35px] mx-2`}
-                    resizeMode='cover'
-                    tintColor={i < review.rating ? "#FFB655" : "gray"}
-                  />
-                ))}
-              </View>
-              <View className="w-full mt-5 flex-row justify-start">
-                {review.photo && review.photo.map((photo, index) => (
-                  <Image key={index} source={{ uri: photo }} className="w-32 h-36 " resizeMode='contain' />
-                ))}
-              </View>
-              <View className="mt-5 w-5/6">
-                <Text className="font-kregular text-sm">
-                  {review.comment}
-                </Text>
-              </View>
-              <View className="mt-5">
-                <Text className="font-bold text-sm">Visited on:</Text>
-                <Text className="p-2 bg-secondary mt-1 uppercase font-kbold text-justify">
-                  {review.choiceQuestion }
-                </Text>
-              </View>
-              <View className="w-full border-b-0.5 border-[#808080] mt-5">
-                
-              </View>
-            </View>
-          );
-        })
-      )}
-       
-    </View>
-  );
 
   // if (loading || bookmarkLoading) {
   //   return <ActivityIndicator size="large" color="#A91D1D" />;
@@ -320,18 +252,19 @@ useEffect(() => {
             <DetailTab activeTab={activeTab} setActiveTab={setActiveTab} />
           )}
 
+          {/* dah masuk detail place */}
           <View>
             {activeTab === 'details' ? renderDetails() : null}
             <View className="flex-row items-center justify-evenly mt-5 mb-10">
               <Button 
-              title="Delete"
-              handlePress={handleDelete}
+              title="Reject"
+              handlePress={handleReject}
               style="bg-primary w-2/5"
               textColor="text-white"/>        
 
               <Button 
-              title="Edit"
-              handlePress={() => handleEditPress(placeID, category)}
+              title="Approve"
+              handlePress={() => handleAddToListing(placeID, category)}
               style="bg-primary w-2/5"
               textColor="text-white"/>
             </View>
@@ -352,7 +285,7 @@ useEffect(() => {
               <Image source={icons.close} className="w-5 h-5 align-top"/>
             </TouchableOpacity> 
             <Text className="mt-9 font-kregular text-2xl text-center">
-              Delete the place from the database?
+              Reject addition of this place?
             </Text>
             <View className="flex-row items-center justify-evenly mt-5 mb-10">
               <Button 
