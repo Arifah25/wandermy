@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, onValue, set, remove, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 
-const Details = () => {
+const DetailsH = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const [event, setEvent] = useState({});
@@ -379,4 +379,4 @@ useEffect(() => {
   );
 };
 
-export default Details;
+export default DetailsH;

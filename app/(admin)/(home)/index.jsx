@@ -45,10 +45,11 @@ const HomeAdmin = () => {
   // Handle pressing a place card to navigate to its details, passing all place data
   const handlePlacePress = (place) => {
     console.log('Navigating to:', place); // Log the place details
-    router.push({
-      pathname: '(admin)/(home)/details',
-      params: { ...place }, // Pass all the place data as route params
-    });
+    // router.push({
+    //   pathname: '(admin)/(home)/homedetails',
+    //   // params: { ...place }, // Pass all the place data as route params
+    // });
+    router.push("(admin)/(home)/homedetails");
   };
 
   const toggleModalVisibility = () => {
