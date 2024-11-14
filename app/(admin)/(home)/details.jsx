@@ -154,98 +154,103 @@ useEffect(() => {
 
   // Render details
   const renderDetails = () => (
-    <View className="mt-1 mx-5 ">
-      {category !== 'event' && (
-        <View className="mb-3 rounded-md bg-secondary">
-          <TouchableOpacity
-            onPress={() => Linking.openURL(websiteLink)}
-            className="h-9 items-center justify-center"
-          >
-            <Text className="text-base font-kregular">Website</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      
-      <View className="items-center mx-10 justify-center">
-        <View className="w-full items-start">
-          <Text className="text-lg font-ksemibold">Address :</Text>
-          <Text className="font-kregular">{address}</Text>
-        </View>
-
-        {category === 'event' ? (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Event date & time :</Text>
-            <Text className="font-kregular">
-              {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
-            </Text>
+    status === 'approved' ? (
+      <View style={{ marginTop: 5, marginHorizontal: 20 }}>
+        {category !== 'event' && websiteLink && (
+          <View style={{ marginBottom: 12, borderRadius: 8, backgroundColor: '#f0f0f0' }}>
+            <TouchableOpacity
+              onPress={() => Linking.openURL(websiteLink)}
+              style={{ height: 36, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Text style={{ fontSize: 16, fontFamily: 'KRegular' }}>Website</Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Operating Hours :</Text>
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-              <View key={index} className="flex-row">
-                <Text className="w-1/3 font-kregular">{day}</Text>
-                {hour[index]?.isOpen ? (
-                  <Text className="w-2/3 font-kregular text-right">
-                    {hour[index].openingTime} - {hour[index].closingTime}
-                  </Text>
+        )}
+  
+        <View style={{ alignItems: 'center', marginHorizontal: 40, justifyContent: 'center' }}>
+          <View style={{ width: '100%', alignItems: 'flex-start' }}>
+            <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Address :</Text>
+            <Text style={{ fontFamily: 'KRegular' }}>{address || 'N/A'}</Text>
+          </View>
+  
+          {category === 'event' ? (
+            <View style={{ width: '100%', alignItems: 'flex-start', marginTop: 12 }}>
+              <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Event date & time :</Text>
+              <Text style={{ fontFamily: 'KRegular' }}>
+                {event?.startDate} - {event?.endDate}{"\n"}{event?.startTime} - {event?.endTime}
+              </Text>
+            </View>
+          ) : (
+            <View style={{ width: '100%', alignItems: 'flex-start', marginTop: 12 }}>
+              <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Operating Hours :</Text>
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+                <View key={index} style={{ flexDirection: 'row' }}>
+                  <Text style={{ width: '33%', fontFamily: 'KRegular' }}>{day}</Text>
+                  {hour[index]?.isOpen ? (
+                    <Text style={{ width: '66%', fontFamily: 'KRegular', textAlign: 'right' }}>
+                      {hour[index].openingTime} - {hour[index].closingTime}
+                    </Text>
+                  ) : (
+                    <Text style={{ textAlign: 'right', width: '30%', fontFamily: 'KRegular' }}>Closed</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+          )}
+  
+          <View style={{ width: '100%', alignItems: 'flex-start', marginTop: 12 }}>
+            <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Contact Number :</Text>
+            <Text style={{ fontFamily: 'KRegular' }}>{contactNum || 'N/A'}</Text>
+          </View>
+  
+          {category === 'event' ? (
+            <View>
+              <View style={{ width: '100%', alignItems: 'flex-start', marginTop: 12 }}>
+                <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Description :</Text>
+                <Text style={{ fontFamily: 'KRegular' }}>{description || 'No description available'}</Text>
+              </View>
+              <View style={{ width: '100%', alignItems: 'flex-start', marginTop: 12 }}>
+                <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Ticket Fee :</Text>
+                {price_or_menu ? (
+                  <Image 
+                    source={{ uri: price_or_menu }} 
+                    style={{ width: 256, height: 208 }}
+                    resizeMode="contain"
+                  />
                 ) : (
-                  <Text className="text-right w-[30%] font-kregular">Closed</Text>
+                  <Text style={{ fontFamily: 'KRegular' }}>No ticket information available</Text>
                 )}
               </View>
-            ))}
-          </View>
-        )}         
-
-        <View className="w-full items-start mt-3">
-          <Text className="text-lg font-ksemibold">Contact Number :</Text>
-          <Text className="font-kregular">{contactNum}</Text>
-        </View>
-
-        {category === 'event'? (
-          <View>
-            <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Description :</Text>
-              <Text className="font-kregular">{description}</Text>
-            </View>
-            <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Ticket Fee :</Text>
-              <View classname="w-full">
+              <View style={{ width: '100%', alignItems: 'flex-start', marginVertical: 12 }}>
+                <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Tags :</Text>
+                <Text style={{ fontFamily: 'KRegular' }}>{tags || 'No tags available'}</Text>
+              </View>
+            </View>   
+          ) : (
+            <View style={{ width: '100%', alignItems: 'flex-start', marginTop: 12 }}>
+              {category === 'attraction' ? (
+                <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Price :</Text>
+              ) : (
+                <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Menu :</Text>
+              )}
+              {price_or_menu ? (
                 <Image 
-                source={{uri:price_or_menu}}
-                className="w-64 h-52"
-                resizeMode='contain'
+                  source={{ uri: price_or_menu }} 
+                  style={{ width: 256, height: 208 }}
+                  resizeMode="contain"
                 />
-                </View>
+              ) : (
+                <Text style={{ fontFamily: 'KRegular' }}>No menu/price available</Text>
+              )}
+              <View style={{ width: '100%', alignItems: 'flex-start', marginVertical: 12 }}>
+                <Text style={{ fontSize: 18, fontFamily: 'KSemibold' }}>Tags :</Text>
+                <Text style={{ fontFamily: 'KRegular' }}>{tags || 'No tags available'}</Text>
+              </View>
             </View>
-            <View className="w-full items-start my-3">
-              <Text className="text-lg font-ksemibold">Tags :</Text>
-              <Text className=" font-kregular">{tags}</Text>
-            </View>
-          </View>   
-                 
-        ):(
-        <View className="w-full items-start mt-3">
-          {category === 'attraction' ? (
-            <Text className="text-lg font-ksemibold">Price :</Text>
-          ):(
-            <Text className="text-lg font-ksemibold">Menu :</Text>
           )}
-          <View className="w-full">
-            <Image 
-            source={{uri:price_or_menu}}
-            className="w-64 h-52"
-            resizeMode='contain'
-            />
-          </View>
-          <View className="w-full items-start my-3">
-            <Text className="text-lg font-ksemibold">Tags :</Text>
-            <Text className=" font-kregular">{tags}</Text>
-          </View>
         </View>
-        )}        
       </View>
-    </View>
+    ) : null
   );
 
   // Render reviews (currently empty)

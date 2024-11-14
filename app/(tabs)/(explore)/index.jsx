@@ -32,7 +32,7 @@ const Explore = () => {
         : [];
       
       // Filter the data based on the selected tab/category
-      const filteredPlaces = placesArray.filter(place => place.category === activeTab); 
+      const filteredPlaces = placesArray.filter(place => place.category === activeTab && place.status === 'approved'); 
 
       setPlaces(filteredPlaces);
       setLoading(false); // Stop loading after data is fetched

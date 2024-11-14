@@ -5,20 +5,22 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { DetailTab, Poster, Button} from '../../../components';
 import { icons } from '../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getDatabase, ref, onValue, set, remove, get,update } from 'firebase/database';
+import { getDatabase, ref, refValue, set, remove, get,update, onValue } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 
-const Details = () => {
+const PendingDetails = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const [event, setEvent] = useState({});
   const [userProfiles, setUserProfiles] = useState({});
   const [hour, setOperatingHours] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  
+  const [pendingPlaces, setPendingPlaces] = useState([]); // To store the pending places
   const route = useRoute();
+  const router = useRouter();
+
   
-  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description } = route.params;
+  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, status } = route.params;
   const auth = getAuth();
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -38,6 +40,7 @@ const Details = () => {
       .catch((error) => {
         console.error('Error updating status:', error);
       });
+      router.back();
   };
 
   const handleReject = () => {
@@ -64,6 +67,18 @@ const Details = () => {
       });
   };
 
+  useEffect(() => {
+    const fetchPendingPlaces = async () => {
+      const placesRef = ref(db, `places/${placeID}`);
+      onValue(placesRef, (snapshot) => {
+        const data = snapshot.val();
+        const pendingPlaces = Object.values(data).filter(place => place.status === 'pending');
+        setPendingPlaces(pendingPlaces);
+      });
+    };
+  
+    fetchPendingPlaces();
+  }, []);
   // Fetch operating hours
   useEffect(() => {
     const hourRef = ref(db, `operatingHours/${placeID}`);
@@ -106,7 +121,7 @@ const Details = () => {
       setLoading(false);
     };
 
-    if (category === 'event') fetchEvent();
+    if (category === 'event' && status == 'pending') fetchEvent();
   }, [placeID, category]);
 
   // Fetch reviews and user profiles
@@ -307,4 +322,4 @@ useEffect(() => {
   );
 };
 
-export default Details;
+export default PendingDetails;

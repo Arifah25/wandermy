@@ -1,138 +1,79 @@
-import React from 'react';
-import { Image, TouchableOpacity } from 'react-native';
-import {icons} from '../../constants';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useRouter } from 'expo-router';
-import HomeLayout from './(home)/_layout';
-import PendingLayout from './(pending)/_layout';
+import { View, Text, Image } from 'react-native'
+import React from 'react'
+import { icons } from '../../constants';
+import { Tabs, usePathname } from 'expo-router'
 
-
-const Stack = createNativeStackNavigator();
-const Tabs = createBottomTabNavigator();
-
-const HeaderIcon = ({ onPress, icon }) => (
-  <TouchableOpacity onPress={onPress} style={{ margin: 10 }}>
-    <Image source={icon} style={{ width: 24, height: 24, tintColor: '#fff' }} />
-  </TouchableOpacity>
-);
-
-// const AdminLayout = () => {
-//   const router = useRouter();
-//   const handleBack = () => {
-//     router.back();
-//   }
-  
-//   return (
-//     <Stack.Navigator>
-//       <Stack.Screen
-//         name="(home)"
-//         component={HomeLayout}
-//         options={{ 
-//           headerShown: false,
-//           // headerTitle: 'Admin',
-//           // headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-//           // headerTitleAlign: 'center',
-//           // headerStyle: { backgroundColor: '#A91D1D' },
-//           // headerRight: () => <HeaderIcon icon={icons.bell} />,
-//         }}
-//       />
-//       <Stack.Screen 
-//         name="(pending)"
-//         component={PendingLayout}
-//         options={{
-//           headerShown: false,
-//           headerTitle: 'Listings',
-//           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-//           headerTitleAlign: 'center',
-//           headerStyle: { backgroundColor: '#A91D1D' },
-//           headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-//         }}
-//       />
-//     </Stack.Navigator>
-//   )
-// }
-
-const HomeTabs = () => {
+const TabIcon = ({ icon, color, name, focused }) => {
   return (
-    <Tabs.Navigator
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Image
+        source={icon}
+        resizeMode="contain"
+        style={{ tintColor: color, width: 24, height: 24, }}
+      />
+      {/* if want to put label */}
+      {/* <Text style={{ color, fontSize: 12, fontWeight: focused ? 'bold' : 'normal' }}>{name}</Text> */}
+    </View>
+  );
+};
+
+const TabsLayout = () => {
+  const pathname = usePathname();
+
+  // Log the current route name
+  //  console.log('Current route:', pathname);
+
+   return (
+    <Tabs
       screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#A91D1D',
         tabBarInactiveTintColor: '#000',
-        tabBarStyle: {
+        tabBarStyle: pathname === '/' ? {
           backgroundColor: '#CBCBCB',
           borderTopWidth: 1,
           borderTopColor: '#C3C3C3',
-          height: 60,
+          height: `${9}%`,
+          justifyContent: 'center',
+          alignItems: 'center',
+        } : {
+          display: 'none', // Hide the tab bar on all screens except /index
         },
       }}
     >
       <Tabs.Screen
-        name="Pending"
-        component={PendingLayout}
+        name="(home)"
+        // component={HomeLayout}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={icons.eye}
-              style={{
-                width: 24,
-                height: 24,
-                tintColor: focused ? '#A91D1D' : '#000',
-              }}
-            />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon 
+            icon={icons.home} 
+            color={color} 
+            name="Home" 
+            focused={focused}
+             />
           ),
         }}
       />
       <Tabs.Screen
-        name="Home"
-        component={HomeLayout}
+        name="(pending)"
+        // component={PendingLayout}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={icons.home}
-              style={{
-                width: 24,
-                height: 24,
-                tintColor: focused ? '#A91D1D' : '#000',
-              }}
-            />
-          ),
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon 
+            icon={icons.eye} 
+            color={color} 
+            name="Home" 
+            focused={focused}
+             />
+          ),          
         }}
       />
-    </Tabs.Navigator>
-  );
-};
+      
+    </Tabs>
+  )
+}
 
-const AdminLayout = () => {
-  const router = useRouter();
-  const handleBack = () => {
-    router.back();
-  };
-  
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="HomeTabs"
-        component={HomeTabs}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen 
-        name="PendingDetails"
-        component={PendingLayout}
-        options={{
-          headerShown: true,
-          headerTitle: 'Listings',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-        }}
-      />
-    </Stack.Navigator>
-  );
-};
-
-export default AdminLayout
+export default TabsLayout

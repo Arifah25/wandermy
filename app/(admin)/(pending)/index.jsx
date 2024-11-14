@@ -32,7 +32,7 @@ const PendingAdmin = () => {
         : [];
       
       // Filter the data based on the selected tab/category
-      const filteredPlaces = placesArray.filter(place => place.category === activeTab); 
+      const filteredPlaces = placesArray.filter(place => place.category === activeTab && place.status === 'pending'); 
 
       setPlaces(filteredPlaces);
       setLoading(false); // Stop loading after data is fetched
@@ -44,9 +44,9 @@ const PendingAdmin = () => {
 
   // Handle pressing a place card to navigate to its details, passing all place data
   const handlePlacePress = (place) => {
-    console.log('Navigating to:', place); // Log the place details
+    // console.log('Navigating to:', place); // Log the place details
     router.push({
-      pathname: '(admin)/(pending)/details',
+      pathname: '/(admin)/(pending)/pendingdetails',
       params: { ...place }, // Pass all the place data as route params
     });
   };

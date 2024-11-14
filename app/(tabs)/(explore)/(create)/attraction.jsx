@@ -227,7 +227,6 @@ const CreateAttraction = () => {
             setImages={setPosterImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
-
         </View>
         <CreateForm 
         title="Attraction name :"
