@@ -50,27 +50,12 @@ const PendingAdmin = () => {
       params: { ...place }, // Pass all the place data as route params
     });
   };
-
-//   const toggleModalVisibility = () => {
-//     setIsModalVisible(!isModalVisible);
-//   };
-
-//   const handleAdd = () => {
-//     toggleModalVisibility();
-//   };
   
 
 return (
   <View
   className="bg-white h-full flex-1 p-5 items-center justify-start"
-  >
-   <View
-   className="flex-row items-center w-full justify-evenly"
-   >
-    <View>
-      <Text>Pending Listings</Text>
-    </View>
-   </View>  
+  > 
    {/* Category Tabs */}
    <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 

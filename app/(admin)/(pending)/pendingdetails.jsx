@@ -124,36 +124,36 @@ const PendingDetails = () => {
     if (category === 'event' && status == 'pending') fetchEvent();
   }, [placeID, category]);
 
-  // Fetch reviews and user profiles
-useEffect(() => {
-  const fetchReviewsAndProfiles = async () => {
-    const refToUse = ref(db, `reviews/${placeID}`);
-    onValue(refToUse, (snapshot) => {
-      const data = snapshot.val();
-      const reviewList = data ? Object.values(data) : [];
-      setReviews(reviewList);  // Set the fetched reviews in state
+//   // Fetch reviews and user profiles
+// useEffect(() => {
+//   const fetchReviewsAndProfiles = async () => {
+//     const refToUse = ref(db, `reviews/${placeID}`);
+//     onValue(refToUse, (snapshot) => {
+//       const data = snapshot.val();
+//       const reviewList = data ? Object.values(data) : [];
+//       setReviews(reviewList);  // Set the fetched reviews in state
 
-      // Now fetch user profiles for each review
-      const fetchUserProfiles = async (reviewList) => {
-        const profiles = {};  // Store fetched profiles here
-        for (const review of reviewList) {
-          const userId = review.user;  // Use review.user to get the userId
-          if (!profiles[userId]) {     // Check if this user's profile has not been fetched yet
-            const userRef = ref(db, `users/${userId}`);  // Correct path to user data
-            const userSnapshot = await get(userRef);     // Fetch user data from Firebase
-            profiles[userId] = userSnapshot.val();       // Store the fetched profile data
-          }
-        }
-        setUserProfiles(profiles);  // Set the user profiles in state
-      };
+//       // Now fetch user profiles for each review
+//       const fetchUserProfiles = async (reviewList) => {
+//         const profiles = {};  // Store fetched profiles here
+//         for (const review of reviewList) {
+//           const userId = review.user;  // Use review.user to get the userId
+//           if (!profiles[userId]) {     // Check if this user's profile has not been fetched yet
+//             const userRef = ref(db, `users/${userId}`);  // Correct path to user data
+//             const userSnapshot = await get(userRef);     // Fetch user data from Firebase
+//             profiles[userId] = userSnapshot.val();       // Store the fetched profile data
+//           }
+//         }
+//         setUserProfiles(profiles);  // Set the user profiles in state
+//       };
 
-      fetchUserProfiles(reviewList);  // Fetch profiles after getting the reviews
-      setLoading(false);
-    });
-  };
+//       fetchUserProfiles(reviewList);  // Fetch profiles after getting the reviews
+//       setLoading(false);
+//     });
+//   };
 
-  fetchReviewsAndProfiles();
-}, [placeID]);  // Dependency on placeID
+//   fetchReviewsAndProfiles();
+// }, [placeID]);  // Dependency on placeID
 
   // Render details
   const renderDetails = () => (

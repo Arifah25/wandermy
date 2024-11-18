@@ -44,12 +44,12 @@ const HomeAdmin = () => {
 
   // Handle pressing a place card to navigate to its details, passing all place data
   const handlePlacePress = (place) => {
+    router.push({
+      pathname: '(admin)/(home)/homedetails',
+      params: { ...place }, // Pass all the place data as route params
+    });
     console.log('Navigating to:', place); // Log the place details
-    // router.push({
-    //   pathname: '(admin)/(home)/homedetails',
-    //   // params: { ...place }, // Pass all the place data as route params
-    // });
-    router.push("(admin)/(home)/homedetails");
+
   };
 
   const toggleModalVisibility = () => {
@@ -80,13 +80,13 @@ return (
   <View
   className="bg-white h-full flex-1 p-5 items-center justify-start"
   >
-   <View
+   {/* <View
    className="flex-row items-center w-full justify-evenly"
    >
     <View>
       <Text>All Listings</Text>
     </View>
-   </View>  
+   </View>   */}
    {/* Category Tabs */}
    <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 

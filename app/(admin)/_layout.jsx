@@ -65,7 +65,7 @@ const TabsLayout = () => {
             <TabIcon 
             icon={icons.eye} 
             color={color} 
-            name="Home" 
+            name="Pending" 
             focused={focused}
              />
           ),          

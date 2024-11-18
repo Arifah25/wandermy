@@ -22,6 +22,12 @@ const HomeLayout = () => {
   const handleBack = () => {
     router.back();
   }
+
+  const logoutAdmin = () => {
+    router.replace('(auth)/sign-in')// Navigate to Login page (logout)}/>,
+  }
+
+
   
   return (
     <Stack.Navigator>
@@ -34,7 +40,8 @@ const HomeLayout = () => {
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
-          headerRight: () => <HeaderIcon icon={icons.bell} />,
+          headerRight: () => <HeaderIcon icon={icons.bell}/>,
+          headerLeft: () => <HeaderIcon icon={icons.logout} onPress={logoutAdmin}/> 
         }}
       />
       <Stack.Screen 

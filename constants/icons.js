@@ -7,6 +7,7 @@ import search from "../assets/icons/search.png"
 import eye from "../assets/icons/eye.png"
 import eyeHide from "../assets/icons/eye-hide.png"
 import left from "../assets/icons/left-arrow.png"
+import logout from "../assets/icons/logout.png"
 import bell from "../assets/icons/bell.png";
 import bookmark from "../assets/icons/bookmark.png";
 import bookmarked from "../assets/icons/bookmarked.png";
@@ -27,6 +28,7 @@ export default {
     eye, 
     eyeHide,
     left,
+    logout,
     bell,
     bookmark,
     bookmarked,
