@@ -29,10 +29,16 @@ const PendingDetails = () => {
   const handleAddToListing = (placeID) => {
     // Reference the place in the database using its ID
     const placeRef = ref(db, `places/${placeID}`);
-  
+
+    const localDate = new Date();
+    // Adjust the time to UTC+5 by adding 5 hours to the local time
+    localDate.setHours(localDate.getHours() + 8);  
+    // Convert the adjusted time to ISO format
+    const currentDate = localDate.toISOString(); // ISO format in UTC+5  
     // Update the status from "pending" to "approved"
     update(placeRef, {
       status: 'approved',
+      dateApproved: currentDate, // Add the current date as dateApproved
     })
       .then(() => {
         console.log(`Place with ID ${placeID} has been approved.`);

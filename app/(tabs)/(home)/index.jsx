@@ -17,12 +17,6 @@ const Home = () => {
     if (snapshot.exists()) {
       const userData = snapshot.val();
       setUserData(userData);
-      // console.log(userData);
-      // // You can access the data like this:
-      // console.log(userData.email);
-      // console.log(userData.username);
-      // console.log(userData.userPreference);
-      // console.log(userData.profilePicture);
     } else {
       console.log("No data available");
     }
@@ -31,51 +25,32 @@ const Home = () => {
   });
 
   return (
-    <View
-    className="bg-white h-full flex-1 p-5"
-    >
-      <View
-      className="flex-row justify-center items-center"
-      >
-        <View
-        className="items-center justify-center -ml-5 mr-7"
-        >
+    <View className="bg-white h-full flex-1 p-5">
+      <View className="flex-row justify-center items-center">
+        <View className="items-center justify-center -ml-5 mr-7">
           {/* get profile photo from database */}
           <Image
           source={{uri: userData.profilePicture} || icons.profile}
           className="rounded-full w-32 h-32"
           />
         </View>
-        <View
-        className="mx-5 justify-center"
-        >
-          <Text
-          className="font-kregular text-2xl"
-          >
+        <View className="mx-5 justify-center">
+          <Text className="font-kregular text-2xl">
             Hello !
           </Text>
-          <Text
-          className="mt-4 font-ksemibold text-2xl"
-          >
+          <Text className="mt-4 font-ksemibold text-2xl">
             {/* get name from database */}
             {userData.username}
           </Text>
         </View>
       </View>
       {/* get recommended places from database */}
-      <View
-      className="m-4 h-full"
-      >
-        <Text
-        className="font-kregular text-xl"
-        >
+      <View className="m-4 h-full">
+        <Text className="font-kregular text-xl">
           Recommendations for you 
         </Text>
-        <View 
-        className="items-center"
-        >
-          <FlatList
-          />
+        <View className="items-center">
+          <FlatList/>
         </View>
       </View>
     </View>

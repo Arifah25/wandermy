@@ -26,6 +26,7 @@ const HomeLayout = () => {
     router.replace('(auth)/sign-in')// Navigate to Login page (logout)}/>,
     console.log('Sign Out Admin Successful');
   }
+
   
   return (
     <Stack.Navigator>

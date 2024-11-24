@@ -12,6 +12,8 @@ const Explore = () => {
   const [activeTab, setActiveTab] = useState('attraction'); // Active category tab
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [filteredPlaces, setFilteredPlaces] = useState([]); // State to store filtered places
+  const [sortOrder, setSortOrder] = useState('asc'); // Sorting state
+  const [isSortModalVisible, setIsSortModalVisible] = useState(false); // Sorting modal visibility
   const router = useRouter(); // Navigation handler
 
   // Fetch data based on the active category
@@ -38,9 +40,53 @@ const Explore = () => {
       setLoading(false); // Stop loading after data is fetched
     });
 
+    
     // Clean up the listener on unmount
     return () => unsubscribe();
   }, [activeTab]); // Re-fetch when activeTab changes
+
+
+  const parseTime = (timeString) => {
+    // Check if timeString is valid
+    if (!timeString) return [0, 0]; // Return 00:00 if time is not available
+    
+    const timeParts = timeString.split(' ');
+    const time = timeParts[0]; // e.g., "10:00"
+    const period = timeParts[1]; // e.g., "AM" or "PM"
+  
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    // Convert to 24-hour format
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+  
+    return [hours, minutes];
+  };
+
+  // Sorting Function
+  const sortData = (order) => {
+    let sorted;
+
+    switch (order) {
+      case 'asc':
+        sorted = [...filteredPlaces].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'desc':
+        sorted = [...filteredPlaces].sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'latest': // Sort by dateApproved (latest first)
+        sorted = [...filteredPlaces].sort((a, b) => new Date(b.dateApproved) - new Date(a.dateApproved));
+        break;
+      case 'oldest': // Sort by dateApproved (oldest first)
+        sorted = [...filteredPlaces].sort((a, b) => new Date(a.dateApproved) - new Date(b.dateApproved));
+        break;  
+    }
+
+    setSortOrder(order);
+    setFilteredPlaces(sorted);
+    setIsSortModalVisible(false); // Close the modal after sorting
+  };
+
 
   // Handle pressing a place card to navigate to its details, passing all place data
   const handlePlacePress = (place) => {
@@ -48,6 +94,10 @@ const Explore = () => {
       pathname: '(tabs)/(explore)/details',
       params: { ...place }, // Pass all the place data as route params
     });
+  };
+
+  const toggleSortModal = () => {
+    setIsSortModalVisible(!isSortModalVisible);
   };
 
   const toggleModalVisibility = () => {
@@ -83,12 +133,12 @@ const Explore = () => {
           activeTab={activeTab} // Pass the active category
           setFilteredPlaces={setFilteredPlaces}
           />
-          {/* sorting button */}
-          <TouchableOpacity className="w-1/6 items-center">
+          {/* Sorting Button */}
+          <TouchableOpacity onPress={toggleSortModal} className="w-1/6 items-center">
             <Image
               source={icons.filter}
               className="w-8 h-8"
-              tintColor='black'
+              tintColor="black"
             />
           </TouchableOpacity>
         </View>  
@@ -142,33 +192,51 @@ const Explore = () => {
               </Text>
               <View className="flex-1 items-center mt-3">
                 <View className="mt-4 bg-white items-center w-3/4 h-12 rounded-md justify-center">
-                  <TouchableOpacity 
-                  onPress={addAttraction}
-                  >
+                  <TouchableOpacity onPress={addAttraction}>
                     <Text className="font-kregular text-xl">
                       Attraction
                     </Text>
                   </TouchableOpacity>
                 </View>
                 <View className="mt-4 bg-white items-center w-3/4 h-12 rounded-md justify-center">
-                  <TouchableOpacity 
-                  onPress={addDining}
-                  >
+                  <TouchableOpacity onPress={addDining}>
                     <Text className="font-kregular text-xl">
                       Dining
                     </Text>
                   </TouchableOpacity>
                 </View>
                 <View className="mt-4 bg-white items-center w-3/4 h-12 rounded-md justify-center">
-                  <TouchableOpacity 
-                  onPress={addEvent}
-                  >
+                  <TouchableOpacity onPress={addEvent}>
                     <Text className="font-kregular text-xl">
                       Event
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Sort Modal */}
+        <Modal visible={isSortModalVisible} transparent animationType="slide">
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="w-3/4 bg-white p-6 rounded-lg">
+              <Text className="text-lg font-bold mb-4">Sort By</Text>
+              <TouchableOpacity onPress={() => sortData('asc')} className="mb-3">
+                <Text className="text-base">Ascending (A-Z)</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => sortData('desc')} className="mb-3">
+                <Text className="text-base">Descending (Z-A)</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => sortData('latest')} className="mb-3">
+                <Text className="text-base">Date posted: Latest</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => sortData('oldest')} className="mb-3">
+                <Text className="text-base">Date posted: Older</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleSortModal} className="mt-4">
+                <Text className="text-center text-red-500">Cancel</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
