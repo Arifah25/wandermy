@@ -60,7 +60,7 @@ return (
    <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 
     {/* Places List or Loading Indicator */}
-    <View className="h-full w-full mt-5">
+    <View className="h-full w-full mt-5 bottom-5" style={{ paddingBottom: 105 }}>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />
       ) : (
