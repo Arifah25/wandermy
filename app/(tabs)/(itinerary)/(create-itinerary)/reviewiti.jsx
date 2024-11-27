@@ -3,9 +3,11 @@ import React, { useContext } from 'react'
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext'
 import moment from 'moment';
 import { Button } from '../../../../components';
+import { useRouter } from 'expo-router';
 
 const ReviewItinerary = () => {
 
+    const router = useRouter();
     const {itineraryData, setItineraryData} = useContext(CreateItineraryContext);
 
     return (
@@ -80,7 +82,7 @@ const ReviewItinerary = () => {
                 title="Generate Itinerary"
                 textColor="text-white"
                 style="bg-primary w-4/5 mt-5"
-                handlePress={() => console.log('Generating Itinerary')}
+                handlePress={() => router.push('/(create-itinerary)/generate')}
                 />  
             </View>
         </View>

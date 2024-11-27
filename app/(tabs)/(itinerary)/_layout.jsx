@@ -8,6 +8,7 @@ import Itinerary from './index';
 import NewItinerary from './(create-itinerary)/new';
 import Traveler from './(create-itinerary)/traveler';
 import CreateItineraryLayout from './(create-itinerary)/_layout';
+import MyItinerary from './itinerary';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,7 +43,18 @@ const ItineraryLayout = () => {
         options={{
           headerShown: false,
         }}
-      />      
+      />    
+      <Stack.Screen
+        name="itinerary"
+        component={MyItinerary}
+        options={{ 
+          headerTitle: 'Itinerary Crafting',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          // headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />    
     </Stack.Navigator>
 
   )

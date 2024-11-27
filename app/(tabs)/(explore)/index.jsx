@@ -100,7 +100,7 @@ const Explore = () => {
      <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Places List or Loading Indicator */}
-      <View className="h-full w-full mt-5">
+      <View className="h-[79%] w-full mt-5">
         {loading ? (
           <ActivityIndicator size="large" color="#A91D1D" />
         ) : (
@@ -115,7 +115,7 @@ const Explore = () => {
             )}
             keyExtractor={(item) => item.id}
             numColumns={2}
-            columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 12, marginTop: 10 }}
+            columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 6, marginVertical: 10, paddingBottom:10 }}
           />
         )}
       </View>

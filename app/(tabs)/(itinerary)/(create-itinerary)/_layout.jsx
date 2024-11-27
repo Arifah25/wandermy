@@ -8,6 +8,7 @@ import SelectDate from './date';
 import SelectTraveler from './traveler';
 import SelectBudget from './budget';
 import ReviewItinerary from './reviewiti';
+import GenerateItinerary from './generate';
 
 const Stack = createNativeStackNavigator();
 
@@ -72,6 +73,17 @@ const CreateItineraryLayout = () => {
         <Stack.Screen
             name="reviewiti"
             component={ReviewItinerary}
+            options={{ 
+            headerTitle: 'Itinerary Crafting',
+            headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+            headerTitleAlign: 'center',
+            headerStyle: { backgroundColor: '#A91D1D' },
+            headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+            }}
+        />
+        <Stack.Screen
+            name="generate"
+            component={GenerateItinerary}
             options={{ 
             headerTitle: 'Itinerary Crafting',
             headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
