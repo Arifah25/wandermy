@@ -29,39 +29,43 @@ const SelectTraveler = () => {
     <View
     className="bg-white flex-1 p-5 h-full items-center justify-start"
     >
-      <Text
-      className="text-3xl font-ksemibold"
-      >
-        Who's Travelling
-      </Text>
-      <Text
-      className="font-kregular text-lg"
-      >
-        Choose your traveller
-      </Text>
-      <View className="w-full mt-5">
-        <FlatList
-        data={SelectTravelList}
-        renderItem={({item, index}) => (
-          <View className="items-center">
-            <TouchableOpacity
-            onPress={() => setSelectedTraveler(item)}
-            >
-              <OptionCard 
-              option={item}
-              selected={selectedTraveler}
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-        />
+      <View className="items-center">
+        <Text
+        className="text-3xl font-ksemibold"
+        >
+          Who's Travelling
+        </Text>
+        <Text
+        className="font-kregular text-lg"
+        >
+          Choose your traveller
+        </Text>
       </View>
-      <Button
-      title="Next"
-      textColor="text-white"
-      style="bg-primary w-3/4 mt-5"
-      handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
-      />
+      <View className="mt-5 w-full">
+        <FlatList
+          data={SelectTravelList}
+          renderItem={({item, index}) => (
+            <View className="items-center">
+              <TouchableOpacity
+              onPress={() => setSelectedTraveler(item)}
+              >
+                <OptionCard 
+                option={item}
+                selected={selectedTraveler}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+       <View className="w-full items-center"> 
+        <Button
+          title="Next"
+          textColor="text-white"
+          style="bg-primary w-3/4 mt-5"
+          handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
+        />
+       </View>
+      </View>
     </View>
   )
 }

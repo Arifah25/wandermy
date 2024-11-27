@@ -5,10 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 
 import Itinerary from './index';
-import NewItinerary from './(create-itinerary)/new';
-import Traveler from './(create-itinerary)/traveler';
-import CreateItineraryLayout from './(create-itinerary)/_layout';
+
 import MyItinerary from './itinerary';
+import CreateItineraryLayout from './(create-itinerary)/_layout';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,14 +35,7 @@ const ItineraryLayout = () => {
           headerStyle: { backgroundColor: '#A91D1D' },
           // headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
-      />  
-      <Stack.Screen 
-        name="(create-itinerary)"
-        component={CreateItineraryLayout}
-        options={{
-          headerShown: false,
-        }}
-      />    
+      />      
       <Stack.Screen
         name="itinerary"
         component={MyItinerary}
@@ -55,6 +47,13 @@ const ItineraryLayout = () => {
           // headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
       />    
+      <Stack.Screen
+      name="(create-itinerary)"
+      component={CreateItineraryLayout}
+      options={{ 
+        headerShown: false,
+      }}
+      />
     </Stack.Navigator>
 
   )

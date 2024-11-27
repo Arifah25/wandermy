@@ -61,6 +61,7 @@ const SearchPlace = () => {
             borderColor: '#d9d9d9',
             borderWidth: 2,
             borderRadius: 6,
+            textAlign: 'center',
           },
           description: {
             fontWeight: 'bold',
@@ -69,8 +70,11 @@ const SearchPlace = () => {
             color: '#1faadb',
           },
           listView: {
+            borderColor: '#d9d9d9',
+            borderLeftWidth: 2,
+            borderRightWidth: 2,
             position: 'absolute', // Make sure the listView is positioned absolutely
-            top: 50, // Adjust based on your layout
+            top: 49, // Adjust based on your layout
             zIndex: 9999, // High zIndex to ensure it appears on top of other components
             elevation: 5, // For Android elevation
             backgroundColor: '#fff', // Ensure the background is white to overlay properly

@@ -7,10 +7,10 @@ const OptionCard = ({
 }) => {
   return (
     <View 
-    className="w-11/12 bg-secondary mb-5 p-4 rounded-lg flex-row items-center"
-    style={[selected?.id==option?.id&&{borderWidth:2, borderColor: '#000'}]}
+    className="w-11/12 bg-[#FFCFB3]  mb-5 p-4 rounded-lg flex-row items-center"
+    style={[selected?.id==option?.id&&{backgroundColor:'#E78F81'}]}
     >
-      <View className="w-4/5">
+      <View className="w-4/5 py-1">
         <Text className="font-kbold text-xl">{option?.title}</Text> 
         <Text className="font-pregular">{option?.desc}</Text>
       </View>

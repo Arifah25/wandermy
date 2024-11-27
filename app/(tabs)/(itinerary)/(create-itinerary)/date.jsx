@@ -1,39 +1,38 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import React, { useContext, useState } from 'react'
-import CalendarPicker from 'react-native-calendar-picker'
-import moment from 'moment';
+import { useRouter } from 'expo-router'
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
-import { useRouter } from 'expo-router';
+import CalendarPicker from "react-native-calendar-picker"
+import moment from 'moment';
 
 const SelectDate = () => {
+    const router = useRouter();
+    const [startDate, setStartDate] = useState();
+    const [endDate, setEndDate] = useState();
+    const {itineraryData, setItineraryData} = useContext(CreateItineraryContext);
 
-  const router = useRouter();
-  const [startDate, setStartDate] = useState();
-  const [endDate, setEndDate] = useState();
-  const {itineraryData, setItineraryData} = useContext(CreateItineraryContext);
+    const onDateChange = (date, type) => {
+        if (type == 'START_DATE')
+        {
+          setStartDate(moment(date));
+        }
+        else if (type == 'END_DATE')
+        {
+          setEndDate(moment(date));
+        }
+      }
 
-  const onDateChange = (date, type) => {
-    if (type == 'START_DATE')
-    {
-      setStartDate(moment(date));
-    }
-    else if (type == 'END_DATE')
-    {
-      setEndDate(moment(date));
-    }
-  }
-
-  const OnDateSelectionContinue = () => {
-    const totalNoOfDays = endDate.diff(startDate, 'days');
-    console.log(totalNoOfDays+1);
-    setItineraryData({
-      ...itineraryData,
-      startDate: startDate,
-      endDate: endDate,
-      totalNoOfDays: totalNoOfDays+1
-    });
-    router.push('(tabs)/(itinerary)/(create-itinerary)/budget')
-  }
+      const OnDateSelectionContinue = () => {
+        const totalNoOfDays = endDate.diff(startDate, 'days');
+        console.log(totalNoOfDays+1);
+        setItineraryData({
+          ...itineraryData,
+          startDate: startDate,
+          endDate: endDate,
+          totalNoOfDays: totalNoOfDays+1
+        });
+        router.push('(tabs)/(itinerary)/(create-itinerary)/budget')
+      }
 
   return (
     <View className="bg-white h-full">
