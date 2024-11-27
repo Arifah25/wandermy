@@ -3,6 +3,9 @@
     "name": "WanderMy",
     "slug": "WanderMy",
     "version": "1.0.0",
+    "android": {
+      "package": "com.example.WanderMy"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "myapp",
