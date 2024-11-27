@@ -2,9 +2,9 @@ import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import Home from './index';
 import { useRouter } from 'expo-router';
+import Home from './index';
+// import Notification from './notification';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +33,16 @@ const HomeLayout = () => {
           headerRight: () => <HeaderIcon icon={icons.bell} />,
         }}
       />
+      {/* <Stack.Screen
+        name="notification"
+        component={Notification}
+        options={{ 
+          headerTitle: 'Notication',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+        }}
+      /> */}
     </Stack.Navigator>
   )
 }

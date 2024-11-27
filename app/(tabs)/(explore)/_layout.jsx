@@ -6,9 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Explore from './index';
 import { useRouter } from 'expo-router';
 import CreateLayout from './(create)/_layout';
-import CreateAttraction from './(create)/attraction';
-import CreateDining from './(create)/dining';
-import CreateEvent from './(create)/event';
 import Details from './details';
 import AddReview from './addreview';
 

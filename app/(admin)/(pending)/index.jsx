@@ -32,7 +32,7 @@ const PendingAdmin = () => {
         : [];
       
       // Filter the data based on the selected tab/category
-      const filteredPlaces = placesArray.filter(place => place.category === activeTab); 
+      const filteredPlaces = placesArray.filter(place => place.category === activeTab && place.status === 'pending'); 
 
       setPlaces(filteredPlaces);
       setLoading(false); // Stop loading after data is fetched
@@ -44,38 +44,23 @@ const PendingAdmin = () => {
 
   // Handle pressing a place card to navigate to its details, passing all place data
   const handlePlacePress = (place) => {
-    console.log('Navigating to:', place); // Log the place details
+    // console.log('Navigating to:', place); // Log the place details
     router.push({
-      pathname: '(admin)/(pending)/details',
+      pathname: '/(admin)/(pending)/pendingdetails',
       params: { ...place }, // Pass all the place data as route params
     });
   };
-
-//   const toggleModalVisibility = () => {
-//     setIsModalVisible(!isModalVisible);
-//   };
-
-//   const handleAdd = () => {
-//     toggleModalVisibility();
-//   };
   
 
 return (
   <View
   className="bg-white h-full flex-1 p-5 items-center justify-start"
-  >
-   <View
-   className="flex-row items-center w-full justify-evenly"
-   >
-    <View>
-      <Text>Pending Listings</Text>
-    </View>
-   </View>  
+  > 
    {/* Category Tabs */}
    <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 
     {/* Places List or Loading Indicator */}
-    <View className="h-full w-full mt-5">
+    <View className="h-full w-full mt-5 bottom-5" style={{ paddingBottom: 105 }}>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />
       ) : (

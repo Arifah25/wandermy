@@ -6,7 +6,6 @@ import { useRouter } from 'expo-router';
 import CreateLayout from './(create)/_layout';
 import EditLayout from './(edit)/_layout';
 import HomeAdmin from './index';
-import DetailsH from './details';
 import HomeDetails from './homedetails';
 
 const Stack = createNativeStackNavigator();
@@ -22,6 +21,12 @@ const HomeLayout = () => {
   const handleBack = () => {
     router.back();
   }
+
+  const logoutAdmin = () => {
+    router.replace('(auth)/sign-in')// Navigate to Login page (logout)}/>,
+    console.log('Sign Out Admin Successful');
+  }
+
   
   return (
     <Stack.Navigator>
@@ -34,21 +39,11 @@ const HomeLayout = () => {
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
-          headerRight: () => <HeaderIcon icon={icons.bell} />,
+          headerRight: () => <HeaderIcon icon={icons.bell}/>,
+          headerLeft: () => <HeaderIcon icon={icons.logout} onPress={logoutAdmin}/> 
         }}
       />
-      <Stack.Screen 
-        name="details"
-        component={DetailsH}
-        options={{
-          // headerShown: false,
-          headerTitle: 'Listings',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-        }}
-      />
+      
       <Stack.Screen 
         name="homedetails"
         component={HomeDetails}

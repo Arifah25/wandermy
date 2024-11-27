@@ -1,7 +1,6 @@
 import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import { useRouter } from 'expo-router';
 import CreateAttraction from './attraction';
 import CreateDining from './dining';

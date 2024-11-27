@@ -5,7 +5,7 @@ import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../../compo
 import { getDatabase, ref, push, set } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
-
+import Toast from 'react-native-toast-message';
 
 const CreateAttraction = () => {
   
@@ -156,10 +156,24 @@ const CreateAttraction = () => {
 
       setIsSubmitting(false);
       console.log('uploaded');
+      // Show success toast
+      Toast.show({
+        type: 'success',
+        text1: 'Request Sent!',
+        text2: 'Your request has been sent to the administrator for review.',
+        visibilityTime: 3000,
+      });
       router.back();
       } catch (error) {
         console.error(error);
         setIsSubmitting(false);
+      // Show error toast
+      Toast.show({
+        type: 'error',
+        text1: 'Submission Failed',
+        text2: 'There was an error while submitting. Please try again.',
+        visibilityTime: 3000,
+      });  
     }
   };
   
@@ -227,7 +241,6 @@ const CreateAttraction = () => {
             setImages={setPosterImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
-
         </View>
         <CreateForm 
         title="Attraction name :"

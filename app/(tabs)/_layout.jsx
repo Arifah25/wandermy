@@ -11,8 +11,6 @@ const TabIcon = ({ icon, color, name, focused }) => {
         resizeMode="contain"
         style={{ tintColor: color, width: 24, height: 24, }}
       />
-      {/* if want to put label */}
-      {/* <Text style={{ color, fontSize: 12, fontWeight: focused ? 'bold' : 'normal' }}>{name}</Text> */}
     </View>
   );
 };

@@ -4,7 +4,7 @@ import {icons} from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 import PendingAdmin from './index';
-import Details from './details';
+import PendingDetails from './pendingdetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,8 +34,8 @@ const PendingLayout = () => {
         }}
       />
       <Stack.Screen 
-        name="details"
-        component={Details}
+        name="pendingdetails"
+        component={PendingDetails}
         options={{
           // headerShown: false,
           headerTitle: 'Listings',
