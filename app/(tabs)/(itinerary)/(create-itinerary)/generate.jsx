@@ -40,7 +40,7 @@ const GenerateItinerary = () => {
         itineraryData: response,
       })
 
-      router.push('(tabs)/(itinerary)/itinerary');
+      router.push('(tabs)/(itinerary)/');
       
     }
 
