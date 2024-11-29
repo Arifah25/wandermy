@@ -5,7 +5,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const ItineraryCard = ({
-    title,
+    itinerary,
 }) => {
   return (
     <View className="border-b-2 border-secondary">
