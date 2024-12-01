@@ -4,7 +4,7 @@ import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 import Home from './index';
-// import Notification from './notification';
+import Notification from './notification';
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +20,12 @@ const HomeLayout = () => {
     router.back();
   }
   
+  const handleBellPress = () => {
+    // Navigate to the notification screen
+    router.push('(tabs)/(home)/notification');
+    console.log('dah');
+  }
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -30,10 +36,10 @@ const HomeLayout = () => {
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
-          headerRight: () => <HeaderIcon icon={icons.bell} />,
+          headerRight: () => <HeaderIcon onPress={handleBellPress} icon={icons.bell} />,
         }}
       />
-      {/* <Stack.Screen
+      <Stack.Screen
         name="notification"
         component={Notification}
         options={{ 
@@ -42,7 +48,7 @@ const HomeLayout = () => {
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
         }}
-      /> */}
+      />
     </Stack.Navigator>
   )
 }
