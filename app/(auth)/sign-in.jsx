@@ -32,7 +32,7 @@ const SignIn = () => {
           const user = userCredential.user;
 
           // Check if email is verified
-          if (user.emailVerified) {
+          // if (user.emailVerified) {
             // Display a toast message for 3 seconds
             //check if the user is admin
             if(email === 'admin@gmail.com' && password === 'admin123'){
@@ -48,10 +48,10 @@ const SignIn = () => {
                 router.push("(tabs)/(home)/");
               }, 1500);
             } 
-          }else{
-            ToastAndroid.show('Please verify your email before signing in.', ToastAndroid.BOTTOM);
-            return;
-          }
+          // }else{
+          //   ToastAndroid.show('Please verify your email before signing in.', ToastAndroid.BOTTOM);
+          //   return;
+          // }
         })
         .catch((error) => {
           // If there's an error, get the error code and message

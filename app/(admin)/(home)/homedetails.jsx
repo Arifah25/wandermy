@@ -52,6 +52,7 @@ const HomeDetails = () => {
   const handleEdit = (placeID, category) => {  
     if (category === 'attraction') {
       router.push(`/(admin)/(home)/(edit)/editattraction?placeID=${placeID}`);
+      console.log('boleh tekan edit');
     } else if (category === 'dining') {
       router.push(`/(admin)/(home)/(edit)/editdining?placeID=${placeID}`);
     } else if (category === 'event') {

@@ -14,7 +14,7 @@ const EditAttraction = () => {
   const route = useRoute();
   const router = useRouter();
   const { placeID } = route.params || {};
-  // console.log("Received placeID in EditAttraction:", placeID);
+  console.log("Received placeID in EditAttraction:", placeID);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +27,7 @@ const EditAttraction = () => {
   const [tags, setTags] = useState("");
   const [longitude, setLongitude] = useState();
   const [latitude, setLatitude] = useState();
-  const [operatingHours, setOperatingHours] = useState();
+  const [operatingHours, setOperatingHours] = useState([]);
  
   const [placeData, setPlaceData] = useState({
     name: '',
@@ -72,16 +72,16 @@ const EditAttraction = () => {
           const data = snapshot.val();
           console.log("Fetched data:", data); 
           setPlaceData(data);
-          setName(data.name);
-          setWebsiteLink(data.websiteLink);
-          setContactNum(data.contactNum);
-          setPoster(data.poster);
-          setPrice_Or_Menu(data.price_or_menu);
-          setAddress(data.address);
-          setLongitude(data.longitude);
-          setLatitude(data.latitude);
+          setName(data.name || "");
+          setWebsiteLink(data.websiteLink || "");
+          setContactNum(data.contactNum || "");
+          setPoster(data.poster || []);
+          setPrice_Or_Menu(data.price_or_menu || []);
+          setAddress(data.address || "");
+          setLongitude(data.longitude || "");
+          setLatitude(data.latitude || "");
           setTags(data.tags);
-          setOperatingHours(data.operatingHours);
+          setOperatingHours(data.operatingHours || []);
           // console.log("Poster Images:", data.poster); // Log poster images
           // console.log("Price Images:", data.price_or_menu); // Log price images
 
@@ -117,7 +117,7 @@ const EditAttraction = () => {
 
     fetchOperatingHours();
   }, [placeID]);
-  // If latitude and longitude are passed from the PinLocation page, update the form state
+
   useEffect(() => {
     if (latitude && longitude) {
       setForm((prevForm) => ({
@@ -177,7 +177,7 @@ const EditAttraction = () => {
       const price_or_menuURL = await getDownloadURL(storageReference);
       return price_or_menuURL;
     } catch (error) {
-      console.error("Error uploading profile picture:", error);
+      console.error("Error uploading picture:", error);
       throw error;
     }
   };
@@ -243,14 +243,14 @@ const EditAttraction = () => {
     // Update Firebase Realtime Database with new data
     const updates = {
       name: name || placeData.name,
-      websiteLink: websiteLink || placeData.websiteLink,
-      contactNum: contactNum || placeData.contactNum,
-      address: address || placeData.address,
-      longitude: longitude || placeData.longitude,
-      latitude: latitude || placeData.latitude,
-      tags: tags || placeData.tags,
-      poster: posterURL || placeData.poster,
-      price_or_menu: priceOrMenuURL || placeData.price_or_menu,
+      websiteLink: websiteLink || placeData.websiteLink || "",
+      contactNum: contactNum || placeData.contactNum || "",
+      address: address || placeData.address || "",
+      longitude: longitude || placeData.longitude || "",
+      latitude: latitude || placeData.latitude || "",
+      tags: tags || placeData.tags || "",
+      poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
+      price_or_menu: priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],
     };
 
     try {
@@ -291,8 +291,6 @@ const EditAttraction = () => {
     // Close the modal
     toggleModalVisibility();
   };
-  
-
   
   return (
     // <SafeAreaView>
