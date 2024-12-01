@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
 import { getAuth } from "firebase/auth";
 import { getDatabase, ref, onValue } from "firebase/database";
 import { useRouter } from "expo-router";
+import { icons } from "../../../constants";
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
@@ -52,31 +53,32 @@ const Notification = () => {
         data={notifications}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-            console.log(item.poster),
+            console.log(item?.poster),
           <TouchableOpacity
-            className="p-4 mb-2 bg-gray-200 rounded"
+            className="p-3 mb-4 bg-gray-200 rounded"
             onPress={() => handleNotificationClick(item.placeID)}
             style={{ flexDirection: 'row', alignItems: 'center' }} // Align text and image horizontally
           >
             {/* poster not showing  */}
             {/* Poster image */}
             <Image
-              source={item.poster ? { uri: item.poster } : null}// Use the 'poster' URL
+              // source={item.poster ? { uri: item.poster } : null}// Use the 'poster' URL
+              source={{ uri: item.poster[0] }}
               style={{
-                width: 50,  // Set width and height to make it square
-                height: 50,
-                borderRadius: 5, // Optional: round corners of the poster
-                marginRight: 10, // Space between image and text
-                borderWidth: 2,   // Add a border around the image box
-                borderColor: 'gray',  // Set the border color
+                width: 65,  // Set width and height to make it square
+                height: 65,
+                borderRadius: 4, // Optional: round corners of the poster
+                marginRight: 14, // Space between image and text
+                // borderWidth: 2,   // Add a border around the image box
+                // borderColor: 'gray',  // Set the border color
                 backgroundColor: '#f0f0f0',
               }}
-              resizeMode="contain" // Ensures the image covers the square area without distorting
+              resizeMode="auto" // Ensures the image covers the square area without distorting
             />
 
             {/* Notification text */}
             <Text 
-            className="text-black"
+            className="text-black text-[15px]"
             style={{
                 flex: 1, // Allow text to take up available space
                 overflow: 'hidden', // Hide overflowed text
