@@ -2,10 +2,10 @@ import React from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
+import { icons } from '../../../../constants';
 import CreateAttraction from './attraction';
 import CreateDining from './dining';
 import CreateEvent from './event';
-import { icons } from '../../../../constants';
 
 const Stack = createNativeStackNavigator();
 
