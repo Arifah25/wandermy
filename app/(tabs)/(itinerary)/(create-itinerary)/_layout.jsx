@@ -8,7 +8,6 @@ import SelectTraveler from './traveler';
 import SelectDate from './date';
 import SelectBudget from './budget';
 import ReviewItinerary from './reviewiti';
-import GenerateItinerary from './generate';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +25,18 @@ const CreateItineraryLayout = () => {
 
     return (
         <Stack.Navigator>
+            {/* <Stack.Screen
+                name='index'
+                component={Itinerary}
+                options={{
+                    headerShown: true,
+                    headerTitle: 'Create Itinerary',
+                    headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+                    headerTitleAlign: 'center',
+                    headerStyle: { backgroundColor: '#A91D1D', height: 95 },
+                    headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+                    }}
+            /> */}
             <Stack.Screen
                 name="new"
                 component={NewItinerary}
@@ -74,17 +85,6 @@ const CreateItineraryLayout = () => {
             <Stack.Screen
                 name="reviewiti"
                 component={ReviewItinerary}
-                options={{ 
-                headerTitle: 'Itinerary Crafting',
-                headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-                headerTitleAlign: 'center',
-                headerStyle: { backgroundColor: '#A91D1D' },
-                headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-                }}
-            />
-            <Stack.Screen
-                name="generate"
-                component={GenerateItinerary}
                 options={{ 
                 headerTitle: 'Itinerary Crafting',
                 headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },

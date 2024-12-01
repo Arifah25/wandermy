@@ -27,7 +27,7 @@ const TabsLayout = () => {
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#A91D1D',
         tabBarInactiveTintColor: '#000',
-        tabBarStyle: pathname === '/' ? {
+        tabBarStyle: pathname === '/' || 'itinerary' ? {
           backgroundColor: '#CBCBCB',
           borderTopWidth: 1,
           borderTopColor: '#C3C3C3',
@@ -62,7 +62,7 @@ const TabsLayout = () => {
         options={{
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={icons.itinerary} color={color} name="Itinerary" focused={focused} />
+            <TabIcon icon={icons.itinerary} color={color} name="MyItinerary" focused={focused} />
           ),
         }}
       />

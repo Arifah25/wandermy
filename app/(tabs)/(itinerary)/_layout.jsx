@@ -4,10 +4,8 @@ import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 
-import Itinerary from '.';
 import MyItinerary from './itinerary';
 import CreateItineraryLayout from './(create-itinerary)/_layout';
-
 const Stack = createNativeStackNavigator();
 
 const HeaderIcon = ({ onPress, icon }) => (
@@ -23,18 +21,7 @@ const ItineraryLayout = () => {
   }
 
   return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="index"
-        component={Itinerary}
-        options={{ 
-          headerTitle: 'Itinerary Crafting',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-          // headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-        }}
-      />      
+    <Stack.Navigator>    
       <Stack.Screen
         name="itinerary"
         component={MyItinerary}
@@ -43,7 +30,7 @@ const ItineraryLayout = () => {
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
-          // headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
       />    
       <Stack.Screen
