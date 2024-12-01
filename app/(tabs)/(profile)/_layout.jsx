@@ -4,7 +4,7 @@ import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Profile from './index';
+import Profile from '.';
 import BookmarkPlaces from './bookmark';
 import EditProfile from "./edit";
 import MyItineraries from "./itinerary"

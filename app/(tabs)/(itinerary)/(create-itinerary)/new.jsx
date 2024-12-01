@@ -75,7 +75,7 @@ const NewItinerary = () => {
       title="Start Crafting"
       textColor="text-white"
       style="bg-primary my-10 w-3/5"
-      handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/traveler')}
+      handlePress={() => router.push('(tabs)/(itinerary)/')}
       />        
     </View>
   )

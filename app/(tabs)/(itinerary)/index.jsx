@@ -31,6 +31,7 @@ const Itinerary = () => {
       setItinerary(prev => [...prev, doc.data()]);
     });
     setLoading(false);
+    console.log(itinerary);
   }
 
   return (
@@ -41,7 +42,7 @@ const Itinerary = () => {
        {itinerary?.length==0?
        (<View>
         <Text
-        className="text-secondary font-kregular text-2xl text-center">
+        className="text-black font-kregular text-2xl text-center">
           Let's Create {"\n"}Your First Itinerary
         </Text>
        </View>

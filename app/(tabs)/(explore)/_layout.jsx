@@ -3,7 +3,7 @@ import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Explore from './index';
+import Explore from '.';
 import { useRouter } from 'expo-router';
 import CreateLayout from './(create)/_layout';
 import Details from './details';

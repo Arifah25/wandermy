@@ -4,8 +4,7 @@ import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 
-import Itinerary from './index';
-
+import Itinerary from '.';
 import MyItinerary from './itinerary';
 import CreateItineraryLayout from './(create-itinerary)/_layout';
 

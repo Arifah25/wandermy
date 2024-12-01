@@ -3,7 +3,7 @@ import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
-import Home from './index';
+import Home from '.';
 import Notification from './notification';
 
 const Stack = createNativeStackNavigator();
