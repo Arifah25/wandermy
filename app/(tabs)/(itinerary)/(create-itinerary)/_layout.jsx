@@ -5,9 +5,9 @@ import { useRouter } from 'expo-router';
 import { icons } from '../../../../constants';
 import NewItinerary from './new';
 import SelectTraveler from './traveler';
-import SelectDate from './date';
 import SelectBudget from './budget';
 import ReviewItinerary from './reviewiti';
+import ChoosePlaces from './choose-places';
 
 const Stack = createNativeStackNavigator();
 
@@ -53,18 +53,7 @@ const CreateItineraryLayout = () => {
                 name="traveler"
                 component={SelectTraveler}
                 options={{ 
-                headerTitle: 'Itinerary Crafting',
-                headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-                headerTitleAlign: 'center',
-                headerStyle: { backgroundColor: '#A91D1D' },
-                headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-                }}
-            />
-            <Stack.Screen
-                name="date"
-                component={SelectDate}
-                options={{ 
-                headerTitle: 'Itinerary Crafting',
+                headerTitle: 'Traveler',
                 headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
                 headerTitleAlign: 'center',
                 headerStyle: { backgroundColor: '#A91D1D' },
@@ -75,7 +64,7 @@ const CreateItineraryLayout = () => {
                 name="budget"
                 component={SelectBudget}
                 options={{ 
-                headerTitle: 'Itinerary Crafting',
+                headerTitle: 'Budget',
                 headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
                 headerTitleAlign: 'center',
                 headerStyle: { backgroundColor: '#A91D1D' },
@@ -86,7 +75,18 @@ const CreateItineraryLayout = () => {
                 name="reviewiti"
                 component={ReviewItinerary}
                 options={{ 
-                headerTitle: 'Itinerary Crafting',
+                headerTitle: 'Review Your Itinerary',
+                headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+                headerTitleAlign: 'center',
+                headerStyle: { backgroundColor: '#A91D1D' },
+                headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+                }}
+            />
+            <Stack.Screen
+                name="choose-places"
+                component={ChoosePlaces}
+                options={{
+                    headerTitle: 'Choose Places',
                 headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
                 headerTitleAlign: 'center',
                 headerStyle: { backgroundColor: '#A91D1D' },

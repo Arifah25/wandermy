@@ -7,7 +7,7 @@ const OptionCard = ({
 }) => {
   return (
     <View 
-    className="w-11/12 bg-[#FFCFB3]  mb-5 p-4 rounded-lg flex-row items-center"
+    className="w-11/12 bg-[#FFCFB3]  mb-7 p-4 rounded-lg flex-row items-center"
     style={[selected?.id==option?.id&&{backgroundColor:'#E78F81'}]}
     >
       <View className="w-4/5 py-1">

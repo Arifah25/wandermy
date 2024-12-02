@@ -24,16 +24,11 @@ const SelectBudget = () => {
     className="bg-white flex-1 p-5 h-full items-center justify-start"
     >
       <Text
-      className="text-3xl font-ksemibold"
-      >
-        Budget
-      </Text>
-      <Text
-      className="font-kregular text-lg"
+      className="text-3xl font-ksemibold text-center"
       >
         Choose your spending habits
       </Text>
-      <View className="w-full mt-5">
+      <View className="w-full mt-7">
         <FlatList
         data={SelectBudgetList}
         renderItem={({item, index}) => (

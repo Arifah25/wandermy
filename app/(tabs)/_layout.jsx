@@ -27,7 +27,7 @@ const TabsLayout = () => {
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#A91D1D',
         tabBarInactiveTintColor: '#000',
-        tabBarStyle: pathname === '/' || 'itinerary' ? {
+        tabBarStyle: pathname === '/' ? {
           backgroundColor: '#CBCBCB',
           borderTopWidth: 1,
           borderTopColor: '#C3C3C3',

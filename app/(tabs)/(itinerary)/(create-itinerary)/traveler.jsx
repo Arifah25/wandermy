@@ -34,13 +34,13 @@ const SelectTraveler = () => {
         >
           Who's Travelling
         </Text>
-        <Text
+        {/* <Text
         className="font-kregular text-lg"
         >
           Choose your traveller
-        </Text>
+        </Text> */}
       </View>
-      <View className="mt-5 w-full">
+      <View className="mt-7 w-full">
         <FlatList
           data={SelectTravelList}
           renderItem={({item, index}) => (
@@ -61,7 +61,7 @@ const SelectTraveler = () => {
           title="Next"
           textColor="text-white"
           style="bg-primary w-3/4 mt-5"
-          handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
+          handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/budget')}
         />
        </View>
       </View>

@@ -4,7 +4,7 @@ import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 
-import MyItinerary from './itinerary';
+import MyItinerary from '.';
 import CreateItineraryLayout from './(create-itinerary)/_layout';
 import ItineraryDetails from './detailsiti';
 const Stack = createNativeStackNavigator();
@@ -24,7 +24,7 @@ const ItineraryLayout = () => {
   return (
     <Stack.Navigator>    
       <Stack.Screen
-        name="itinerary"
+        name="index"
         component={MyItinerary}
         options={{ 
           headerTitle: 'Itinerary Crafting',

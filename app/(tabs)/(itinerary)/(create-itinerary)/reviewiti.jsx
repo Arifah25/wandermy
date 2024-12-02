@@ -105,11 +105,12 @@ const ReviewItinerary = () => {
         {/* Generate Button */}
         <View className="w-full mt-5 items-center h-16">
           <Button
-            title={loading ? 'Generating...' : 'Generate Itinerary'}
+            // title={loading ? 'Generating...' : 'Generate Itinerary'}
+            title="Choose Places"
             textColor="text-white"
             style="bg-primary w-4/5 mt-5"
-            handlePress={GenerateAiItinerary}
-            disabled={loading} // Disable button while loading
+            handlePress={()=> router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')}
+            // disabled={loading} // Disable button while loading
           />
         </View>
       </View>
