@@ -1,13 +1,12 @@
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { Button, OptionCard } from '../../../../components';
-import { useNavigation, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { SelectTravelList } from '../../../../constants/option';
 
 const SelectTraveler = () => {
   const router = useRouter();
-  const navigation = useNavigation();
   const [selectedTraveler, setSelectedTraveler] = useState();
   const {itineraryData, setItineraryData} = useContext(CreateItineraryContext);
 
@@ -20,10 +19,15 @@ const SelectTraveler = () => {
   // },[])
   
   useEffect(() =>{
-    setItineraryData({...itineraryData,
+    selectedTraveler&&setItineraryData({...itineraryData,
       traveler: selectedTraveler
     })
   },[selectedTraveler])
+
+  const printItineraryData = () => {
+    console.log(itineraryData)
+    console.log(selectedTraveler)
+  }
 
   return (
     <View
@@ -62,7 +66,8 @@ const SelectTraveler = () => {
           title="Next"
           textColor="text-white"
           style="bg-primary w-3/4 mt-5"
-          handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
+          // handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
+          handlePress={printItineraryData}
         />
        </View>
       </View>

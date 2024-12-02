@@ -57,6 +57,14 @@ const ReviewItinerary = () => {
             Before generating your itinerary, please review your selection
           </Text>
         </View>
+        {/* Trip Name */}
+        <View className="flex-row mt-5 items-center h-16">
+          <Text className="text-3xl items-center justify-center w-1/6">🚀</Text>
+          <View>
+            <Text className="font-ksemibold text-base text-gray-400">Trip Name:</Text>
+            <Text className="font-kregular text-base">{itineraryData?.tripName?.name}</Text>
+          </View>
+        </View>
         {/* Destination */}
         <View className="flex-row mt-2 items-center h-16">
           <Text className="text-3xl items-center justify-center w-1/6">📍</Text>

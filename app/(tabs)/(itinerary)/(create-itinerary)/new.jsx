@@ -1,20 +1,24 @@
 import { View, Text, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, DateField, SearchPlace } from '../../../../components';
 import 'react-native-get-random-values';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 
 const NewItinerary = () => {
     const router = useRouter();
+    const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
 
     //Initialize state variables for attributes in event 
-    const [form, setForm] = useState({
-      startDate: '',
-      endDate: '',
-    });
+    const [tripName, setTripName] = useState(''); 
     
+    useEffect(() => {
+      setItineraryData({...itineraryData,
+        tripName: tripName
+      })
+    }, [tripName]);
 
   return (
     <View
@@ -36,7 +40,8 @@ const NewItinerary = () => {
           className="font-kregular text-base h-14 "
           placeholder="e.g, Semester Break Trip"
           placeholderTextColor="#7E6C6C"
-          // onChangeText={}
+          value={tripName}
+          onChangeText={(value) => setTripName(value)}
           />
         </View>
       </View>
