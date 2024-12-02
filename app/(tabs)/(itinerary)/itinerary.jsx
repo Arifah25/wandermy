@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from 'react-native'
+import { View, Text, Image, ScrollView, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { TouchableOpacity } from 'react-native'
@@ -27,8 +27,8 @@ const MyItinerary = () => {
 
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots.
-      console.log(doc.id, " => ", doc.data());
-      // setItinerary(prev => [...prev, doc.data()]);
+      // console.log(doc.id, " => ", doc.data());
+      setItinerary(prev => [...prev, doc.data()]);
     });
     setLoading(false);
     console.log(itinerary);
@@ -36,6 +36,10 @@ const MyItinerary = () => {
 
   const New = () => {
     router.push("(tabs)/(itinerary)/(create-itinerary)/new");
+  }
+
+  const navigateDetails = (itinerary) => {
+    router.push("(tabs)/(itinerary)/detailsiti", {itinerary});
   }
 
   return (
@@ -54,12 +58,17 @@ const MyItinerary = () => {
         <Text className="text-xl font-kregular text-black">
           Itineraries
         </Text>
-        <ScrollView className="h-full pb-10">
+        <FlatList
+        data={itinerary}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({item}) => (
           <ItineraryCard 
-          userItinerary={itinerary}
+          itinerary={item}
+          name={item.itineraryData.trip_details.tripName}
+          handlePress={navigateDetails}
           />
-
-        </ScrollView>
+        )}
+        />
        </View>)
        }
        <TouchableOpacity

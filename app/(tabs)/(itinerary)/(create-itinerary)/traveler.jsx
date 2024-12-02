@@ -24,11 +24,6 @@ const SelectTraveler = () => {
     })
   },[selectedTraveler])
 
-  const printItineraryData = () => {
-    console.log(itineraryData)
-    console.log(selectedTraveler)
-  }
-
   return (
     <View
     className="bg-white flex-1 p-5 h-full items-center justify-start"
@@ -66,8 +61,7 @@ const SelectTraveler = () => {
           title="Next"
           textColor="text-white"
           style="bg-primary w-3/4 mt-5"
-          // handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
-          handlePress={printItineraryData}
+          handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/date')}
         />
        </View>
       </View>

@@ -14,11 +14,13 @@ const NewItinerary = () => {
     //Initialize state variables for attributes in event 
     const [tripName, setTripName] = useState(''); 
     
-    useEffect(() => {
-      setItineraryData({...itineraryData,
-        tripName: tripName
-      })
-    }, [tripName]);
+    const handleTripNameChange = (value) => {
+      setTripName(value);
+      setItineraryData((prevData) => ({
+        ...prevData,
+        tripName: value,
+      }));
+    };
 
   return (
     <View
@@ -41,7 +43,7 @@ const NewItinerary = () => {
           placeholder="e.g, Semester Break Trip"
           placeholderTextColor="#7E6C6C"
           value={tripName}
-          onChangeText={(value) => setTripName(value)}
+          onChangeText={handleTripNameChange}
           />
         </View>
       </View>

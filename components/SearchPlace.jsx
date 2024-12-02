@@ -35,7 +35,7 @@ const SearchPlace = () => {
       onPress={(data, details = null) => {
         // 'details' is provided when fetchDetails = true
         console.log(details);
-        setItineraryData({
+        setItineraryData({ ...itineraryData,
             locationInfo:{
                 name: data.description,
                 coordinates: details?.geometry.location,

@@ -21,6 +21,7 @@ const ReviewItinerary = () => {
   
       try {
         const FINAL_PROMPT = AI_PROMPT
+          .replace('{tripName}', itineraryData?.tripName || '')
           .replace('{location}', itineraryData?.locationInfo?.name || '')
           .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
           .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
@@ -36,6 +37,7 @@ const ReviewItinerary = () => {
   
         const docId = Date.now().toString();
         await setDoc(doc(firestore, 'userItinerary', docId), {
+          docId: docId,
           userEmail: user?.email,
           itineraryData: response,
         });
@@ -62,7 +64,7 @@ const ReviewItinerary = () => {
           <Text className="text-3xl items-center justify-center w-1/6">🚀</Text>
           <View>
             <Text className="font-ksemibold text-base text-gray-400">Trip Name:</Text>
-            <Text className="font-kregular text-base">{itineraryData?.tripName?.name}</Text>
+            <Text className="font-kregular text-base">{itineraryData?.tripName}</Text>
           </View>
         </View>
         {/* Destination */}

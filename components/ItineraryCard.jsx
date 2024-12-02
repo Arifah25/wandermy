@@ -5,7 +5,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const ItineraryCard = ({
-    itinerary,
+    name,
+    handlePress,
 }) => {
   return (
     <View className="border-b-2 border-secondary">
@@ -15,11 +16,12 @@ const ItineraryCard = ({
             <View className="w-10">
                 <AntDesign name="calendar" size={24} color="black" />
             </View>
-            <TouchableOpacity className="w-3/4">
+            <TouchableOpacity className="w-3/4"
+            onPress={handlePress}>
             <Text
             className="text-base font-kregular"
             >
-                Summer trip 
+                {name} 
             </Text>
             </TouchableOpacity>
             <TouchableOpacity className="">

@@ -18,7 +18,8 @@ const SearchInput = ({
       return (
         place.category === activeTab && 
         (place.name?.toLowerCase().includes(query.toLowerCase()) || 
-         place.tags?.toLowerCase().includes(query.toLowerCase()))
+         place.tags?.toLowerCase().includes(query.toLowerCase())  ||
+         place.address?.toLowerCase().includes(query.toLowerCase())) 
       );
     });
 
