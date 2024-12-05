@@ -3,12 +3,12 @@ import { useNavigation } from '@react-navigation/native';
 import { Image, TouchableOpacity } from 'react-native';
 import { icons } from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import Profile from '.';
 import BookmarkPlaces from './bookmark';
 import EditProfile from "./edit";
 import MyItineraries from "./itinerary"
 import { useRouter } from 'expo-router';
+import Details from "./details";
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +31,17 @@ const ProfileLayout = () => {
         component={Profile}
         options={{ 
           headerTitle: 'Profile',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen
+        name="details"
+        component={Details}
+        options={{ 
+          headerTitle: 'WanderMy',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
