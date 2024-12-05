@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Modal, Switch } from 'react-native'
+import { View, Text, ScrollView, Modal, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, DateField, Map, TimeField, } from '../../../../components'
@@ -38,12 +38,22 @@ const CreateEvent = () => {
     endDate: '',
     startTime: '',
     endTime: '',
+    admissionType: 'free', // Default is Free Admission
+    feeAmount: '', // Fee amount field
   });
 
   // Store selected images in state
   const [posterImages, setPosterImages] = useState([]);
   const [priceImages, setPriceImages] = useState([]);
 
+  const handleAdmissionTypeChange = (type) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      admissionType: type,
+      feeAmount: type === 'free' ? '' : prevForm.feeAmount, // Clear feeAmount if 'free'
+    }));
+  };
+  
   const uploadImages = async (images, folderName) => {
     const storage = getStorage();
     const uploadedUrls = [];
@@ -115,6 +125,8 @@ const CreateEvent = () => {
         category: 'event',
         status: 'pending',
         user: userId,
+        admissionType: form.admissionType,
+        feeAmount: form.admissionType === 'paid' ? form.feeAmount : 'Free',
       };
       await set(newPlaceRef, placeData);
 
@@ -169,7 +181,6 @@ const CreateEvent = () => {
     setForm({ ...form, price: [...form.price, ...imageURLs] }); // Append multiple image URLs
   };
   
-  
   return (
     // <SafeAreaView>
       <ScrollView
@@ -205,14 +216,21 @@ const CreateEvent = () => {
         <CreateForm 
         title="Event name :"
         value={form.name}
-        handleChangeText={(e) => setForm({ ...form, name: e })}      />
+        handleChangeText={(e) => setForm({ ...form, name: e })}      
+        />
+
+        <CreateForm
+          title="Description of the event :" 
+          value={form.description}
+          handleChangeText={(e) => setForm({ ...form, description: e })}
+          keyboardType="default"
+          tags="true"
+        /> 
 
         <View className="mb-5">
-        <Text
-          className="font-kregular text-xl"
-          >
+          {/* <Text className="font-kregular text-xl">
             When does the event start and end ? 
-          </Text>
+          </Text> */}
           <View 
           className="flex-row justify-start my-5 items-center"
           >
@@ -252,10 +270,15 @@ const CreateEvent = () => {
             </View>
           </View>
         </View>
+        
+        <CreateForm 
+          title="Contact Number :"
+          value={form.contactNum}
+          handleChangeText={(e) => setForm({ ...form, contactNum: e })}
+          keyboardType="phone-pad"
+          />
 
-        <View
-        className="items-center mb-5"
-        >
+        <View className="items-center mb-5">
           <CreateForm
           title="Address :"
           value={form.address}
@@ -270,16 +293,89 @@ const CreateEvent = () => {
           textColor="text-black ml-5"
           location="true"
           />
-
         </View>
 
-        <View
-        className="mb-5"
-        >
-          <Text
-          className="font-kregular text-xl"
-          >
-            Ticket Price :
+        {/* Radio Buttons for Admission Type */}
+        <View className="mb-5">
+          <Text className="font-kregular text-xl">Admission Type:</Text>
+          <View className="flex-row items-center mt-2">
+            <TouchableOpacity
+              onPress={() => handleAdmissionTypeChange('free')}
+              style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {form.admissionType === 'free' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Free Admission</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => handleAdmissionTypeChange('paid')}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {form.admissionType === 'paid' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Paid Admission</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Conditional Fee Amount Input */}
+        {form.admissionType === 'paid' && (
+          <View className="mb-5">
+            <CreateForm
+              title="Fee Amount:"
+              value={form.feeAmount}
+              handleChangeText={(e) => setForm({ ...form, feeAmount: e })}
+              keyboardType="default"
+            />
+          </View>
+        )}
+        
+        <View className="mb-5">
+          <Text className="font-kregular text-xl">
+            Infographics (Optional) :
           </Text>
           {/* image picker for price */}
           <AddPhoto
@@ -288,23 +384,7 @@ const CreateEvent = () => {
             setImages={setPriceImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
-
         </View>
-      
-        <CreateForm 
-        title="Contact Number :"
-        value={form.contactNum}
-        handleChangeText={(e) => setForm({ ...form, contactNum: e })}
-        keyboardType="phone-pad"
-        />
-
-         <CreateForm
-         title="Description of the event :" 
-         value={form.description}
-         handleChangeText={(e) => setForm({ ...form, description: e })}
-         keyboardType="default"
-         tags="true"
-         /> 
         
         <CreateForm 
         title="Tags :"

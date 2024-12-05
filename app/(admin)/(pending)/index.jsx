@@ -60,30 +60,22 @@ return (
    <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 
     {/* Places List or Loading Indicator */}
-    <View className="h-full w-full mt-5 bottom-5" style={{ paddingBottom: 105 }}>
+    <View className="h-full w-full mt-5 " style={{ paddingBottom: 74 }}>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />
       ) : (
         <FlatList
           data={filteredPlaces.length > 0 ? filteredPlaces : places}
           renderItem={({ item }) => (
-            <TouchableOpacity 
-            onPress={() => handlePlacePress(item)}
-            style={{
-              padding: 15,
-              borderBottomWidth: 1,
-              borderBottomColor: '#ccc',
-            }} // Styling for list items
-            >
-              {typeof item.name === 'string' ? (
-                <Text>{item.name}</Text>
-              ) : (
-                <Text>Invalid Name</Text>
-              )}
-            </TouchableOpacity>
-
+            <PlaceCard
+              name={item.name} // Display place name
+              image={item.poster ? item.poster[0] : null} // Display poster image
+              handlePress={() => handlePlacePress(item)} // Pass all item data to the details page
+            />
           )}
           keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 12, marginTop: 10 }}
         />
       )}
     </View>    

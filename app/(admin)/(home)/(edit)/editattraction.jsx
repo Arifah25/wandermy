@@ -27,12 +27,14 @@ const EditAttraction = () => {
   const [tags, setTags] = useState("");
   const [longitude, setLongitude] = useState();
   const [latitude, setLatitude] = useState();
+  const [admissionType, setAdmissionType] = useState();
   const [operatingHours, setOperatingHours] = useState([]);
  
   const [placeData, setPlaceData] = useState({
     name: '',
     latitude: '',
     longitude: '',
+    admissionType: '',
     address: '',
     websiteLink: '',
     contactNum: '',
@@ -41,18 +43,21 @@ const EditAttraction = () => {
     tags: '',
     description: '',
     operatingHours: [],
+    admissionType: '',
   });
   
   const [form, setForm] = useState({
     name: '',
     latitude: '',
     longitude: '',
+    admissionType: '',
     address: '',
     websiteLink: '',
     contactNum: '',
     price_or_menu: [],
     poster: [], 
     tags: '',
+    admissionType:'',
     operatingHours: [
       { dayOfWeek: 'MON', isOpen: false, openingTime: '', closingTime: '' },
       { dayOfWeek: 'TUE', isOpen: false, openingTime: '', closingTime: '' },
@@ -80,8 +85,10 @@ const EditAttraction = () => {
           setAddress(data.address || "");
           setLongitude(data.longitude || "");
           setLatitude(data.latitude || "");
+          setAdmissionType(data.admissionType || "free");
           setTags(data.tags);
           setOperatingHours(data.operatingHours || []);
+          setAdmissionType(data.admissionType);
           // console.log("Poster Images:", data.poster); // Log poster images
           // console.log("Price Images:", data.price_or_menu); // Log price images
 
@@ -137,13 +144,13 @@ const EditAttraction = () => {
       const response = await fetch(fileUri);
       const blob = await response.blob();
 
-      const storageReference = storageRef(storage, `places/attraction/${placeID}/poster`);
+      const storageReference = storageRef(storage, `places/attraction/${placeID}/poster/${new Date().toISOString()}`);
       await uploadBytes(storageReference, blob);
 
       const posterURL = await getDownloadURL(storageReference);
       return posterURL;
     } catch (error) {
-      console.error("Error uploading profile picture:", error);
+      console.error("Error uploading poster picture:", error);
       throw error;
     }
   };
@@ -171,7 +178,7 @@ const EditAttraction = () => {
       const response = await fetch(fileUri);
       const blob = await response.blob();
 
-      const storageReference = storageRef(storage, `places/attraction/${placeID}/poster`);
+      const storageReference = storageRef(storage, `places/attraction/${placeID}/price/${new Date().toISOString()}`);
       await uploadBytes(storageReference, blob);
 
       const price_or_menuURL = await getDownloadURL(storageReference);
@@ -192,7 +199,17 @@ const EditAttraction = () => {
     });
 
     if (!result.canceled) {
-      setPrice_Or_Menu(result.assets[0].uri); // Save the URI of the selected image
+      try {
+        const uploadedUrls = await Promise.all(
+          result.assets.map(async (asset) => {
+            const uploadedUrl = await uploadPriceOrMenuImage(placeID, asset.uri);
+            return uploadedUrl;
+          })
+        );
+        setPrice_Or_Menu((prev) => [...prev, ...uploadedUrls]); // Append new images to the state
+      } catch (error) {
+        console.error("Error uploading images:", error);
+      }
     }
   };
 
@@ -246,11 +263,12 @@ const EditAttraction = () => {
       websiteLink: websiteLink || placeData.websiteLink || "",
       contactNum: contactNum || placeData.contactNum || "",
       address: address || placeData.address || "",
+      admissionType: admissionType || placeData.admissionType || "",
       longitude: longitude || placeData.longitude || "",
       latitude: latitude || placeData.latitude || "",
       tags: tags || placeData.tags || "",
       poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
-      price_or_menu: priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],
+      price_or_menu: admissionType === 'free' ? null : priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],      admissionType: admissionType || placeData.admissionType,
     };
 
     try {
@@ -336,23 +354,7 @@ const EditAttraction = () => {
             />
           </View>
         </View>
-
-        <View className="my-2">
-        <Text className="font-kregular text-xl mb-2">Address :</Text>
-        <View className="w-full bg-white rounded-md h-12 justify-center border-2 border-secondary">
-          <TextInput
-            className="font-pregular p-2"
-            value={address} // Controlled input
-            placeholder="Enter address"
-            placeholderTextColor="#7E6C6C"
-            onChangeText={(value) => setAddress(value)}
-            multiline={true}
-          />
-        </View>
-      </View>
-
-        
-        
+ 
         <View className="items-center mb-5">
           <CreateForm
           title="Address :"
@@ -431,24 +433,93 @@ const EditAttraction = () => {
           ))}
         </View>
 
-        <View className="my-5">
-          <Text className="font-kregular text-xl">
-            Price :
-          </Text>
-          <TouchableOpacity onPress={handleChangePrice_Or_Menu} className="items-center">
-            <Image
-              source={price_or_menu ? { uri: price_or_menu } : icons.profile}       
-            />
-          </TouchableOpacity>
-          
-          {/* image picker for poster   */}
-            <AddPhoto
-            isMultiple={true}
-            images={price_or_menu}
-            setImages={setPrice_Or_Menu} // Pass the state setters to AddPhoto
-            isLoading={isSubmitting}
-          />
+        <View className="mb-5">
+          <Text className="font-kregular text-xl">Admission Type:</Text>
+          <View className="flex-row items-center mt-2">
+            {/* Free Admission */}
+            <TouchableOpacity
+              onPress={() => setAdmissionType('free')}
+              style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {/* This should highlight the radio button if `admissionType` is 'free' */}
+                {admissionType === 'free' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Free Admission</Text>
+            </TouchableOpacity>
+
+            {/* Paid Admission */}
+            <TouchableOpacity
+              onPress={() => setAdmissionType('paid')}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {/* This should highlight the radio button if `admissionType` is 'paid' */}
+                {admissionType === 'paid' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Paid Admission</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {/* Fee Amount Input if Paid */}
+        {admissionType === 'paid' && (
+          <View className="mb-5">
+            <Text className="font-kregular text-xl">Upload Price Details:</Text>
+            <TouchableOpacity onPress={handleChangePrice_Or_Menu} className="items-center">
+              <Image
+                source={price_or_menu ? { uri: price_or_menu } : icons.profile}       
+              />
+            </TouchableOpacity>
+            {/* image picker for poster   */}
+            <AddPhoto
+              isMultiple={true}
+              images={price_or_menu}
+              setImages={setPrice_Or_Menu} // Pass the state setters to AddPhoto
+              isLoading={isSubmitting}
+            />
+          </View>
+        )}
 
         <View className="my-2">
           <Text className="font-kregular text-xl mb-2">Tags :  </Text>

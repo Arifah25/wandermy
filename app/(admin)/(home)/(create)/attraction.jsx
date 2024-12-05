@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Modal, Switch } from 'react-native'
+import { View, Text, ScrollView, Modal, Switch, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../../components'
@@ -33,6 +33,7 @@ const CreateAttraction = () => {
     price: [],
     poster: [], 
     tags: '',
+    admissionType: 'free', // Default is Free Admission
     operatingHours: [
       { dayOfWeek: 'MON', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
       { dayOfWeek: 'TUE', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
@@ -47,6 +48,14 @@ const CreateAttraction = () => {
   // Store selected images in state
   const [posterImages, setPosterImages] = useState([]);
   const [priceImages, setPriceImages] = useState([]);
+
+  const handleAdmissionTypeChange = (type) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      admissionType: type,
+      price: type === 'free' ? [] : prevForm.price, // Clear price if free admission
+    }));
+  };
 
   const uploadImages = async (images, folderName) => {
     const storage = getStorage();
@@ -140,6 +149,8 @@ const CreateAttraction = () => {
         category: 'attraction',
         status: 'pending',
         user: userId,
+        admissionType: form.admissionType,
+
       };
       await set(newPlaceRef, placeData);
 
@@ -292,23 +303,86 @@ const CreateAttraction = () => {
           </View>
         ))}
         </View>
-        <View
-        className="mb-5"
-        >
-          <Text
-          className="font-kregular text-xl"
-          >
-            Price :
-          </Text>
-          {/* image picker for price */}
-          <AddPhoto
-            isMultiple={true}
-            images={priceImages}
-            setImages={setPriceImages} // Pass the state setters to AddPhoto
-            isLoading={isSubmitting}
-          />
+        {/* Admission Type Section */}
+        <View className="mb-5">
+          <Text className="font-kregular text-xl">Admission Type:</Text>
+          <View className="flex-row items-center mt-2">
+            {/* Free Admission */}
+            <TouchableOpacity
+              onPress={() => handleAdmissionTypeChange('free')}
+              style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {form.admissionType === 'free' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Free Admission</Text>
+            </TouchableOpacity>
 
+            {/* Paid Admission */}
+            <TouchableOpacity
+              onPress={() => handleAdmissionTypeChange('paid')}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {form.admissionType === 'paid' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Paid Admission</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {/* Conditional Price Section */}
+        {form.admissionType === 'paid' && (
+          <View className="mb-5">
+            <Text className="font-kregular text-xl">Upload Price Details:</Text>
+            <AddPhoto
+              isMultiple={true}
+              images={priceImages}
+              setImages={setPriceImages}
+              isLoading={isSubmitting}
+            />
+          </View>
+        )}
         <CreateForm 
         title="Tags :"
         value={form.tags}

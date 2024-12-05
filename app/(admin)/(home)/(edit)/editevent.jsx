@@ -31,6 +31,8 @@ const EditEvent = () => {
   const [endDate, setEndDate] = useState([]);
   const [startTime, setStartTime] = useState([]);
   const [endTime, setEndTime] = useState([]);
+  const [admissionType, setAdmissionType] = useState(''); // State for admission type
+  const [feeAmount, setFeeAmount] = useState(''); // State for fee amount (if paid)
 
   const [placeData, setPlaceData] = useState({
     name: '',
@@ -46,6 +48,8 @@ const EditEvent = () => {
     endDate: '',
     startTime: '',
     endTime: '', 
+    admissionType: '',
+    feeAmount: '',
   });
   
   const [form, setForm] = useState({
@@ -62,6 +66,8 @@ const EditEvent = () => {
     endDate: '',
     startTime: '',
     endTime: '',
+    admissionType: '',
+    feeAmount: '',
   });
 
   useEffect(() => {
@@ -82,6 +88,8 @@ const EditEvent = () => {
           setLatitude(data.latitude);
           setTags(data.tags);
           setDescription(data.description);
+          setAdmissionType(data.admissionType); // Set admission type
+          setFeeAmount(data.feeAmount || ''); // Set fee amount if paid
         } else {
           console.log("No place data available");
         }
@@ -135,7 +143,7 @@ const EditEvent = () => {
       const response = await fetch(fileUri);
       const blob = await response.blob();
 
-      const storageReference = storageRef(storage, `places/event/${placeID}/poster`);
+      const storageReference = storageRef(storage, `places/event/${placeID}/poster/${new Date().toISOString()}`);
       await uploadBytes(storageReference, blob);
 
       const posterURL = await getDownloadURL(storageReference);
@@ -169,7 +177,7 @@ const EditEvent = () => {
       const response = await fetch(fileUri);
       const blob = await response.blob();
 
-      const storageReference = storageRef(storage, `places/event/${placeID}/poster`);
+      const storageReference = storageRef(storage, `places/event/${placeID}/price/${new Date().toISOString()}`);
       await uploadBytes(storageReference, blob);
 
       const price_or_menuURL = await getDownloadURL(storageReference);
@@ -231,6 +239,8 @@ const EditEvent = () => {
       endDate: endDate || placeData.endDate,
       startTime: startTime || placeData.startTime,
       endTime: endTime || placeData.endTime,
+      admissionType: admissionType || placeData.admissionType,
+      feeAmount: admissionType === 'paid' ? feeAmount : null,
     };
 
     try {
@@ -412,9 +422,89 @@ const EditEvent = () => {
         </View>
       </View>
 
-      <View className="my-5">
+      {/* Radio Buttons for Admission Type */}
+      <View className="mb-5">
+        <Text className="font-kregular text-xl">Admission Type:</Text>
+        <View className="flex-row items-center mt-2">
+          <TouchableOpacity
+            onPress={() => setAdmissionType('free')}
+            style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}
+          >
+            <View
+              style={{
+                height: 20,
+                width: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: '#A91D1D',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 8,
+              }}
+            >
+              {admissionType === 'free' && (
+                <View
+                  style={{
+                    height: 10,
+                    width: 10,
+                    borderRadius: 5,
+                    backgroundColor: '#A91D1D',
+                  }}
+                />
+              )}
+            </View>
+            <Text>Free Admission</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setAdmissionType('paid')}
+            style={{ flexDirection: 'row', alignItems: 'center' }}
+          >
+            <View
+              style={{
+                height: 20,
+                width: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: '#A91D1D',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 8,
+              }}
+            >
+              {admissionType === 'paid' && (
+                <View
+                  style={{
+                    height: 10,
+                    width: 10,
+                    borderRadius: 5,
+                    backgroundColor: '#A91D1D',
+                  }}
+                />
+              )}
+            </View>
+            <Text>Paid Admission</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Fee Amount Input if Paid */}
+      {admissionType === 'paid' && (
+        <View className="mb-5">
+          <Text className="font-kregular text-xl">Fee Amount:</Text>
+          <TextInput
+            className="font-pregular p-2 border-2 border-secondary rounded-md"
+            value={feeAmount}
+            placeholder="Enter fee amount"
+            onChangeText={(value) => setFeeAmount(value)} // Updates feeAmount correctly
+            keyboardType="default"
+          />
+        </View>
+      )}
+
+      <View className="my-5"> 
         <Text className="font-kregular text-xl">
-          Ticket Fee :
+          More Details :
         </Text>
         <TouchableOpacity onPress={handleChangePrice_Or_Menu} className="items-center">
           <Image
