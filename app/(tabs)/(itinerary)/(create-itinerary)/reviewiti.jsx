@@ -2,10 +2,6 @@ import { View, Text, SafeAreaView, TouchableOpacity, Image } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext'
 import moment from 'moment';
-import { AI_PROMPT } from '../../../../constants/option';
-import { chatSession } from '../../../../configs/AImodule';
-import { setDoc, doc } from 'firebase/firestore';
-import { auth, firestore } from '../../../../configs/firebaseConfig';
 import { Button } from '../../../../components';
 import { useRouter } from 'expo-router';
 import { icons } from '../../../../constants';
@@ -14,43 +10,6 @@ const ReviewItinerary = () => {
     const router = useRouter();
     const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
     const [loading, setLoading] = useState(false);
-    const user = auth.currentUser;
-  
-    const GenerateAiItinerary = async () => {
-      if (loading) return; // Prevent multiple executions while loading
-      setLoading(true);
-  
-      try {
-        const FINAL_PROMPT = AI_PROMPT
-          .replace('{tripName}', itineraryData?.tripName || '')
-          // .replace('{location}', itineraryData?.locationInfo?.name || '')
-          .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
-          .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-          .replace('{traveler}', itineraryData?.traveler?.title || '')
-          .replace('{budget}', itineraryData?.budget?.title || '');
-  
-        console.log('AI Prompt:', FINAL_PROMPT);
-  
-        const result = await chatSession.sendMessage(FINAL_PROMPT);
-        const response = JSON.parse(result.response.text()); // Assuming JSON response
-  
-        console.log('AI Response:', response);
-  
-        const docId = Date.now().toString();
-        await setDoc(doc(firestore, 'userItinerary', docId), {
-          docId: docId,
-          userEmail: user?.email,
-          itineraryData: response,
-        });
-  
-        router.replace('(tabs)/(itinerary)/itinerary');
-      } catch (error) {
-        console.error('Error generating itinerary:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     
     const handleBack = () => {
       router.back();

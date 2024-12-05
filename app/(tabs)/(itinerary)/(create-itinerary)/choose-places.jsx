@@ -5,6 +5,10 @@ import { useRouter } from 'expo-router';
 import { PlaceCard, TabPlace, HeaderWithCart } from '../../../../components';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { CartContext } from "../../../../context/CartContext";
+import { AI_PROMPT } from '../../../../constants/option';
+import { chatSession } from '../../../../configs/AImodule';
+import { setDoc, doc } from 'firebase/firestore';
+import { auth, firestore } from '../../../../configs/firebaseConfig';
 
 const ChoosePlaces = () => {
   const [places, setPlaces] = useState([]);
@@ -15,6 +19,7 @@ const ChoosePlaces = () => {
   const router = useRouter();
   const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
   const { cart, removeFromCart } = useContext(CartContext);
+  const user = auth.currentUser;
 
   const isNearby = (placeLocation, placeCoordinates, targetLocation, targetCoordinates, radius = 10) => {
     if (!placeLocation || !targetLocation || !placeCoordinates || !targetCoordinates) return false;
@@ -91,15 +96,40 @@ const ChoosePlaces = () => {
     removeFromCart(placeID);
   }
 
-  const handleGenerateItinerary = () => {
-    // Implement the logic to generate the itinerary
-    setItineraryData({...itineraryData, 
-      places: cart
-    });
-    console.log('Generating itinerary with:', itineraryData);
-    
-    // router.push('(tabs)/(itinerary)/');
-  }
+  const handleGenerateItinerary = async () => {
+    if (loading) return; // Prevent multiple executions while loading
+    setLoading(true);
+
+    try {
+      const FINAL_PROMPT = AI_PROMPT
+        .replace('{tripName}', itineraryData?.tripName || '')
+        // .replace('{location}', itineraryData?.locationInfo?.name || '')
+        .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
+        .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
+        .replace('{traveler}', itineraryData?.traveler?.title || '')
+        .replace('{budget}', itineraryData?.budget?.title || '');
+
+      console.log('AI Prompt:', FINAL_PROMPT);
+
+      const result = await chatSession.sendMessage(FINAL_PROMPT);
+      const response = JSON.parse(result.response.text()); // Assuming JSON response
+
+      console.log('AI Response:', response);
+
+      const docId = Date.now().toString();
+      await setDoc(doc(firestore, 'userItinerary', docId), {
+        docId: docId,
+        userEmail: user?.email,
+        itineraryData: response,
+      });
+
+      router.replace('(tabs)/(itinerary)/itinerary');
+    } catch (error) {
+      console.error('Error generating itinerary:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
