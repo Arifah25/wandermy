@@ -1,14 +1,15 @@
-import { View, FlatList, ActivityIndicator, Text, SafeAreaView, TouchableOpacity, Modal } from 'react-native';
+import { View, FlatList, ActivityIndicator, Text, SafeAreaView, TouchableOpacity, Modal, Image } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { useRouter } from 'expo-router';
-import { PlaceCard, TabPlace, HeaderWithCart } from '../../../../components';
+import { PlaceCard, TabPlace, HeaderWithCart, Button } from '../../../../components';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { CartContext } from "../../../../context/CartContext";
 import { AI_PROMPT } from '../../../../constants/option';
 import { chatSession } from '../../../../configs/AImodule';
 import { setDoc, doc } from 'firebase/firestore';
 import { auth, firestore } from '../../../../configs/firebaseConfig';
+import { icons } from '../../../../constants';
 
 const ChoosePlaces = () => {
   const [places, setPlaces] = useState([]);
@@ -18,7 +19,7 @@ const ChoosePlaces = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
   const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
-  const { cart, removeFromCart } = useContext(CartContext);
+  const { cart, removeFromCart, clearCart } = useContext(CartContext);
   const user = auth.currentUser;
 
   const isNearby = (placeLocation, placeCoordinates, targetLocation, targetCoordinates, radius = 10) => {
@@ -104,6 +105,9 @@ const ChoosePlaces = () => {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
         // .replace('{location}', itineraryData?.locationInfo?.name || '')
+        .replace('{location}', 'Kuala Lumpur, Malaysia')
+        .replace('{departure}',  'Penang, Malaysia')
+        .replace('{places}', itineraryData?.places || '')
         .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
         .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
         .replace('{traveler}', itineraryData?.traveler?.title || '')
@@ -122,8 +126,8 @@ const ChoosePlaces = () => {
         userEmail: user?.email,
         itineraryData: response,
       });
-
-      router.replace('(tabs)/(itinerary)/itinerary');
+      clearCart();
+      router.push('(tabs)/(itinerary)/index');
     } catch (error) {
       console.error('Error generating itinerary:', error);
     } finally {
@@ -177,17 +181,20 @@ const ChoosePlaces = () => {
                 </View>
               ))
             )}
-            <TouchableOpacity
-              onPress={handleGenerateItinerary}
-              className="bg-primary h-10 rounded-md items-center justify-center mt-5"
-            >
-              <Text className="text-white font-kregular text-sm">Generate Itinerary</Text>
-            </TouchableOpacity>
+            <View className="w-full mt-5 items-center h-16">
+              <Button
+                title={loading ? 'Generating...' : 'Generate Itinerary'}
+                textColor="text-white"
+                style="bg-primary w-4/5 mt-5"
+                handlePress={handleGenerateItinerary}
+                disabled={loading} // Disable button while loading
+              />
+            </View>
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
-              className="absolute top-2 right-2"
-            >
-              <Text className="text-lg font-kbold">X</Text>
+              className=" absolute top-6 right-6"
+              >
+                <Image source={icons.close} className="w-5 h-5 align-top"/>
             </TouchableOpacity>
           </View>
         </View>

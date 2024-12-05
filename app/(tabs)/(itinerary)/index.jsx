@@ -64,7 +64,7 @@ const MyItinerary = () => {
         renderItem={({item}) => (
           <ItineraryCard 
           itinerary={item}
-          name={item.itineraryData.trip_details.tripName}
+          name={item.itineraryData.travelPlanName}
           handlePress={navigateDetails}
           />
         )}

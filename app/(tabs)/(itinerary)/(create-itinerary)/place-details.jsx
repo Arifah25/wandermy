@@ -2,25 +2,29 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Modal } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Poster, HeaderWithCart } from '../../../../components';
+import { Poster, HeaderWithCart, Button } from '../../../../components';
 import { getDatabase, ref, onValue, get } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
-import { CartContext } from '../../../../context/CartContext';
+import { CartContext } from "../../../../context/CartContext";
+import { AI_PROMPT } from '../../../../constants/option';
+import { chatSession } from '../../../../configs/AImodule';
+import { setDoc, doc } from 'firebase/firestore';
+import { auth, firestore } from '../../../../configs/firebaseConfig';
+import { icons } from '../../../../constants';
 
 const DetailsPlaces = () => {
   const [loading, setLoading] = useState(false);
   const [event, setEvent] = useState({});
   const [hour, setOperatingHours] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const router = useRouter();
   const route = useRoute();
   const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
-  const { cart, addToCart, removeFromCart } = useContext(CartContext);
+  const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
+  const user = auth.currentUser;
   
   const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description } = route.params;
-  const auth = getAuth();
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
@@ -32,14 +36,43 @@ const DetailsPlaces = () => {
     removeFromCart(placeID);
   }
 
-  const handleGenerateItinerary = () => {
-    // Implement the logic to generate the itinerary
-    console.log('Generating itinerary with:', cart);
-    setItineraryData({...itineraryData, 
-      places: cart
-    });
-    // router.push('(tabs)/(itinerary)/');
-  }
+  const handleGenerateItinerary = async () => {
+    if (loading) return; // Prevent multiple executions while loading
+    setLoading(true);
+
+    try {
+      const FINAL_PROMPT = AI_PROMPT
+        .replace('{tripName}', itineraryData?.tripName || '')
+        // .replace('{location}', itineraryData?.locationInfo?.name || '')
+        .replace('{location}', 'Kuala Lumpur, Malaysia')
+        .replace('{departure}',  'Penang, Malaysia')
+        .replace('{places}', itineraryData?.places || '')
+        .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
+        .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
+        .replace('{traveler}', itineraryData?.traveler?.title || '')
+        .replace('{budget}', itineraryData?.budget?.title || '');
+
+      console.log('AI Prompt:', FINAL_PROMPT);
+
+      const result = await chatSession.sendMessage(FINAL_PROMPT);
+      const response = JSON.parse(result.response.text()); // Assuming JSON response
+
+      console.log('AI Response:', response);
+
+      const docId = Date.now().toString();
+      await setDoc(doc(firestore, 'userItinerary', docId), {
+        docId: docId,
+        userEmail: user?.email,
+        itineraryData: response,
+      });
+      clearCart();
+      router.push('(tabs)/(itinerary)/');
+    } catch (error) {
+      console.error('Error generating itinerary:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch operating hours
   useEffect(() => {
@@ -213,7 +246,7 @@ const DetailsPlaces = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View className="flex-1 justify-end bg-black bg-opacity-50">
+        <View className="flex-1 justify-end">
           <View className="bg-white p-5 rounded-t-lg">
             <Text className="text-lg font-ksemibold mb-3">Your Itinerary</Text>
             {cart.length === 0 ? (
@@ -228,17 +261,20 @@ const DetailsPlaces = () => {
                 </View>
               ))
             )}
-            <TouchableOpacity
-              onPress={handleGenerateItinerary}
-              className="bg-primary h-10 rounded-md items-center justify-center mt-5"
-            >
-              <Text className="text-white font-kregular text-sm">Generate Itinerary</Text>
-            </TouchableOpacity>
+            <View className="w-full mt-5 items-center h-16">
+              <Button
+                title={loading ? 'Generating...' : 'Generate Itinerary'}
+                textColor="text-white"
+                style="bg-primary w-4/5 mt-5"
+                handlePress={handleGenerateItinerary}
+                disabled={loading} // Disable button while loading
+              />
+            </View>
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
-              className="absolute top-2 right-2"
-            >
-              <Text className="text-lg font-kbold">X</Text>
+              className=" absolute top-6 right-6"
+              >
+                <Image source={icons.close} className="w-5 h-5 align-top"/>
             </TouchableOpacity>
           </View>
         </View>
