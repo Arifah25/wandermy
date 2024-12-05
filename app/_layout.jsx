@@ -1,6 +1,7 @@
 import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import {CreateItineraryContext} from '../context/CreateItineraryContext'
+import { CartProvider } from "../context/CartContext";
 import { useEffect, useState } from "react";
 
 SplashScreen.preventAutoHideAsync();
@@ -26,6 +27,7 @@ export default function RootLayout() {
   
 
   return (
+    <CartProvider>
     <CreateItineraryContext.Provider value={{itineraryData, setItineraryData}}>
     <Stack>
       <Stack.Screen 
@@ -46,5 +48,6 @@ export default function RootLayout() {
       />
     </Stack>
     </CreateItineraryContext.Provider>
+    </CartProvider>
   );
 }

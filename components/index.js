@@ -15,6 +15,7 @@ import Rating from "./Rating";
 import Visit from "./Visit";
 import SearchPlace from "./SearchPlace";
 import OptionCard from "./OptionCard";
+import HeaderWithCart from "./HeaderWithCart";
 
 export{
     FormField,
@@ -34,4 +35,5 @@ export{
     Visit,
     SearchPlace,
     OptionCard,
+    HeaderWithCart,
 };

@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, SafeAreaView, TouchableOpacity, Image } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react'
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext'
 import moment from 'moment';
@@ -8,6 +8,7 @@ import { setDoc, doc } from 'firebase/firestore';
 import { auth, firestore } from '../../../../configs/firebaseConfig';
 import { Button } from '../../../../components';
 import { useRouter } from 'expo-router';
+import { icons } from '../../../../constants';
 
 const ReviewItinerary = () => {
     const router = useRouter();
@@ -22,7 +23,7 @@ const ReviewItinerary = () => {
       try {
         const FINAL_PROMPT = AI_PROMPT
           .replace('{tripName}', itineraryData?.tripName || '')
-          .replace('{location}', itineraryData?.locationInfo?.name || '')
+          // .replace('{location}', itineraryData?.locationInfo?.name || '')
           .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
           .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
           .replace('{traveler}', itineraryData?.traveler?.title || '')
@@ -49,72 +50,85 @@ const ReviewItinerary = () => {
         setLoading(false);
       }
     };
+
+    
+    const handleBack = () => {
+      router.back();
+    }
   
     return (
-      <View className="bg-white flex-1 p-5 h-full items-start justify-start">
-        <Text className="text-2xl font-kbold">Review your itinerary</Text>
+      <SafeAreaView className="flex-1 bg-white h-full">
+        <View className="flex-row items-center mx-5 mt-6 justify-between">
+          <TouchableOpacity onPress={handleBack} style={{  marginTop: 5 }}>
+            <Image source={icons.left} style={{ width: 24, height: 24, tintColor: '#000' }} />
+          </TouchableOpacity>
+        </View>
+        <View className=" px-10 w-full">
+          <Text className="text-2xl font-kbold text-center">Review your itinerary</Text>
   
-        <View>
-          <Text className="text-base font-ksemibold my-5">
-            Before generating your itinerary, please review your selection
-          </Text>
-        </View>
-        {/* Trip Name */}
-        <View className="flex-row mt-5 items-center h-16">
-          <Text className="text-3xl items-center justify-center w-1/6">🚀</Text>
           <View>
-            <Text className="font-ksemibold text-base text-gray-400">Trip Name:</Text>
-            <Text className="font-kregular text-base">{itineraryData?.tripName}</Text>
-          </View>
-        </View>
-        {/* Destination */}
-        <View className="flex-row mt-2 items-center h-16">
-          <Text className="text-3xl items-center justify-center w-1/6">📍</Text>
-          <View>
-            <Text className="font-ksemibold text-base text-gray-400">Destination:</Text>
-            <Text className="font-kregular text-base">{itineraryData?.locationInfo?.name}</Text>
-          </View>
-        </View>
-        {/* Travel Date */}
-        <View className="flex-row mt-2 items-center h-16">
-          <Text className="text-3xl items-center justify-center w-1/6">🗓️</Text>
-          <View>
-            <Text className="font-ksemibold text-base text-gray-400">Travel Date:</Text>
-            <Text className="font-kregular text-base">
-              {moment(itineraryData?.startDate).format('DD MMM')} -{' '}
-              {moment(itineraryData?.endDate).format('DD MMM')} ({itineraryData?.totalNoOfDays} days)
+            <Text className="text-base font-ksemibold my-5">
+              Before generating your itinerary, please review your selection
             </Text>
           </View>
-        </View>
-        {/* Traveler */}
-        <View className="flex-row mt-2 items-center h-16">
-          <Text className="text-3xl items-center justify-center w-1/6">🧳</Text>
-          <View>
-            <Text className="font-ksemibold text-base text-gray-400">Who is Travelling:</Text>
-            <Text className="font-kregular text-base">{itineraryData?.traveler?.title}</Text>
+          {/* Trip Name */}
+          <View className="flex-row mt-5 items-center h-16">
+            <Text className="text-3xl items-center justify-center w-1/6">🚀</Text>
+            <View>
+              <Text className="font-ksemibold text-base text-gray-400">Trip Name:</Text>
+              <Text className="font-kregular text-base">{itineraryData?.tripName}</Text>
+            </View>
+          </View>
+          {/* Destination */}
+          <View className="flex-row mt-2 items-center h-16">
+            <Text className="text-3xl items-center justify-center w-1/6">📍</Text>
+            <View>
+              <Text className="font-ksemibold text-base text-gray-400">Destination:</Text>
+              {/* <Text className="font-kregular text-base">{itineraryData?.locationInfo?.name}</Text> */}
+              <Text className="font-kregular text-base">{itineraryData?.location}</Text>
+            </View>
+          </View>
+          {/* Travel Date */}
+          <View className="flex-row mt-2 items-center h-16">
+            <Text className="text-3xl items-center justify-center w-1/6">🗓️</Text>
+            <View>
+              <Text className="font-ksemibold text-base text-gray-400">Travel Date:</Text>
+              <Text className="font-kregular text-base">
+                {moment(itineraryData?.startDate).format('DD MMM')} -{' '}
+                {moment(itineraryData?.endDate).format('DD MMM')} ({itineraryData?.totalNoOfDays} days)
+              </Text>
+            </View>
+          </View>
+          {/* Traveler */}
+          <View className="flex-row mt-2 items-center h-16">
+            <Text className="text-3xl items-center justify-center w-1/6">🧳</Text>
+            <View>
+              <Text className="font-ksemibold text-base text-gray-400">Who is Travelling:</Text>
+              <Text className="font-kregular text-base">{itineraryData?.traveler?.title}</Text>
+            </View>
+          </View>
+          {/* Budget */}
+          <View className="flex-row mt-2 items-center h-16">
+            <Text className="text-3xl items-center justify-center w-1/6">💰</Text>
+            <View>
+              <Text className="font-ksemibold text-base text-gray-400">Budget:</Text>
+              <Text className="font-kregular text-base">{itineraryData?.budget?.title}</Text>
+            </View>
+          </View>
+          {/* Generate Button */}
+          <View className="w-full mt-5 items-center h-16">
+            <Button
+              // title={loading ? 'Generating...' : 'Generate Itinerary'}
+              title="Choose Places"
+              textColor="text-white"
+              style="bg-primary w-4/5 mt-5"
+              handlePress={()=> router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')}
+              // disabled={loading} // Disable button while loading
+            />
           </View>
         </View>
-        {/* Budget */}
-        <View className="flex-row mt-2 items-center h-16">
-          <Text className="text-3xl items-center justify-center w-1/6">💰</Text>
-          <View>
-            <Text className="font-ksemibold text-base text-gray-400">Budget:</Text>
-            <Text className="font-kregular text-base">{itineraryData?.budget?.title}</Text>
-          </View>
-        </View>
-        {/* Generate Button */}
-        <View className="w-full mt-5 items-center h-16">
-          <Button
-            // title={loading ? 'Generating...' : 'Generate Itinerary'}
-            title="Choose Places"
-            textColor="text-white"
-            style="bg-primary w-4/5 mt-5"
-            handlePress={()=> router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')}
-            // disabled={loading} // Disable button while loading
-          />
-        </View>
-      </View>
+      </SafeAreaView>
     );
   };
   
-  export default ReviewItinerary;  
+  export default ReviewItinerary;

@@ -8,6 +8,7 @@ import SelectTraveler from './traveler';
 import SelectBudget from './budget';
 import ReviewItinerary from './reviewiti';
 import ChoosePlaces from './choose-places';
+import DetailsPlaces from './place-details';
 
 const Stack = createNativeStackNavigator();
 
@@ -75,22 +76,26 @@ const CreateItineraryLayout = () => {
                 name="reviewiti"
                 component={ReviewItinerary}
                 options={{ 
-                headerTitle: 'Review Your Itinerary',
-                headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+                headerShown: false,
+                // headerTitle: 'Review Your Itinerary',
+                headerTitleStyle: { color: 'transparent', fontFamily: 'Kanit-Regular', fontSize: 20 },
                 headerTitleAlign: 'center',
-                headerStyle: { backgroundColor: '#A91D1D' },
+                headerStyle: { backgroundColor: '#transparent' },
                 headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
                 }}
             />
             <Stack.Screen
                 name="choose-places"
                 component={ChoosePlaces}
+                options={{ 
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name='place-details'
+                component={DetailsPlaces}
                 options={{
-                    headerTitle: 'Choose Places',
-                headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-                headerTitleAlign: 'center',
-                headerStyle: { backgroundColor: '#A91D1D' },
-                headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+                    headerShown: false,
                 }}
             />
         </Stack.Navigator>  
