@@ -14,7 +14,7 @@ const EditDining = () => {
   const route = useRoute();
   const router = useRouter();
   const { placeID } = route.params || {};
-  // console.log("Received placeID in EditAttraction:", placeID);  
+  console.log("Received placeID in EditDining:", placeID);  
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,7 +138,7 @@ const EditDining = () => {
       const response = await fetch(fileUri);
       const blob = await response.blob();
 
-      const storageReference = storageRef(storage, `places/dining/${placeID}/poster`);
+      const storageReference = storageRef(storage, `places/dining/${placeID}/poster/${new Date().toISOString()}`);
       await uploadBytes(storageReference, blob);
 
       const posterURL = await getDownloadURL(storageReference);
@@ -172,7 +172,7 @@ const EditDining = () => {
       const response = await fetch(fileUri);
       const blob = await response.blob();
 
-      const storageReference = storageRef(storage, `places/dining/${placeID}/poster`);
+      const storageReference = storageRef(storage, `places/event/${placeID}/price/${new Date().toISOString()}`);
       await uploadBytes(storageReference, blob);
 
       const price_or_menuURL = await getDownloadURL(storageReference);
