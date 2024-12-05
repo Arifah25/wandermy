@@ -162,7 +162,7 @@ const Explore = () => {
               )}
               keyExtractor={(item) => item.id}
               numColumns={2}
-              columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 12, marginTop: 10 }}
+              columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 16, marginTop: 10 }}
             />
           )}
         </View>
