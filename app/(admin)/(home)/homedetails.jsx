@@ -12,14 +12,16 @@ const HomeDetails = () => {
   const [activeTab, setActiveTab] = useState('details');
   const [event, setEvent] = useState({});
   const [reviews, setReviews] = useState([]);
+  const [userProfiles, setUserProfiles] = useState({});
   const [hour, setOperatingHours] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [userProfiles, setUserProfiles] = useState({});
-
   const route = useRoute();
   const router = useRouter();
-  const navigation = useNavigation();
-  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, status } = route.params;
+  const [placeData, setPlaceData] = useState({
+    price_or_menu: [],
+  });
+
+  const { placeID, name, poster, address, websiteLink, category, contactNum, tags, description, feeAmount, status, admissionType } = route.params;
   const auth = getAuth();
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -59,103 +61,25 @@ const HomeDetails = () => {
       router.push(`/(admin)/(home)/(edit)/editevent?placeID=${placeID}`);
     }
   };
+
+  useEffect(() => {
+    if (placeID) {
+      const userRef = ref(db, `places/${placeID}`);
+      get(userRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          console.log("Fetched data:", data); 
+          setPlaceData(data);
+          // console.log("Poster Images:", data.poster); // Log poster images          // console.log("Price Images:", data.price_or_menu); // Log price images
+        } else {
+          console.log("No data available");
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
+    }
+  }, [placeID]);
   
-  // Render details
-  const renderDetails = () => (
-    <View className="mt-1 mx-5 ">
-      {category !== 'event' && (
-        <View className="mb-3 rounded-md bg-secondary">
-          <TouchableOpacity
-            onPress={() => Linking.openURL(websiteLink)}
-            className="h-9 items-center justify-center"
-          >
-            <Text className="text-base font-kregular">Website</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      
-      <View className="items-center mx-10 justify-center">
-        <View className="w-full items-start">
-          <Text className="text-lg font-ksemibold">Address :</Text>
-          <Text className="font-kregular">{address}</Text>
-        </View>
-
-        {category === 'event' ? (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Event date & time :</Text>
-            <Text className="font-kregular">
-              {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
-            </Text>
-          </View>
-        ) : (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Operating Hours :</Text>
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-              <View key={index} className="flex-row">
-                <Text className="w-1/3 font-kregular">{day}</Text>
-                {hour[index]?.isOpen ? (
-                  <Text className="w-2/3 font-kregular text-right">
-                    {hour[index].openingTime} - {hour[index].closingTime}
-                  </Text>
-                ) : (
-                  <Text className="text-right w-[30%] font-kregular">Closed</Text>
-                )}
-              </View>
-            ))}
-          </View>
-        )}         
-
-        <View className="w-full items-start mt-3">
-          <Text className="text-lg font-ksemibold">Contact Number :</Text>
-          <Text className="font-kregular">{contactNum}</Text>
-        </View>
-
-        {category === 'event'? (
-          <View>
-            <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Description :</Text>
-              <Text className="font-kregular">{description}</Text>
-            </View>
-            <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Ticket Fee :</Text>
-              <View classname="w-full">
-                <Image 
-                source={{uri:price_or_menu}}
-                className="w-64 h-52"
-                resizeMode='contain'
-                />
-                </View>
-            </View>
-            <View className="w-full items-start my-3">
-              <Text className="text-lg font-ksemibold">Tags :</Text>
-              <Text className=" font-kregular">{tags}</Text>
-            </View>
-          </View>   
-                 
-        ):(
-        <View className="w-full items-start mt-3">
-          {category === 'attraction' ? (
-            <Text className="text-lg font-ksemibold">Price :</Text>
-          ):(
-            <Text className="text-lg font-ksemibold">Menu :</Text>
-          )}
-          <View className="w-full">
-            <Image 
-            source={{uri:price_or_menu}}
-            className="w-64 h-52"
-            resizeMode='contain'
-            />
-          </View>
-          <View className="w-full items-start my-3">
-            <Text className="text-lg font-ksemibold">Tags :</Text>
-            <Text className=" font-kregular">{tags}</Text>
-          </View>
-        </View>
-        )}        
-      </View>
-    </View>
-  );
-
   // Fetch operating hours
   useEffect(() => {
     const hourRef = ref(db, `operatingHours/${placeID}`);
@@ -233,6 +157,158 @@ useEffect(() => {
   fetchReviewsAndProfiles();
 }, [placeID]);  // Dependency on placeID
 
+  
+  // Render details
+  const renderDetails = () => (
+    <View className="mt-1 mx-2 ">
+      {category !== 'event' && (
+        <View className="mb-3 rounded-md bg-secondary">
+          <TouchableOpacity
+            onPress={() => Linking.openURL(websiteLink)}
+            className="h-9 items-center justify-center"
+          >
+            <Text className="text-base font-kregular">Website</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      <View className="items-center mx-7 justify-center">
+        <View className="w-full items-start">
+          <Text className="text-lg font-ksemibold">Address :</Text>
+          <Text className="font-kregular">{address}</Text>
+        </View>
+
+        {category === 'event' ? (
+          <View className="w-full items-start mt-3">
+            <Text className="text-lg font-ksemibold">Event date & time :</Text>
+            <Text className="font-kregular">
+              {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
+            </Text>
+          </View>
+        ) : (
+          <View className="w-full items-start mt-3">
+            <Text className="text-lg font-ksemibold">Operating Hours :</Text>
+            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+              <View key={index} className="flex-row">
+                <Text className="w-1/3 font-kregular">{day}</Text>
+                {hour[index]?.isOpen ? (
+                  <Text className="w-2/3 font-kregular text-right">
+                    {hour[index].openingTime} - {hour[index].closingTime}
+                  </Text>
+                ) : (
+                  <Text className="text-right w-[30%] font-kregular">Closed</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}         
+
+        <View className="w-full items-start">
+          <Text className="text-lg font-ksemibold">Contact Number :</Text>
+          <Text className="font-kregular">{contactNum}</Text>
+        </View>
+
+        {category === 'event'? (
+          <View className="w-full items-start mt-3">
+            <View >
+              <Text className="text-lg font-ksemibold">Description :</Text>
+              <Text className="font-kregular">{description}</Text>
+            </View>
+            <View className="w-full items-start mt-3">
+              <Text className="text-lg font-ksemibold">Admission Fee:</Text>
+              {admissionType === 'free' ? (
+                <Text className="font-kregular mt-2">Free Entry</Text>
+              ) : (
+                <Text className="font-kregular mt-2">{feeAmount}</Text>
+              )}
+            </View>
+            {placeData.price_or_menu && placeData.price_or_menu.length > 0 ? (
+              <View className="w-full items-start mt-3">
+                <Text className="text-lg font-ksemibold mb-3">More Details :</Text>
+                <View className="w-full">
+                  {placeData.price_or_menu.map((imageUri, index) => (
+                    <Image
+                    key={index}
+                    source={{ uri: imageUri }}
+                    style={{
+                      width: '100%', // Make it occupy full width
+                      aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
+                      marginBottom: 10, // Add spacing between images
+                    }}
+                    resizeMode="contain"
+                  />
+                  ))}
+                </View>
+              </View>
+            ) : null}
+            <View className="w-full items-start my-3">
+              <Text className="text-lg font-ksemibold">Tags :</Text>
+              <Text className=" font-kregular">{tags}</Text>
+            </View>
+          </View>   
+                 
+        ):category === 'attraction' ? (
+          <View className="w-full items-start mt-3">
+            <View className="w-full items-start mt-3">
+              <Text className="text-lg font-ksemibold">Admission Fee:</Text>
+              {admissionType === 'free' ? (
+                <Text className="font-kregular mt-2">Free Entry</Text>
+              ) : placeData.price_or_menu && placeData.price_or_menu.length > 0 ? (
+                <View className="w-full">
+                  {placeData.price_or_menu.map((imageUri, index) => (
+                    <Image
+                    key={index}
+                    source={{ uri: imageUri }}
+                    style={{
+                      width: '100%', // Make it occupy full width
+                      aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
+                      marginBottom: 10, // Add spacing between images
+                    }}
+                    resizeMode="contain"
+                  />
+                  ))}
+                </View>
+              ) : (
+                <Text className="font-kregular mt-2">No price information available.</Text>
+              )}
+            </View>
+            <View className="w-full items-start my-3">
+              <Text className="text-lg font-ksemibold">Tags :</Text>
+              <Text className=" font-kregular">{tags}</Text>
+            </View>
+          </View>
+
+        ) : category === 'dining' ? (
+          <View className="w-full items-start mt-3">
+            <Text className="text-lg font-ksemibold">Menu :</Text>
+            {placeData.price_or_menu && placeData.price_or_menu.length > 0 ? (
+              <View className="w-full">
+                {placeData.price_or_menu.map((imageUri, index) => (
+                  <Image
+                  key={index}
+                  source={{ uri: imageUri }}
+                  style={{
+                    width: '100%', // Make it occupy full width
+                    aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
+                    marginBottom: 10, // Add spacing between images
+                  }}
+                  resizeMode="contain"
+                />
+                ))}
+              </View>
+            ) : (
+              <Text className="font-kregular mt-2">No menu available.</Text>
+            )}
+
+            <View className="w-full items-start my-3">
+              <Text className="text-lg font-ksemibold">Tags :</Text>
+              <Text className="font-kregular">{tags}</Text>
+            </View>
+          </View>
+        ) : null}      
+      </View>
+    </View>
+  );
 
   // Render reviews (currently empty)
   const renderReview = () => (
@@ -296,7 +372,7 @@ useEffect(() => {
       <ScrollView className=" w-full">
         <View className="m-5">
           <Poster image={poster} />
-          <Text className="mt-3 ml-3 font-kregular text-xl">{name}</Text>
+          <Text className="my-3 mt-4 ml-3 font-kregular text-3xl">{name}</Text>
 
           {category !== 'event' && (
             <DetailTab activeTab={activeTab} setActiveTab={setActiveTab} />
