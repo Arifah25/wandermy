@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Modal, Switch } from 'react-native'
+import { View, Text, ScrollView, Modal, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, DateField, Map, TimeField, } from '../../../../components'
@@ -6,7 +6,9 @@ import { getDatabase, ref, push, set } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
+
 const CreateEvent = () => {
+  
   // Use the useRouter hook to get the router object for navigation
   const router = useRouter();
   const { latitude, longitude, address } = useLocalSearchParams(); // Use the correct hook
@@ -36,12 +38,22 @@ const CreateEvent = () => {
     endDate: '',
     startTime: '',
     endTime: '',
+    admissionType: 'free', // Default is Free Admission
+    feeAmount: '', // Fee amount field
   });
 
   // Store selected images in state
   const [posterImages, setPosterImages] = useState([]);
   const [priceImages, setPriceImages] = useState([]);
 
+  const handleAdmissionTypeChange = (type) => {
+    setForm((prevForm) => ({
+      ...prevForm,
+      admissionType: type,
+      feeAmount: type === 'free' ? '' : prevForm.feeAmount, // Clear feeAmount if 'free'
+    }));
+  };
+  
   const uploadImages = async (images, folderName) => {
     const storage = getStorage();
     const uploadedUrls = [];
@@ -87,8 +99,10 @@ const CreateEvent = () => {
         console.error('Error generating places ID: ', error);
       }
     };
+
     generatePlaceID();
   }, []);
+  
 
   const handlePost = async () => {
     setIsSubmitting(true);
@@ -111,6 +125,8 @@ const CreateEvent = () => {
         category: 'event',
         status: 'pending',
         user: userId,
+        admissionType: form.admissionType,
+        feeAmount: form.admissionType === 'paid' ? form.feeAmount : 'Free',
       };
       await set(newPlaceRef, placeData);
 
@@ -132,7 +148,6 @@ const CreateEvent = () => {
         setIsSubmitting(false);
     }
   };
-
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -165,12 +180,13 @@ const CreateEvent = () => {
     // Update the form state with the new price image URLs
     setForm({ ...form, price: [...form.price, ...imageURLs] }); // Append multiple image URLs
   };
-
+  
   return (
-    <ScrollView
-    className="flex-1 h-full px-8 bg-white"
-    >
-      <Modal
+    // <SafeAreaView>
+      <ScrollView
+      className="flex-1 h-full px-8 bg-white"
+      >
+        <Modal
         visible={isModalVisible}
         transparent={true}
         animationType="fade"
@@ -196,35 +212,48 @@ const CreateEvent = () => {
             isLoading={isSubmitting}
           />
         </View>
-
+        
         <CreateForm 
         title="Event name :"
         value={form.name}
-        handleChangeText={(e) => setForm({ ...form, name: e })}      />
+        handleChangeText={(e) => setForm({ ...form, name: e })}      
+        />
 
-       <View className="mb-5">
-        <Text className="font-kregular text-xl">
+        <CreateForm
+          title="Description of the event :" 
+          value={form.description}
+          handleChangeText={(e) => setForm({ ...form, description: e })}
+          keyboardType="default"
+          tags="true"
+        /> 
+
+        <View className="mb-5">
+          {/* <Text className="font-kregular text-xl">
             When does the event start and end ? 
-        </Text>
-        <View className="flex-row justify-start my-5 items-center">
-          <Text className="w-14 text-lg font-kregular">
-            Date :
-          </Text>
-          <View className="w-4/5 flex-row justify-evenly">
-           <DateField 
-            placeholder="Start Date"
-            value={form.startDate}
-            handleChangeText={(e) => setForm({ ...form, startDate: e })}
-            />
-            <DateField 
-            placeholder="End Date"
-            valu e={form.endDate}
-            handleChangeText={(e) => setForm({ ...form, endDate: e })}
-            />
+          </Text> */}
+          <View 
+          className="flex-row justify-start my-5 items-center"
+          >
+            <Text
+            className="w-14 text-lg font-kregular">
+              Date :
+            </Text>
+            <View className="w-4/5 flex-row justify-evenly">
+              <DateField 
+              placeholder="Start Date"
+              value={form.startDate}
+              handleChangeText={(e) => setForm({ ...form, startDate: e })}
+              />
+              <DateField 
+              placeholder="End Date"
+              value={form.endDate}
+              handleChangeText={(e) => setForm({ ...form, endDate: e })}
+              />
+            </View>
           </View>
-        </View>
-        <View className="flex-row justify-start items-center">
-            <Text className="w-14 text-lg font-kregular">
+          <View className="flex-row justify-start items-center">
+          <Text
+            className="w-14 text-lg font-kregular">
               Time :
             </Text>
             <View className="w-4/5 flex-row justify-evenly">
@@ -242,13 +271,20 @@ const CreateEvent = () => {
           </View>
         </View>
         
+        <CreateForm 
+          title="Contact Number :"
+          value={form.contactNum}
+          handleChangeText={(e) => setForm({ ...form, contactNum: e })}
+          keyboardType="phone-pad"
+          />
+
         <View className="items-center mb-5">
           <CreateForm
           title="Address :"
           value={form.address}
           tags="true"
           handleChangeText={(e) => setForm({ ...form, address: e })}       
-            />
+           />
           {/* pin location */}
           <Button 
           title="Pin Location"
@@ -257,12 +293,89 @@ const CreateEvent = () => {
           textColor="text-black ml-5"
           location="true"
           />
-
         </View>
 
+        {/* Radio Buttons for Admission Type */}
+        <View className="mb-5">
+          <Text className="font-kregular text-xl">Admission Type:</Text>
+          <View className="flex-row items-center mt-2">
+            <TouchableOpacity
+              onPress={() => handleAdmissionTypeChange('free')}
+              style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {form.admissionType === 'free' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Free Admission</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => handleAdmissionTypeChange('paid')}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
+            >
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: '#A91D1D',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                }}
+              >
+                {form.admissionType === 'paid' && (
+                  <View
+                    style={{
+                      height: 10,
+                      width: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#A91D1D',
+                    }}
+                  />
+                )}
+              </View>
+              <Text>Paid Admission</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Conditional Fee Amount Input */}
+        {form.admissionType === 'paid' && (
+          <View className="mb-5">
+            <CreateForm
+              title="Fee Amount:"
+              value={form.feeAmount}
+              handleChangeText={(e) => setForm({ ...form, feeAmount: e })}
+              keyboardType="default"
+            />
+          </View>
+        )}
+        
         <View className="mb-5">
           <Text className="font-kregular text-xl">
-            Ticket Price :
+            Infographics (Optional) :
           </Text>
           {/* image picker for price */}
           <AddPhoto
@@ -274,29 +387,14 @@ const CreateEvent = () => {
         </View>
         
         <CreateForm 
-        title="Contact Number :"
-        value={form.contactNum}
-        handleChangeText={(e) => setForm({ ...form, contactNum: e })}
-        keyboardType="phone-pad"
-        />
-
-        <CreateForm
-        title="Description of the event :" 
-        value={form.description}
-        handleChangeText={(e) => setForm({ ...form, description: e })}
-        keyboardType="default"
-        tags="true"
-        /> 
-          
-        <CreateForm 
         title="Tags :"
         value={form.tags}
         handleChangeText={(e) => setForm({ ...form, tags: e })}
         keyboardType="default"
         tags="true"
         />
-          
-        <View className="flex-row items-center justify-evenly mt-5 mb-10">
+        <View
+        className="flex-row items-center justify-evenly mt-5 mb-10">
           <Button 
           title="Cancel"
           handlePress={() => router.back()}
@@ -310,7 +408,8 @@ const CreateEvent = () => {
           textColor="text-white"/>
         </View>
       </ScrollView>      
-    )
-  }
+    // </SafeAreaView>
+  )
+}
 
 export default CreateEvent
