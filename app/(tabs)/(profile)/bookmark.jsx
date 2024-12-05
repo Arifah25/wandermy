@@ -73,7 +73,7 @@ const BookmarkPlaces = () => {
 
   const handlePress = (item) => {
     router.push({
-      pathname: '(tabs)/(explore)/details',
+      pathname: '(tabs)/(profile)/details',
       params: { ...item }, // Pass all the place data as route params
     });
   };
