@@ -51,7 +51,7 @@ const Home = () => {
       console.log("Fetching recommendations...");
       const response = await axios.post(
         //everytime nak run, kena check ipaddress dulu, kena match jugak baru boleh run
-        'http://10.164.233.105:5000/recommendations', // Replace with your server's IP
+        'http://10.75.242.106:5000/recommendations', // Replace with your server's IP
         { userId },
         { timeout: 30000 } // Set timeout to 30 seconds
       );
