@@ -11,6 +11,7 @@ import { chatSession } from '../../../../configs/AImodule';
 import { setDoc, doc } from 'firebase/firestore';
 import { auth, firestore } from '../../../../configs/firebaseConfig';
 import { icons } from '../../../../constants';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DetailsPlaces = () => {
   const [loading, setLoading] = useState(false);
@@ -24,12 +25,19 @@ const DetailsPlaces = () => {
   const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
   const user = auth.currentUser;
   
-  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description } = route.params;
+  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude } = route.params;
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   const handleAddToCart = () => {
-    addToCart({ placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description });
+    addToCart({ 
+      placeID, 
+      name, 
+      address, 
+      latitude,
+      longitude, 
+      category
+     });
   };
 
   const handleRemoveFromCart = (placeID) => {
@@ -37,19 +45,23 @@ const DetailsPlaces = () => {
   }
 
   const handleGenerateItinerary = async () => {
+    setModalVisible(false)
     if (loading) return; // Prevent multiple executions while loading
     setLoading(true);
 
+    const formattedPlaces = JSON.stringify(cart);
+
+    console.log('Formatted Places:', formattedPlaces);
     try {
       const FINAL_PROMPT = AI_PROMPT
-        .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{location}', 'Kuala Lumpur, Malaysia')
-        .replace('{departure}',  'Penang, Malaysia')
-        .replace('{places}', itineraryData?.places || '')
-        .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
-        .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-        .replace('{traveler}', itineraryData?.traveler?.title || '')
-        .replace('{budget}', itineraryData?.budget?.title || '');
+      .replace('{tripName}', itineraryData?.tripName || '')
+      .replace('{destination}', 'Kuala Lumpur, Malaysia')
+      .replace('{origin}',  'Penang, Malaysia')
+      .replace('{places}', formattedPlaces || '')
+      .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
+      .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
+      .replace('{traveler}', itineraryData?.traveler?.title || '')
+      .replace('{budget}', itineraryData?.budget?.title || '');
 
       console.log('AI Prompt:', FINAL_PROMPT);
 
@@ -219,7 +231,7 @@ const DetailsPlaces = () => {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white">
       <HeaderWithCart onCartPress={() => setModalVisible(true)} />
       <ScrollView className=" w-full">
        <View className="m-5">
@@ -245,9 +257,9 @@ const DetailsPlaces = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View className="flex-1 justify-end">
-          <View className="bg-white p-5 rounded-t-lg">
-            <Text className="text-lg font-ksemibold mb-3">Your Pick</Text>
+        <View className=" flex-1 justify-end pb-7 p-1 ">
+          <View className="bg-white p-5 rounded-t-lg border-t-2 ">
+            <Text className="text-lg font-ksemibold mb-3">Your Itinerary</Text>
             {cart.length === 0 ? (
               <Text>No places added yet</Text>
             ) : (
@@ -278,7 +290,7 @@ const DetailsPlaces = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 

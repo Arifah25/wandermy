@@ -128,7 +128,14 @@ const ChoosePlaces = () => {
   };
 
   const handleAddToCart = (place) => {
-    addToCart(place);
+    addToCart({ 
+      placeID : place.placeID, 
+      name: place.name, 
+      category: place.category,
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
   };
 
   const handleRemoveFromCart = (placeID) => {
@@ -136,14 +143,15 @@ const ChoosePlaces = () => {
   };
 
   const handleGenerateItinerary = async () => {
+    setModalVisible(false)
     if (loading) return; // Prevent multiple executions while loading
     setLoading(true);
 
     try {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{location}', 'Kuala Lumpur, Malaysia')
-        .replace('{departure}',  'Penang, Malaysia')
+        .replace('{destination}', 'Kuala Lumpur, Malaysia')
+        .replace('{origin}',  'Penang, Malaysia')
         .replace('{places}', itineraryData?.places || '')
         .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
         .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
@@ -185,10 +193,10 @@ const ChoosePlaces = () => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <HeaderWithCart onCartPress={() => setModalVisible(true)} />
-      <View style={{ paddingHorizontal: 16 }} className="flex-1 bg-white">
-        <View className="flex-row items-center mt-5  w-full justify-evenly">
+      <View className="flex-1 px-5">
+        <View className="flex-row items-center mt-5 justify-center">
           <Search 
-            width="w-5/6"
+            width="w-4/5"
             places={places} // Pass the places data
             activeTab={activeTab} // Pass the active category
             setFilteredPlaces={setFilteredPlaces}
@@ -197,7 +205,7 @@ const ChoosePlaces = () => {
           <TouchableOpacity onPress={handleBookmarkPress} className="w-1/6 items-center">
             <Image
               source={bookmarkVisible? icons.bookmarked : icons.bookmark}
-              className="w-9 h-9"
+              className="w-8 h-9"
               tintColor="black"
             />
           </TouchableOpacity>
@@ -230,8 +238,8 @@ const ChoosePlaces = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View className="flex-1 justify-end">
-          <View className="bg-white p-5 rounded-t-lg">
+        <View className="flex-1 justify-end mb-7 p-1 ">
+          <View className="bg-white p-5 rounded-t-lg border-t-2 ">
             <Text className="text-lg font-ksemibold mb-3">Your Itinerary</Text>
             {cart.length === 0 ? (
               <Text>No places added yet</Text>
@@ -250,7 +258,8 @@ const ChoosePlaces = () => {
                 title={loading ? 'Generating...' : 'Generate Itinerary'}
                 textColor="text-white"
                 style="bg-primary w-4/5 mt-5"
-                handlePress={handleGenerateItinerary}
+                // handlePress={handleGenerateItinerary}
+                handlePress={console.log(cart)}
                 disabled={loading} // Disable button while loading
               />
             </View>
