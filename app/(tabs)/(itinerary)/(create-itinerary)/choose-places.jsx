@@ -1,8 +1,8 @@
 import { View, FlatList, ActivityIndicator, Text, SafeAreaView, TouchableOpacity, Modal, Image } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getDatabase, ref, onValue, get } from 'firebase/database';
 import { useRouter } from 'expo-router';
-import { PlaceCard, TabPlace, HeaderWithCart, Button } from '../../../../components';
+import { PlaceCard, TabPlace, HeaderWithCart, Button, Search } from '../../../../components';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { CartContext } from "../../../../context/CartContext";
 import { AI_PROMPT } from '../../../../constants/option';
@@ -17,9 +17,11 @@ const ChoosePlaces = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('attraction');
   const [modalVisible, setModalVisible] = useState(false);
+  const [bookmarkVisible, setBookmarkVisible] = useState(false);
+  const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
   const router = useRouter();
   const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
-  const { cart, removeFromCart, clearCart } = useContext(CartContext);
+  const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
   const user = auth.currentUser;
 
   const isNearby = (placeLocation, placeCoordinates, targetLocation, targetCoordinates, radius = 10) => {
@@ -86,6 +88,38 @@ const ChoosePlaces = () => {
     return () => unsubscribe();
   }, [activeTab, itineraryData?.locationInfo]);
 
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      if (!user) return;
+
+      const db = getDatabase();
+      const bookmarksRef = ref(db, `bookmark/${user.uid}`);
+      const snapshot = await get(bookmarksRef);
+      const bookmarks = snapshot.val() || {};
+
+      const bookmarkIds = Object.keys(bookmarks);
+
+      if (bookmarkIds.length === 0) {
+        setBookmarkedPlaces([]);
+        return;
+      }
+
+      const placesPromises = bookmarkIds.map(async (placeID) => {
+        const placeRef = ref(db, `places/${placeID}`);
+        const placeSnapshot = await get(placeRef);
+        const placeData = placeSnapshot.val();
+        return placeData ? { id: placeID, ...placeData } : null;
+      });
+
+      const placesData = await Promise.all(placesPromises);
+      const validPlaces = placesData.filter((place) => place !== null);
+
+      setBookmarkedPlaces(validPlaces);
+    };
+
+    fetchBookmarks();
+  }, [user]);
+
   const handlePlacePress = (place) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/place-details',
@@ -93,9 +127,13 @@ const ChoosePlaces = () => {
     });
   };
 
+  const handleAddToCart = (place) => {
+    addToCart(place);
+  };
+
   const handleRemoveFromCart = (placeID) => {
     removeFromCart(placeID);
-  }
+  };
 
   const handleGenerateItinerary = async () => {
     if (loading) return; // Prevent multiple executions while loading
@@ -104,7 +142,6 @@ const ChoosePlaces = () => {
     try {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
-        // .replace('{location}', itineraryData?.locationInfo?.name || '')
         .replace('{location}', 'Kuala Lumpur, Malaysia')
         .replace('{departure}',  'Penang, Malaysia')
         .replace('{places}', itineraryData?.places || '')
@@ -135,22 +172,49 @@ const ChoosePlaces = () => {
     }
   };
 
+  const handleBookmarkPress = () => {
+    setBookmarkVisible(!bookmarkVisible);
+  };
+
+  const getFilteredPlaces = () => {
+    return bookmarkVisible
+      ? bookmarkedPlaces.filter((place) => place.category === activeTab)
+      : filteredPlaces;
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <HeaderWithCart onCartPress={() => setModalVisible(true)} />
       <View style={{ paddingHorizontal: 16 }} className="flex-1 bg-white">
+        <View className="flex-row items-center mt-5  w-full justify-evenly">
+          <Search 
+            width="w-5/6"
+            places={places} // Pass the places data
+            activeTab={activeTab} // Pass the active category
+            setFilteredPlaces={setFilteredPlaces}
+          />
+          {/* Bookmark Button */}
+          <TouchableOpacity onPress={handleBookmarkPress} className="w-1/6 items-center">
+            <Image
+              source={bookmarkVisible? icons.bookmarked : icons.bookmark}
+              className="w-9 h-9"
+              tintColor="black"
+            />
+          </TouchableOpacity>
+        </View>  
         <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
         <View style={{ flex: 1, marginTop: 16 }}>
           {loading ? (
             <ActivityIndicator size="large" color="#A91D1D" />
           ) : (
             <FlatList
-              data={filteredPlaces}
+              data={getFilteredPlaces()}
               renderItem={({ item }) => (
                 <PlaceCard
                   name={item.name}
                   image={item.poster ? item.poster[0] : null}
                   handlePress={() => handlePlacePress(item)}
+                  handleAddToCart={() => handleAddToCart(item)}
                 />
               )}
               keyExtractor={(item) => item.id}

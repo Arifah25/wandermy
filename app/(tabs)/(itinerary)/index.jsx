@@ -34,6 +34,8 @@ const MyItinerary = () => {
     console.log(itinerary);
   }
 
+  // const LatestItinerary = JSON.parse(itinerary[0].itineraryData);
+
   const New = () => {
     router.push("(tabs)/(itinerary)/(create-itinerary)/new");
   }
@@ -43,7 +45,7 @@ const MyItinerary = () => {
   }
 
   return (
-    <View
+    <SafeAreaView
     className="bg-white h-full flex-1 p-5 justify-start"
     >
       {loading&&<ActivityIndicator size={'large'} color={'#000'}/> }
@@ -55,9 +57,12 @@ const MyItinerary = () => {
         </Text>
        </View>
        ):(<View>
-        <Text className="text-xl font-kregular text-black">
+        <Text className="text-xl font-ksemibold text-black">
           Itineraries
         </Text>
+        <View>
+          <Image source={icons.search} className="w-7 h-7"/>
+        </View>
         <FlatList
         data={itinerary}
         keyExtractor={(item, index) => index.toString()}
@@ -77,7 +82,7 @@ const MyItinerary = () => {
       >
         <Image source={icons.plus} tintColor="#fff" className="w-7 h-7"/>
       </TouchableOpacity> 
-    </View>
+    </SafeAreaView>
   )
 }
 

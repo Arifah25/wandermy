@@ -38,7 +38,8 @@ const NewItinerary = () => {
         endDate: endDate,
         totalNoOfDays: totalNoOfDays+1
       });
-      router.push('(tabs)/(itinerary)/(create-itinerary)/traveler')
+      console.log(itineraryData);
+      router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')
     }
     
     const handleTripNameChange = (value) => {
@@ -106,8 +107,8 @@ const NewItinerary = () => {
       title="Start Crafting"
       textColor="text-white"
       style="bg-primary my-10 w-3/5"
-      // handlePress={OnDateSelectionContinue}
-      handlePress={() => router.navigate('(tabs)/(itinerary)/')}
+      handlePress={OnDateSelectionContinue}
+      // handlePress={() => router.navigate('(tabs)/(itinerary)/')}
       />        
     </View>
   )
