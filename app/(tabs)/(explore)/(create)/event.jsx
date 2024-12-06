@@ -272,10 +272,10 @@ const CreateEvent = () => {
         </View>
         
         <CreateForm 
-          title="Contact Number :"
+          title="Contact Information :"
           value={form.contactNum}
           handleChangeText={(e) => setForm({ ...form, contactNum: e })}
-          keyboardType="phone-pad"
+          // keyboardType="phone-pad"
           />
 
         <View className="items-center mb-5">
@@ -402,7 +402,7 @@ const CreateEvent = () => {
           textColor="text-primary"
           />
           <Button 
-          title="POST"
+          title="Submit"
           handlePress={handlePost}
           style="bg-primary w-2/5"
           textColor="text-white"/>
