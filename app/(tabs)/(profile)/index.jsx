@@ -77,7 +77,7 @@ const Profile = () => {
       className="bg-white h-full flex-1 px-5 items-center justify-start"
     >
       <View
-        className="w-full justify-center items-center gap-4 px-5"
+        className="w-full justify-center items-center gap-4 px-5 mt-4"
       >
         {/* get profile photo from database */}
         <Image

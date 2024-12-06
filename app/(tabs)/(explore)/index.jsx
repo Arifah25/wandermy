@@ -147,7 +147,7 @@ const Explore = () => {
         <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {/* Places List or Loading Indicator */}
-        <View className="h-full w-full mt-5 bottom-5" style={{ paddingBottom: 110, paddingTop: 10 }}>
+    <View className="h-full w-full mt-2 " style={{ paddingBottom: 120, paddingTop: 10 }}>
           {loading ? (
             <ActivityIndicator size="large" color="#A91D1D" />
           ) : (

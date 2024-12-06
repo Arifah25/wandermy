@@ -21,6 +21,7 @@
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-community/geolocation": "^3.4.0",
     "@react-navigation/native": "^6.0.2",
+    "axios": "^1.7.8",
     "date-fns": "^4.1.0",
     "expo": "^52.0.7",
     "expo-asset": "~11.0.1",
@@ -54,7 +55,8 @@
     "react-native-simple-toast": "^3.3.1",
     "react-native-toast-message": "^2.2.1",
     "react-native-web": "~0.19.13",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "expo-image-manipulator": "~13.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
 import Home from '.';
 import Notification from './notification';
+import Details from './details';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +27,7 @@ const HomeLayout = () => {
     console.log('dah');
   }
 
+  
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -37,6 +39,17 @@ const HomeLayout = () => {
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
           headerRight: () => <HeaderIcon onPress={handleBellPress} icon={icons.bell} />,
+        }}
+      />
+      <Stack.Screen
+        name="details"
+        component={Details}
+        options={{ 
+          headerTitle: 'WanderMy',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
       />
       <Stack.Screen

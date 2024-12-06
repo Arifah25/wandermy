@@ -73,7 +73,7 @@ const BookmarkPlaces = () => {
 
   const handlePress = (item) => {
     router.push({
-      pathname: '(tabs)/(explore)/details',
+      pathname: '(tabs)/(profile)/details',
       params: { ...item }, // Pass all the place data as route params
     });
   };
@@ -105,7 +105,8 @@ const BookmarkPlaces = () => {
         )}
         keyExtractor={item => item.id}
         numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-around' }}
+        // columnWrapperStyle={{ justifyContent: 'space-around' }}
+        columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 16, marginTop: 10 }}
         ListEmptyComponent={() => (
           <View className="justify-center items-center mt-7">
             <Text className="font-kbold text-xl">No Bookmark Found</Text>

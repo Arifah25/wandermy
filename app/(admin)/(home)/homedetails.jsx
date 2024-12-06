@@ -62,6 +62,7 @@ const HomeDetails = () => {
     }
   };
 
+  //fetch data from db
   useEffect(() => {
     if (placeID) {
       const userRef = ref(db, `places/${placeID}`);
