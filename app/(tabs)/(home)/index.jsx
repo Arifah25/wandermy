@@ -118,7 +118,7 @@ const Home = () => {
       </View>
 
       {/* Recommendations Section */}
-      <View className="m-4 h-full mt-5 bottom-5" style={{ paddingBottom: 110 }}>
+      <View className="m-4 h-full mt-5" style={{ paddingBottom: 120 }}>
         <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recommendations for you</Text>
         {loading ? (
           <ActivityIndicator size="large" color="#A91D1D" />
