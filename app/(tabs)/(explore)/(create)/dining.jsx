@@ -120,6 +120,21 @@ const CreateDining = () => {
   };
 
   const handlePost = async () => {
+    // Validate required fields
+    if (
+      !posterImages.length ||
+      !form.name.trim() ||
+      !form.address.trim() ||
+      !form.contactNum.trim() ||
+      !form.admissionType.trim() ||
+      form.operatingHours.some(
+        (day) => day.isOpen && (!day.openingTime || !day.closingTime)
+      ) ||
+      !form.tags.trim()
+    ) {
+      alert("Please fill all the required(*) fields.");
+      return; // Prevent submission
+    }
     setIsSubmitting(true);
     try {
       // Upload images and get the URLs
@@ -218,7 +233,7 @@ const CreateDining = () => {
           <Text
           className="font-kregular text-xl"
           >
-            Poster :
+            Poster* :
           </Text>
           {/* image picker for poster */}
           <AddPhoto
@@ -226,17 +241,16 @@ const CreateDining = () => {
             setImages={setPosterImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
-
         </View>
         <CreateForm 
-        title="Restaurant name :"
+        title="Restaurant name* :"
         value={form.name}
         handleChangeText={(e) => setForm({ ...form, name: e })}      />
         <View
         className="items-center mb-5"
         >
           <CreateForm
-          title="Address :"
+          title="Address* :"
           value={form.address}
           tags="true"
           handleChangeText={(e) => setForm({ ...form, address: e })}       
@@ -258,13 +272,16 @@ const CreateDining = () => {
         keyboardType="url"
         />
         <CreateForm 
-        title="Contact Number :"
+        title="Contact Number* :"
         value={form.contactNum}
         handleChangeText={(e) => setForm({ ...form, contactNum: e })}
         keyboardType="phone-pad"
         />
           {/* Operating Hours with Open/Close toggle */}
         <View className="w-full">
+          <Text className="font-kregular text-xl mb-3">
+            Operating Hours* :
+          </Text>
         {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
           <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
             <View className="flex-row items-center w-1/3 justify-start mb-2">
@@ -310,7 +327,7 @@ const CreateDining = () => {
 
         </View>
         <CreateForm 
-        title="Tags :"
+        title="Tags* :"
         value={form.tags}
         handleChangeText={(e) => setForm({ ...form, tags: e })}
         keyboardType="default"
