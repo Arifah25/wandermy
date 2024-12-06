@@ -6,10 +6,9 @@ import { icons } from '../../../../constants';
 import NewItinerary from './new';
 import SelectTraveler from './traveler';
 import SelectBudget from './budget';
-import ReviewItinerary from './reviewiti';
 import ChoosePlaces from './choose-places';
 import DetailsPlaces from './place-details';
-import MyItinerary from '..';
+import ReviewDetails from './reviewdetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,7 +26,7 @@ const CreateItineraryLayout = () => {
 
     return (
         <Stack.Navigator>
-            <Stack.Screen
+            {/* <Stack.Screen
                 name='index'
                 component={MyItinerary}
                 options={{
@@ -38,7 +37,7 @@ const CreateItineraryLayout = () => {
                     headerStyle: { backgroundColor: '#A91D1D', height: 95 },
                     headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
                     }}
-            />
+            /> */}
             <Stack.Screen
                 name="new"
                 component={NewItinerary}
@@ -74,8 +73,8 @@ const CreateItineraryLayout = () => {
                 }}
             />
             <Stack.Screen
-                name="reviewiti"
-                component={ReviewItinerary}
+                name="reviewdetails"
+                component={ReviewDetails}
                 options={{ 
                 headerShown: false,
                 // headerTitle: 'Review Your Itinerary',

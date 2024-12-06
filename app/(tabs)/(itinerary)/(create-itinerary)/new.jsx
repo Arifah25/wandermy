@@ -94,6 +94,7 @@ const NewItinerary = () => {
         height={345}
         allowRangeSelection={true}
         minDate={new Date()}
+        minRangeDuration={1}
         maxRangeDuration={5}
         selectedRangeStyle={{
           backgroundColor: 'salmon'

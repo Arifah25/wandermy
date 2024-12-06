@@ -6,7 +6,7 @@ import { Button } from '../../../../components';
 import { useRouter } from 'expo-router';
 import { icons } from '../../../../constants';
 
-const ReviewItinerary = () => {
+const ReviewDetails = () => {
     const router = useRouter();
     const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
     const [loading, setLoading] = useState(false);
@@ -90,4 +90,4 @@ const ReviewItinerary = () => {
     );
   };
   
-  export default ReviewItinerary;
+  export default ReviewDetails;

@@ -41,7 +41,10 @@ const MyItinerary = () => {
   }
 
   const navigateDetails = (itinerary) => {
-    router.push("(tabs)/(itinerary)/detailsiti", {itinerary});
+    router.push({
+      pathname: '(tabs)/(itinerary)/detailsiti',
+      params: { ...itinerary },
+    });
   }
 
   return (
@@ -69,8 +72,8 @@ const MyItinerary = () => {
         renderItem={({item}) => (
           <ItineraryCard 
           itinerary={item}
-          name={item.itineraryData.travelPlanName}
-          handlePress={navigateDetails}
+          name={item.itineraryData.tripDetails?.tripName}
+          handlePress={navigateDetails(item.itineraryData)}
           />
         )}
         />
