@@ -12,6 +12,7 @@ import bell from "../assets/icons/bell.png";
 import bookmark from "../assets/icons/bookmark.png";
 import bookmarked from "../assets/icons/bookmarked.png";
 import star from "../assets/icons/star.png";
+import view from "../assets/icons/view.png"
 import filter from "../assets/icons/filter.png";
 import close from "../assets/icons/close.png";
 import clock from "../assets/icons/clock.png";
@@ -20,6 +21,7 @@ import wandermy1 from "../assets/icons/wandermy1.png";
 
 export default {
     home,
+    view,
     explore, 
     itinerary,
     profile,

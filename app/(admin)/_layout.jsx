@@ -63,7 +63,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon 
-            icon={icons.eye} 
+            icon={icons.view} 
             color={color} 
             name="Pending" 
             focused={focused}

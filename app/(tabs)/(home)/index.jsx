@@ -4,9 +4,29 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from "../../../constants";
 import { getAuth } from 'firebase/auth';
-import { getDatabase, ref, get } from 'firebase/database';
+import { getDatabase, ref, get, push, set } from 'firebase/database';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { PlaceCard } from '../../../components';
+
+const logUserInteraction = async (placeID) => {
+  const db = getDatabase();
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
+
+  if (!userId) return; // Ensure user is logged in
+
+  try {
+    const interactionRef = ref(db, `user_interactions/${userId}`);
+    const newInteractionRef = push(interactionRef);
+    await set(newInteractionRef, {
+      placeID,
+      timestamp: new Date().toISOString(),
+    });
+    console.log("User interaction logged successfully.");
+  } catch (error) {
+    console.error("Error logging user interaction:", error);
+  }
+};
 
 const Home = () => {
   const [userData, setUserData] = useState({});
@@ -51,7 +71,7 @@ const Home = () => {
       console.log("Fetching recommendations...");
       const response = await axios.post(
         //everytime nak run, kena check ipaddress dulu, kena match jugak baru boleh run
-        'http://10.164.233.105:5000/recommendations', // Replace with your server's IP
+        'http://172.20.10.5:5000/recommendations', // Replace with your server's IP
         { userId },
         { timeout: 30000 } // Set timeout to 30 seconds
       );
@@ -95,6 +115,7 @@ const Home = () => {
 
   // Handle card press
   const handlePlacePress = (item) => {
+    logUserInteraction(item.placeID);
     router.push({
       pathname: '(tabs)/(home)/details',
       params: { ...item }, // Pass data to the details page

@@ -1,3 +1,4 @@
+#before adding based on user interaction
 from flask import Flask, jsonify, request
 import firebase_admin
 from firebase_admin import credentials, db
@@ -25,49 +26,46 @@ def get_recommendations():
     if not user_id:
         return jsonify({"error": "User ID is required"}), 400
 
-    # Fetch bookmarks and interactions for the user
+    # Fetch bookmarks for the user
     bookmark_ref = db.reference('bookmark')
-    interaction_ref = db.reference(f'user_interactions/{user_id}')
     places_ref = db.reference('places')
-
     user_bookmarks_data = bookmark_ref.child(user_id).get()
-    user_interactions_data = interaction_ref.get()
-    places_data = places_ref.get()
 
+    # Fetch all places data
+    places_data = places_ref.get()
     if not places_data:
         return jsonify({"error": "No places found in the database"}), 404
 
-    # Extract placeIDs from bookmarks and interactions
-    user_bookmarks = [bookmark['placeID'] for bookmark in user_bookmarks_data.values()] if user_bookmarks_data else []
-    user_interactions = [interaction['placeID'] for interaction in user_interactions_data.values()] if user_interactions_data else []
-
-    # Combine bookmarks and interactions
-    all_user_places = set(user_bookmarks + user_interactions)
-
-    # Debugging: Log all user places
-    print("All User Places (Bookmarked + Interacted):", all_user_places)
-
-    # Handle case when no bookmarks or interactions are found
-    if not all_user_places:
-        print(f"No bookmarks or interactions found for user ID: {user_id}. Recommending random places.")
+    # Handle case when user has no bookmarks
+    if not user_bookmarks_data:
+        print(f"No bookmarks found for user ID: {user_id}. Recommending random places.")
+        # Select 16 random places from the database
         all_places = [
-            {"placeID": place_id, "name": place_info.get("name", ""), "tags": place_info.get("tags", ""), "description": place_info.get("description", "")}
+            {"placeID": place_id, "name": place_info.get("name", "")}
             for place_id, place_info in places_data.items()
         ]
         random_recommendations = random.sample(all_places, min(16, len(all_places)))
         return jsonify({"recommendations": random_recommendations})
 
-    # Extract data for bookmarks and interactions
-    combined_places = [
-        {
+    # Extract placeIDs from user bookmarks
+    user_bookmarks = [bookmark['placeID'] for bookmark in user_bookmarks_data.values()]
+
+    # Extract bookmarked places and all places
+    all_places = []
+    bookmarked_places = []
+    for place_id, place_info in places_data.items():
+        all_places.append({
             "placeID": place_id,
             "name": place_info.get("name", ""),
             "tags": place_info.get("tags", ""),
             "description": place_info.get("description", ""),
-        }
-        for place_id, place_info in places_data.items()
-        if place_id in all_user_places
-    ]
+        })
+        if place_id in user_bookmarks:
+            bookmarked_places.append({
+                "placeID": place_id,
+                "tags": place_info.get("tags", ""),
+                "description": place_info.get("description", ""),
+            })
 
     # Function to clean text: remove punctuation, convert to lowercase
     def clean_text(text):
@@ -76,48 +74,46 @@ def get_recommendations():
         return text
 
     # Convert data to DataFrames
-    df_all_places = pd.DataFrame([
-        {
-            "placeID": place_id,
-            "name": place_info.get("name", ""),
-            "tags": place_info.get("tags", ""),
-            "description": place_info.get("description", ""),
-        }
-        for place_id, place_info in places_data.items()
-    ])
-    df_combined = pd.DataFrame(combined_places)
+    df_all_places = pd.DataFrame(all_places)
+    df_bookmarked = pd.DataFrame(bookmarked_places)
 
     # Create combined text for analysis
     df_all_places['combined_text'] = (
         df_all_places['tags'].apply(clean_text) + ' ' +
         df_all_places['description'].apply(clean_text)
     )
-    df_combined['combined_text'] = (
-        df_combined['tags'].apply(clean_text) + ' ' +
-        df_combined['description'].apply(clean_text)
+    df_bookmarked['combined_text'] = (
+        df_bookmarked['tags'].apply(clean_text) + ' ' +
+        df_bookmarked['description'].apply(clean_text)
     )
 
     # Vectorize text using TF-IDF
     tfidf = TfidfVectorizer(stop_words='english')
     X_all = tfidf.fit_transform(df_all_places['combined_text'])
-    X_combined = tfidf.transform(df_combined['combined_text'])
 
-    # Create a query vector by averaging the TF-IDF vectors of combined places
-    query_vector = X_combined.mean(axis=0)
+    # Create a query vector by averaging the TF-IDF vectors of bookmarked places
+    X_bookmarked = tfidf.transform(df_bookmarked['combined_text'])
+    query_vector = X_bookmarked.mean(axis=0)
     query_vector_array = np.asarray(query_vector).reshape(1, -1)
 
     # Fit the NearestNeighbors model
-    knn = NearestNeighbors(n_neighbors=min(16, len(df_all_places)), metric='cosine')
+    knn = NearestNeighbors(n_neighbors=min(16, len(all_places)), metric='cosine')
     knn.fit(X_all)
 
     # Find nearest neighbors
     distances, indices = knn.kneighbors(query_vector_array)
 
+    # Print user ID and bookmarked places
+    print(f"\nUser ID: {user_id}")
+    print("Bookmarked PlaceIDs:")
+    for place_id in user_bookmarks:
+        print(f"  - {place_id}")
+
     # Prepare recommendations
     recommendations = []
     for distance, index in zip(distances[0], indices[0]):
         place = df_all_places.iloc[index]
-        if place['placeID'] not in all_user_places:  # Exclude already bookmarked or interacted places
+        if place['placeID'] not in user_bookmarks:  # Exclude already bookmarked places
             recommendations.append({
                 "placeID": place['placeID'],
                 "name": place['name'],
