@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Modal } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { Poster, HeaderWithCart, Button } from '../../../../components';
 import { getDatabase, ref, onValue, get } from 'firebase/database';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
@@ -43,7 +43,6 @@ const DetailsPlaces = () => {
     try {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
-        // .replace('{location}', itineraryData?.locationInfo?.name || '')
         .replace('{location}', 'Kuala Lumpur, Malaysia')
         .replace('{departure}',  'Penang, Malaysia')
         .replace('{places}', itineraryData?.places || '')
@@ -248,7 +247,7 @@ const DetailsPlaces = () => {
       >
         <View className="flex-1 justify-end">
           <View className="bg-white p-5 rounded-t-lg">
-            <Text className="text-lg font-ksemibold mb-3">Your Itinerary</Text>
+            <Text className="text-lg font-ksemibold mb-3">Your Pick</Text>
             {cart.length === 0 ? (
               <Text>No places added yet</Text>
             ) : (
