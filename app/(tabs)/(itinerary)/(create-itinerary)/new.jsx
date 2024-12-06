@@ -39,7 +39,7 @@ const NewItinerary = () => {
         totalNoOfDays: totalNoOfDays+1
       });
       console.log(itineraryData);
-      router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')
+      router.push('(tabs)/(itinerary)/(create-itinerary)/traveler')
     }
     
     const handleTripNameChange = (value) => {

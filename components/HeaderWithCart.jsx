@@ -12,7 +12,7 @@ const HeaderWithCart = ({ onCartPress }) => {
   };
 
   return (
-    <View className="flex-row items-center mx-5 mt-6 justify-between">
+    <View className="flex-row items-center mx-6 justify-between">
       <TouchableOpacity onPress={handleBack} style={{  marginTop: 5 }}>
         <Image source={icons.left} style={{ width: 24, height: 24, tintColor: '#000' }} />
       </TouchableOpacity>
