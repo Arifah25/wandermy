@@ -399,7 +399,7 @@ const CreateAttraction = () => {
           textColor="text-primary"
           />
           <Button 
-          title="POST"
+          title="Submit"
           handlePress={handlePost}
           style="bg-primary w-2/5"
           textColor="text-white"/>
