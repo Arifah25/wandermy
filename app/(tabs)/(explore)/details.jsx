@@ -183,8 +183,8 @@ useEffect(() => {
   }, []);
   
    // Render details
-   const renderDetails = () => (
-    <View className="mt-1 mx-2 ">
+  const renderDetails = () => (
+    <View className="mx-2 ">
       {category !== 'event' && (
         <View className="mb-3 rounded-md bg-secondary">
           <TouchableOpacity
@@ -197,47 +197,25 @@ useEffect(() => {
       )}
       
       <View className="items-center mx-7 justify-center">
-        <View className="w-full items-start">
-          <Text className="text-lg font-ksemibold">Address :</Text>
-          <Text className="font-kregular">{address}</Text>
-        </View>
-
-        {category === 'event' ? (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Event date & time :</Text>
-            <Text className="font-kregular">
-              {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
-            </Text>
-          </View>
-        ) : (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Operating Hours :</Text>
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-              <View key={index} className="flex-row">
-                <Text className="w-1/3 font-kregular">{day}</Text>
-                {hour[index]?.isOpen ? (
-                  <Text className="w-2/3 font-kregular text-right">
-                    {hour[index].openingTime} - {hour[index].closingTime}
-                  </Text>
-                ) : (
-                  <Text className="text-right w-[30%] font-kregular">Closed</Text>
-                )}
-              </View>
-            ))}
-          </View>
-        )}         
-
-        <View className="w-full items-start">
-          <Text className="text-lg font-ksemibold">Contact Number :</Text>
-          <Text className="font-kregular">{contactNum}</Text>
-        </View>
-
         {category === 'event'? (
           <View className="w-full items-start mt-3">
             <View >
               <Text className="text-lg font-ksemibold">Description :</Text>
               <Text className="font-kregular">{description}</Text>
             </View>
+
+            <View className="w-full items-start mt-3">
+              <Text className="text-lg font-ksemibold">Event date & time :</Text>
+              <Text className="font-kregular">
+                {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
+              </Text>
+            </View>
+
+            <View className="w-full items-start">
+              <Text className="text-lg font-ksemibold">Contact Number :</Text>
+              <Text className="font-kregular">{contactNum}</Text>
+            </View>
+
             <View className="w-full items-start mt-3">
               <Text className="text-lg font-ksemibold">Admission Fee:</Text>
               {admissionType === 'free' ? (
@@ -257,7 +235,6 @@ useEffect(() => {
                     style={{
                       width: '100%', // Make it occupy full width
                       aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
-                      marginTop: 10,
                       marginBottom: 10, // Add spacing between images
                     }}
                     resizeMode="contain"
@@ -274,6 +251,33 @@ useEffect(() => {
                  
         ):category === 'attraction' ? (
           <View className="w-full items-start mt-3">
+
+            <View className="w-full items-start">
+              <Text className="text-lg font-ksemibold">Address :</Text>
+              <Text className="font-kregular">{address}</Text>
+            </View>
+
+            <View className="w-full items-start mt-3">
+              <Text className="text-lg font-ksemibold">Operating Hours :</Text>
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+                <View key={index} className="flex-row">
+                  <Text className="w-1/3 font-kregular">{day}</Text>
+                  {hour[index]?.isOpen ? (
+                    <Text className="w-2/3 font-kregular text-right">
+                      {hour[index].openingTime} - {hour[index].closingTime}
+                    </Text>
+                  ) : (
+                    <Text className="text-right w-[30%] font-kregular">Closed</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+
+            <View className="w-full items-start">
+              <Text className="text-lg font-ksemibold">Contact Number :</Text>
+              <Text className="font-kregular">{contactNum}</Text>
+            </View>
+
             <View className="w-full items-start mt-3">
               <Text className="text-lg font-ksemibold">Admission Fee:</Text>
               {admissionType === 'free' ? (
@@ -287,7 +291,6 @@ useEffect(() => {
                     style={{
                       width: '100%', // Make it occupy full width
                       aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
-                      marginTop: 10,
                       marginBottom: 10, // Add spacing between images
                     }}
                     resizeMode="contain"
@@ -306,6 +309,33 @@ useEffect(() => {
 
         ) : category === 'dining' ? (
           <View className="w-full items-start mt-3">
+
+            <View className="w-full items-start">
+              <Text className="text-lg font-ksemibold">Address :</Text>
+              <Text className="font-kregular">{address}</Text>
+            </View>
+
+            <View className="w-full items-start mt-3">
+              <Text className="text-lg font-ksemibold">Operating Hours :</Text>
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+                <View key={index} className="flex-row">
+                  <Text className="w-1/3 font-kregular">{day}</Text>
+                  {hour[index]?.isOpen ? (
+                    <Text className="w-2/3 font-kregular text-right">
+                      {hour[index].openingTime} - {hour[index].closingTime}
+                    </Text>
+                  ) : (
+                    <Text className="text-right w-[30%] font-kregular">Closed</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+
+            <View className="w-full items-start">
+              <Text className="text-lg font-ksemibold">Contact Number :</Text>
+              <Text className="font-kregular">{contactNum}</Text>
+            </View>
+
             <Text className="text-lg font-ksemibold">Menu :</Text>
             {placeData.price_or_menu && placeData.price_or_menu.length > 0 ? (
               <View className="w-full">
@@ -316,7 +346,6 @@ useEffect(() => {
                   style={{
                     width: '100%', // Make it occupy full width
                     aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
-                    marginTop: 10,
                     marginBottom: 10, // Add spacing between images
                   }}
                   resizeMode="contain"
@@ -401,14 +430,21 @@ useEffect(() => {
   return (
     <View className="h-full items-center">
       <ScrollView className=" w-full">
-       <View className="m-5">
-        <Poster image={poster} />
-        <Text className="mt-3 ml-3 font-kregular text-xl">{name}</Text>
-
-          {category !== 'event' && (
-            <DetailTab activeTab={activeTab} setActiveTab={setActiveTab} />
-            
+        <View className="m-5">
+          {category === 'event' ? (
+            <Image
+              source={{ uri: poster }}
+              className="w-full h-auto rounded-lg bg-secondary"
+              style={{ aspectRatio: 1 }}
+            />
+          ) : (
+            <Poster image={poster} />
           )}
+            <Text className="mt-4 ml-3 font-kbold text-3xl">{name}</Text>
+
+            {category !== 'event' && (
+              <DetailTab activeTab={activeTab} setActiveTab={setActiveTab} />
+            )}
 
           <View>
             {activeTab === 'details' ? renderDetails() : renderReview()}

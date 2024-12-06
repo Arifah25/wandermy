@@ -129,6 +129,21 @@ const CreateAttraction = () => {
   };
 
   const handlePost = async () => {
+    // Validate required fields
+    if (
+      !posterImages.length ||
+      !form.name.trim() ||
+      !form.address.trim() ||
+      !form.contactNum.trim() ||
+      !form.admissionType.trim() ||
+      form.operatingHours.some(
+        (day) => day.isOpen && (!day.openingTime || !day.closingTime)
+      ) ||
+      !form.tags.trim()
+    ) {
+      alert("Please fill all the required(*) fields.");
+      return; // Prevent submission
+    }
     setIsSubmitting(true);
     try {
       // Upload images and get the URLs
@@ -224,13 +239,11 @@ const CreateAttraction = () => {
            placeholderText="Select your preferred location on the map"
           />
         </Modal>
-        <View
-        className="my-5"
-        >
+        <View className="my-5">
           <Text
           className="font-kregular text-xl"
           >
-            Poster :
+            Poster* :
           </Text>
           {/* image picker for poster */}
           <AddPhoto
@@ -240,14 +253,14 @@ const CreateAttraction = () => {
           />
         </View>
         <CreateForm 
-        title="Attraction name :"
+        title="Attraction name* :"
         value={form.name}
         handleChangeText={(e) => setForm({ ...form, name: e })}      />
         <View
         className="items-center mb-5"
         >
           <CreateForm
-          title="Address :"
+          title="Address* :"
           value={form.address}
           tags="true"
           handleChangeText={(e) => setForm({ ...form, address: e })}       
@@ -269,13 +282,17 @@ const CreateAttraction = () => {
         keyboardType="url"
         />
         <CreateForm 
-        title="Contact Number :"
+        title="Contact Number* :"
         value={form.contactNum}
         handleChangeText={(e) => setForm({ ...form, contactNum: e })}
         keyboardType="phone-pad"
         />
-          {/* Operating Hours with Open/Close toggle */}
+        
+        {/* Operating Hours with Open/Close toggle */}
         <View className="w-full">
+          <Text className="font-kregular text-xl mb-3">
+            Operating Hours* :
+          </Text>
         {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
           <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
             <View className="flex-row items-center w-1/3 justify-start mb-2">
@@ -305,7 +322,7 @@ const CreateAttraction = () => {
         </View>
         {/* Admission Type Section */}
         <View className="mb-5">
-          <Text className="font-kregular text-xl">Admission Type:</Text>
+          <Text className="font-kregular text-xl">Admission Type* :</Text>
           <View className="flex-row items-center mt-2">
             {/* Free Admission */}
             <TouchableOpacity
@@ -384,7 +401,7 @@ const CreateAttraction = () => {
           </View>
         )}
         <CreateForm 
-        title="Tags :"
+        title="Tags* :"
         value={form.tags}
         handleChangeText={(e) => setForm({ ...form, tags: e })}
         keyboardType="default"
@@ -399,7 +416,7 @@ const CreateAttraction = () => {
           textColor="text-primary"
           />
           <Button 
-          title="POST"
+          title="Submit"
           handlePress={handlePost}
           style="bg-primary w-2/5"
           textColor="text-white"/>

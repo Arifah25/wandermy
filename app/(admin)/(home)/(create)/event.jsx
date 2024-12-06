@@ -6,7 +6,6 @@ import { getDatabase, ref, push, set } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
-
 const CreateEvent = () => {
   
   // Use the useRouter hook to get the router object for navigation
@@ -105,6 +104,20 @@ const CreateEvent = () => {
   
 
   const handlePost = async () => {
+    if (
+      !form.name.trim() ||
+      !posterImages.length ||
+      !form.description.trim() ||
+      !form.startDate.trim() ||
+      !form.endDate.trim() ||
+      !form.contactNum.trim() ||
+      !form.address.trim() ||
+      !form.admissionType.trim() ||
+      !form.tags.trim()
+    ) {
+      alert("Please fill in all the required(*) fields.");
+      return; // Prevent submission
+    }
     setIsSubmitting(true);
     try {
       // Upload images and get the URLs
@@ -402,7 +415,7 @@ const CreateEvent = () => {
           textColor="text-primary"
           />
           <Button 
-          title="POST"
+          title="Submit"
           handlePress={handlePost}
           style="bg-primary w-2/5"
           textColor="text-white"/>

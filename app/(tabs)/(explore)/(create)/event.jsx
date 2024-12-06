@@ -1,13 +1,13 @@
-import { View, Text, ScrollView, Modal, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, Modal, Switch } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
-import { AddPhoto, Button, CreateForm, DateField, Map, TimeField, } from '../../../../components'
+import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../../components'
 import { getDatabase, ref, push, set } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
-const CreateEvent = () => {
+const CreateDining = () => {
   
   // Use the useRouter hook to get the router object for navigation
   const router = useRouter();
@@ -18,7 +18,7 @@ const CreateEvent = () => {
   const auth = getAuth();
   const userId = auth.currentUser.uid;
 
-  // Initialize state variables for attributes in event
+  // Initialize state variables for attributes in dining
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newPlaceRef, setNewPlaceRef] = useState(null);
@@ -33,33 +33,27 @@ const CreateEvent = () => {
     price: [],
     poster: [], 
     tags: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    startTime: '',
-    endTime: '',
-    admissionType: 'free', // Default is Free Admission
-    feeAmount: '', // Fee amount field
+    operatingHours: [
+      { dayOfWeek: 'MON', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'TUE', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'WED', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'THU', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'FRI', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'SAT', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+      { dayOfWeek: 'SUN', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
+    ],
   });
 
   // Store selected images in state
   const [posterImages, setPosterImages] = useState([]);
   const [priceImages, setPriceImages] = useState([]);
 
-  const handleAdmissionTypeChange = (type) => {
-    setForm((prevForm) => ({
-      ...prevForm,
-      admissionType: type,
-      feeAmount: type === 'free' ? '' : prevForm.feeAmount, // Clear feeAmount if 'free'
-    }));
-  };
-  
   const uploadImages = async (images, folderName) => {
     const storage = getStorage();
     const uploadedUrls = [];
     
     for (const uri of images) {
-      const storageRef1 = storageRef(storage, `places/event/${placeID}/${folderName}/${new Date().toISOString()}`);
+      const storageRef1 = storageRef(storage, `places/dining/${placeID}/${folderName}/${new Date().toISOString()}`);
       const response = await fetch(uri);
       const blob = await response.blob();
       
@@ -103,13 +97,49 @@ const CreateEvent = () => {
     generatePlaceID();
   }, []);
   
+  const handleChangeOpeningTime = (dayOfWeek, time) => {
+    const updatedOperatingHours = form.operatingHours.map((day) =>
+      day.dayOfWeek === dayOfWeek ? { ...day, openingTime: time } : day
+    );
+    // 
+    setForm({ ...form, operatingHours: updatedOperatingHours });
+  };
+
+  const handleChangeClosingTime = (dayOfWeek, time) => {
+    const updatedOperatingHours = form.operatingHours.map((day) =>
+      day.dayOfWeek === dayOfWeek ? { ...day, closingTime: time } : day
+    );
+    setForm({ ...form, operatingHours: updatedOperatingHours });
+  };
+
+  const handleToggleDayOpen = (dayOfWeek) => {
+    const updatedOperatingHours = form.operatingHours.map((day) =>
+      day.dayOfWeek === dayOfWeek ? { ...day, isOpen: !day.isOpen } : day
+    );
+    setForm({ ...form, operatingHours: updatedOperatingHours });
+  };
 
   const handlePost = async () => {
+    // Validate required fields
+    if (
+      !posterImages.length ||
+      !form.name.trim() ||
+      !form.address.trim() ||
+      !form.contactNum.trim() ||
+      !form.admissionType.trim() ||
+      form.operatingHours.some(
+        (day) => day.isOpen && (!day.openingTime || !day.closingTime)
+      ) ||
+      !form.tags.trim()
+    ) {
+      alert("Please fill all the required(*) fields.");
+      return; // Prevent submission
+    }
     setIsSubmitting(true);
     try {
       // Upload images and get the URLs
       const posterUrls = await uploadImages(posterImages, 'poster');
-      const priceUrls = await uploadImages(priceImages, 'price');
+      const priceUrls = await uploadImages(priceImages, 'menu');
 
       const placeData = {
         placeID,
@@ -117,28 +147,27 @@ const CreateEvent = () => {
         latitude: form.latitude,
         longitude: form.longitude,
         address: form.address,
+        websiteLink: form.websiteLink,
         contactNum: form.contactNum,
         poster: posterUrls, // Use uploaded URLs
         price_or_menu: priceUrls,
         tags: form.tags,
-        description: form.description,
-        category: 'event',
+        category: 'dining',
         status: 'pending',
         user: userId,
-        admissionType: form.admissionType,
-        feeAmount: form.admissionType === 'paid' ? form.feeAmount : 'Free',
       };
       await set(newPlaceRef, placeData);
 
       // Save opening hours
-      const eventRef = ref(db, `event/${placeID}`);
-      
-        await set(eventRef, {
-          startDate: form.startDate,
-          endDate: form.endDate,
-          startTime: form.startTime,
-          endTime: form.endTime,
+      form.operatingHours.forEach(async (day) => {
+        const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
+        await set(operatingHoursRef, {
+          // dayOfWeek: day.dayOfWeek,
+          isOpen: day.isOpen,
+          openingTime: day.isOpen ? day.openingTime : 'null',
+          closingTime: day.isOpen ? day.closingTime : null,
         });
+      });
 
       setIsSubmitting(false);
       console.log('uploaded');
@@ -181,6 +210,7 @@ const CreateEvent = () => {
     setForm({ ...form, price: [...form.price, ...imageURLs] }); // Append multiple image URLs
   };
   
+  
   return (
     // <SafeAreaView>
       <ScrollView
@@ -203,7 +233,7 @@ const CreateEvent = () => {
           <Text
           className="font-kregular text-xl"
           >
-            Poster :
+            Poster* :
           </Text>
           {/* image picker for poster */}
           <AddPhoto
@@ -212,75 +242,15 @@ const CreateEvent = () => {
             isLoading={isSubmitting}
           />
         </View>
-        
         <CreateForm 
-        title="Event name :"
+        title="Restaurant name* :"
         value={form.name}
-        handleChangeText={(e) => setForm({ ...form, name: e })}      
-        />
-
-        <CreateForm
-          title="Description of the event :" 
-          value={form.description}
-          handleChangeText={(e) => setForm({ ...form, description: e })}
-          keyboardType="default"
-          tags="true"
-        /> 
-
-        <View className="mb-5">
-          {/* <Text className="font-kregular text-xl">
-            When does the event start and end ? 
-          </Text> */}
-          <View 
-          className="flex-row justify-start my-5 items-center"
-          >
-            <Text
-            className="w-14 text-lg font-kregular">
-              Date :
-            </Text>
-            <View className="w-4/5 flex-row justify-evenly">
-              <DateField 
-              placeholder="Start Date"
-              value={form.startDate}
-              handleChangeText={(e) => setForm({ ...form, startDate: e })}
-              />
-              <DateField 
-              placeholder="End Date"
-              value={form.endDate}
-              handleChangeText={(e) => setForm({ ...form, endDate: e })}
-              />
-            </View>
-          </View>
-          <View className="flex-row justify-start items-center">
-          <Text
-            className="w-14 text-lg font-kregular">
-              Time :
-            </Text>
-            <View className="w-4/5 flex-row justify-evenly">
-              <TimeField 
-              placeholder="Start Time"
-              value={form.startTime}
-              handleChangeText={(e) => setForm({ ...form, startTime: e })}
-              />
-              <TimeField 
-              placeholder="End Time"
-              value={form.endTime}
-              handleChangeText={(e) => setForm({ ...form, endTime: e })}
-              />
-            </View>
-          </View>
-        </View>
-        
-        <CreateForm 
-          title="Contact Information :"
-          value={form.contactNum}
-          handleChangeText={(e) => setForm({ ...form, contactNum: e })}
-          // keyboardType="phone-pad"
-          />
-
-        <View className="items-center mb-5">
+        handleChangeText={(e) => setForm({ ...form, name: e })}      />
+        <View
+        className="items-center mb-5"
+        >
           <CreateForm
-          title="Address :"
+          title="Address* :"
           value={form.address}
           tags="true"
           handleChangeText={(e) => setForm({ ...form, address: e })}       
@@ -293,89 +263,59 @@ const CreateEvent = () => {
           textColor="text-black ml-5"
           location="true"
           />
+
         </View>
+        <CreateForm 
+        title="Website Link (if any) :"
+        value={form.websiteLink}
+        handleChangeText={(e) => setForm({ ...form, websiteLink: e })}
+        keyboardType="url"
+        />
+        <CreateForm 
+        title="Contact Number* :"
+        value={form.contactNum}
+        handleChangeText={(e) => setForm({ ...form, contactNum: e })}
+        keyboardType="phone-pad"
+        />
+          {/* Operating Hours with Open/Close toggle */}
+        <View className="w-full">
+          <Text className="font-kregular text-xl mb-3">
+            Operating Hours* :
+          </Text>
+        {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
+          <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
+            <View className="flex-row items-center w-1/3 justify-start mb-2">
+              <Text className="text-base font-semibold w-1/3">{dayOfWeek}</Text>
+              <Switch 
+                value={isOpen}
+                onValueChange={() => handleToggleDayOpen(dayOfWeek)}
+                label={isOpen ? 'Open' : 'Close'}
+              />
+            </View>
 
-        {/* Radio Buttons for Admission Type */}
-        <View className="mb-5">
-          <Text className="font-kregular text-xl">Admission Type:</Text>
-          <View className="flex-row items-center mt-2">
-            <TouchableOpacity
-              onPress={() => handleAdmissionTypeChange('free')}
-              style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20 }}
-            >
-              <View
-                style={{
-                  height: 20,
-                  width: 20,
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  borderColor: '#A91D1D',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 8,
-                }}
-              >
-                {form.admissionType === 'free' && (
-                  <View
-                    style={{
-                      height: 10,
-                      width: 10,
-                      borderRadius: 5,
-                      backgroundColor: '#A91D1D',
-                    }}
-                  />
-                )}
+            {isOpen && (
+              <View className="flex-row justify-evenly items-center">
+                <TimeField
+                  value={openingTime}
+                  handleChangeText={(time) => handleChangeOpeningTime(dayOfWeek, time)}
+                />
+                <Text className="mx-3">-</Text>
+                <TimeField
+                  value={closingTime}
+                  handleChangeText={(time) => handleChangeClosingTime(dayOfWeek, time)}
+                />
               </View>
-              <Text>Free Admission</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleAdmissionTypeChange('paid')}
-              style={{ flexDirection: 'row', alignItems: 'center' }}
-            >
-              <View
-                style={{
-                  height: 20,
-                  width: 20,
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  borderColor: '#A91D1D',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 8,
-                }}
-              >
-                {form.admissionType === 'paid' && (
-                  <View
-                    style={{
-                      height: 10,
-                      width: 10,
-                      borderRadius: 5,
-                      backgroundColor: '#A91D1D',
-                    }}
-                  />
-                )}
-              </View>
-              <Text>Paid Admission</Text>
-            </TouchableOpacity>
+            )}
           </View>
+        ))}
         </View>
-
-        {/* Conditional Fee Amount Input */}
-        {form.admissionType === 'paid' && (
-          <View className="mb-5">
-            <CreateForm
-              title="Fee Amount:"
-              value={form.feeAmount}
-              handleChangeText={(e) => setForm({ ...form, feeAmount: e })}
-              keyboardType="default"
-            />
-          </View>
-        )}
-        
-        <View className="mb-5">
-          <Text className="font-kregular text-xl">
-            Infographics (Optional) :
+        <View
+        className="mb-5"
+        >
+          <Text
+          className="font-kregular text-xl"
+          >
+            Menu :
           </Text>
           {/* image picker for price */}
           <AddPhoto
@@ -384,10 +324,10 @@ const CreateEvent = () => {
             setImages={setPriceImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
+
         </View>
-        
         <CreateForm 
-        title="Tags :"
+        title="Tags* :"
         value={form.tags}
         handleChangeText={(e) => setForm({ ...form, tags: e })}
         keyboardType="default"
@@ -412,4 +352,4 @@ const CreateEvent = () => {
   )
 }
 
-export default CreateEvent
+export default CreateDining
