@@ -49,7 +49,7 @@ const SelectBudget = () => {
       title="Next"
       textColor="text-white"
       style="bg-primary w-3/4 mt-5"
-      handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/reviewiti')}
+      handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/reviewdetails')}
       />
     </View>
     )

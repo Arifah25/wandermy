@@ -9,6 +9,7 @@ import SelectBudget from './budget';
 import ChoosePlaces from './choose-places';
 import DetailsPlaces from './place-details';
 import ReviewDetails from './reviewdetails';
+import ReviewItinerary from './review-itinerary';
 
 const Stack = createNativeStackNavigator();
 
@@ -94,6 +95,13 @@ const CreateItineraryLayout = () => {
             <Stack.Screen
                 name='place-details'
                 component={DetailsPlaces}
+                options={{
+                    headerShown: false,
+                }}
+            />
+             <Stack.Screen
+                name='review-itinerary'
+                component={ReviewItinerary}
                 options={{
                     headerShown: false,
                 }}

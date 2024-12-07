@@ -77,7 +77,7 @@ const DetailsPlaces = () => {
         itineraryData: response,
       });
       clearCart();
-      router.push('(tabs)/(itinerary)/');
+      router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
     } catch (error) {
       console.error('Error generating itinerary:', error);
     } finally {

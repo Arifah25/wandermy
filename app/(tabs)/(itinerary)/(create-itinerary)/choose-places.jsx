@@ -172,7 +172,7 @@ const ChoosePlaces = () => {
         itineraryData: response,
       });
       clearCart();
-      router.push('(tabs)/(itinerary)/index');
+      router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
     } catch (error) {
       console.error('Error generating itinerary:', error);
     } finally {
