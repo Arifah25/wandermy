@@ -43,7 +43,7 @@ const MyItinerary = () => {
   }
 
   return (
-    <SafeAreaView className="bg-white h-full flex-1 p-5 justify-start">
+    <View className="bg-white h-full flex-1 p-5 justify-start">
       {loading && <ActivityIndicator size={'large'} color={'#000'} />}
       {itinerary?.length == 0 ? (
         <View>
@@ -78,7 +78,7 @@ const MyItinerary = () => {
       >
         <Image source={icons.plus} tintColor="#fff" className="w-7 h-7" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   )
 }
 

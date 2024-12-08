@@ -10,6 +10,7 @@ import { chatSession } from '../../../../configs/AImodule';
 import { setDoc, doc } from 'firebase/firestore';
 import { auth, firestore } from '../../../../configs/firebaseConfig';
 import { icons } from '../../../../constants';
+import moment from 'moment';
 
 const ChoosePlaces = () => {
   const [places, setPlaces] = useState([]);

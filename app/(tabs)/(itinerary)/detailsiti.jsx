@@ -16,6 +16,7 @@ const ItineraryDetails = () => {
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(null);
   const router = useRouter();
+  const [posterUrls, setPosterUrls] = useState({});
 
   useEffect(() => {
     const fetchItinerary = async () => {
@@ -38,6 +39,26 @@ const ItineraryDetails = () => {
 
     fetchItinerary();
   }, [docId]);
+
+  useEffect(() => {
+    const fetchPosterUrls = async () => {
+      const db = getDatabase();
+      const newPosterUrls = {};
+
+      sortedDays.forEach((day) => {
+        itineraryData.itinerary[day].forEach((item) => {
+          const posterRef = ref(db, `places/${item.placeID}/poster `);
+          onValue(posterRef, (snapshot) => {
+            const url = snapshot.val();
+            newPosterUrls[item.placeID] = url;
+            setPosterUrls((prevUrls) => ({ ...prevUrls, [item.placeID]: url }));
+          });
+        });
+      });
+    };
+
+    fetchPosterUrls();
+  }, [itineraryData]);
 
   const renderTransportRecommendation = useMemo(() => {
     if (!itineraryData) return null;
@@ -106,13 +127,17 @@ const ItineraryDetails = () => {
             {itineraryData.itinerary[day].map((item, index) => (
               <View key={index} className="rounded-lg border mb-5 p-2 flex-row items-center">
                 <View className="mx-3">
+                {posterUrls[item.placeID] ? (
+                  <Image source={{ uri: posterUrls[item.placeID] }} style={{ width: 100, height: 100 }} />
+                ) : (
                   <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
+                )}
                 </View>
                 <View className="w-3/5">
                   <Text className="font-kregular text-lg">{item.place}</Text>
                   <Text className="font-kregular text-sm">{item.activities}</Text>
                   <Text className="font-kregular text-sm">{item.time}</Text>
-                  <Text className="font-kregular text-sm">💸 {item.budget} per person</Text>
+                  <Text className="font-kregular text-sm">💸 {item.budget} </Text>
                   <Text className="font-kregular text-sm text-right">⏱️ {item.hoursToSpend} hours</Text>
                 </View>
               </View>

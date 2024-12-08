@@ -62,7 +62,7 @@ const ReviewItinerary = () => {
         <Text className="text-lg font-kregular mt-3">🏨 Hotel Recommendation:</Text>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {itineraryData.accommodation.map((item, index) => (
-            <View key={index} className="mr-3 border border-secondary rounded-lg mt-2">
+            <View key={index} className="mx-3 border border-secondary rounded-lg mt-2">
               <View className="items-center bg-secondary rounded-lg ">
                 <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
               </View>
@@ -96,7 +96,7 @@ const ReviewItinerary = () => {
                   <Text className="font-kregular text-lg">{item.place}</Text>
                   <Text className="font-kregular text-sm">{item.activities}</Text>
                   <Text className="font-kregular text-sm">{item.time}</Text>
-                  <Text className="font-kregular text-sm">💸 {item.budget} per person</Text>
+                  <Text className="font-kregular text-sm">💸 {item.budget} </Text>
                   <Text className="font-kregular text-sm text-right">⏱️ {item.hoursToSpend} hours</Text>
                 </View>
               </View>
@@ -130,7 +130,7 @@ const ReviewItinerary = () => {
         {renderTransportRecommendation}
         {renderHotelRecommendation}
         {renderItinerary}
-        <View className="flex-row justify-between mt-5">
+        <View className="flex-row justify-evenly mt-5">
             <TouchableOpacity
               onPress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')}
               className="bg-primary h-10 rounded-md items-center justify-center w-1/3"
@@ -138,7 +138,7 @@ const ReviewItinerary = () => {
               <Text className="text-white font-kregular text-sm">Edit</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => router.push('(tabs)/(itinerary)/index')}
+              onPress={() => router.push('(tabs)/(itinerary)/')}
               className="bg-primary h-10 rounded-md items-center justify-center w-1/3"
             >
               <Text className="text-white font-kregular text-sm">Done</Text>

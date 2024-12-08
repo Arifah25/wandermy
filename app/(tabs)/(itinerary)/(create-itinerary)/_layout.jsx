@@ -27,7 +27,7 @@ const CreateItineraryLayout = () => {
 
     return (
         <Stack.Navigator>
-            {/* <Stack.Screen
+            <Stack.Screen
                 name='index'
                 component={MyItinerary}
                 options={{
@@ -38,7 +38,7 @@ const CreateItineraryLayout = () => {
                     headerStyle: { backgroundColor: '#A91D1D', height: 95 },
                     headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
                     }}
-            /> */}
+            />
             <Stack.Screen
                 name="new"
                 component={NewItinerary}
