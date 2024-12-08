@@ -12,6 +12,7 @@ import { setDoc, doc } from 'firebase/firestore';
 import { auth, firestore } from '../../../../configs/firebaseConfig';
 import { icons } from '../../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import moment from 'moment';
 
 const DetailsPlaces = () => {
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ const DetailsPlaces = () => {
   const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
   const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
   const user = auth.currentUser;
-  
+
   const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude } = route.params;
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -33,35 +34,36 @@ const DetailsPlaces = () => {
     addToCart({ 
       placeID, 
       name, 
-      address, 
+      category,
+      address,
       latitude,
-      longitude, 
-      category
-     });
+      longitude,
+    });
   };
 
   const handleRemoveFromCart = (placeID) => {
     removeFromCart(placeID);
-  }
-
+  };
+  
   const handleGenerateItinerary = async () => {
-    setModalVisible(false)
+    setModalVisible(false);
     if (loading) return; // Prevent multiple executions while loading
     setLoading(true);
 
     const formattedPlaces = JSON.stringify(cart);
 
     console.log('Formatted Places:', formattedPlaces);
+
     try {
       const FINAL_PROMPT = AI_PROMPT
-      .replace('{tripName}', itineraryData?.tripName || '')
-      .replace('{destination}', 'Kuala Lumpur, Malaysia')
-      .replace('{origin}',  'Penang, Malaysia')
-      .replace('{places}', formattedPlaces || '')
-      .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
-      .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-      .replace('{traveler}', itineraryData?.traveler?.title || '')
-      .replace('{budget}', itineraryData?.budget?.title || '');
+        .replace('{tripName}', itineraryData?.tripName || '')
+        .replace('{destination}', 'Kuala Lumpur, Malaysia')
+        .replace('{origin}', 'Penang, Malaysia')
+        .replace('{places}', formattedPlaces || '')
+        .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
+        .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
+        .replace('{traveler}', itineraryData?.traveler?.title || '')
+        .replace('{budget}', itineraryData?.budget?.title || '');
 
       console.log('AI Prompt:', FINAL_PROMPT);
 
@@ -75,8 +77,10 @@ const DetailsPlaces = () => {
         docId: docId,
         userEmail: user?.email,
         itineraryData: response,
+        startDate: moment(itineraryData?.startDate).format('DD MMM '),
+        endDate: moment(itineraryData?.endDate).format('DD MMM ')
       });
-      clearCart();
+      // clearCart();
       router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
     } catch (error) {
       console.error('Error generating itinerary:', error);
@@ -123,8 +127,8 @@ const DetailsPlaces = () => {
       const eventRef = ref(db, `event/${placeID}`);
       const snapshot = await get(eventRef);
       const eventData = snapshot.exists() ? snapshot.val() : {};
-      setEvent(eventData);
-      setLoading(false);
+        setEvent(eventData);
+        setLoading(false);
     };
 
     if (category === 'event') fetchEvent();
@@ -227,7 +231,7 @@ const DetailsPlaces = () => {
   );
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#A91D1D" />;
+    return <ActivityIndicator size="large" color="#000" />;
   }
 
   return (
@@ -240,10 +244,10 @@ const DetailsPlaces = () => {
 
           <View>
             {renderDetails()}
-          </View>
+        </View>
 
           
-       </View>
+        </View>
       </ScrollView>
       <TouchableOpacity
         onPress={handleAddToCart}
@@ -284,7 +288,7 @@ const DetailsPlaces = () => {
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
               className=" absolute top-6 right-6"
-              >
+            >
                 <Image source={icons.close} className="w-5 h-5 align-top"/>
             </TouchableOpacity>
           </View>

@@ -147,12 +147,16 @@ const ChoosePlaces = () => {
     if (loading) return; // Prevent multiple executions while loading
     setLoading(true);
 
+    const formattedPlaces = JSON.stringify(cart);
+
+    console.log('Formatted Places:', formattedPlaces);
+
     try {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
         .replace('{destination}', 'Kuala Lumpur, Malaysia')
         .replace('{origin}',  'Penang, Malaysia')
-        .replace('{places}', itineraryData?.places || '')
+        .replace('{places}', formattedPlaces || '')
         .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
         .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
         .replace('{traveler}', itineraryData?.traveler?.title || '')
@@ -170,8 +174,10 @@ const ChoosePlaces = () => {
         docId: docId,
         userEmail: user?.email,
         itineraryData: response,
+        startDate: moment(itineraryData?.startDate).format('DD MMM '),
+        endDate: moment(itineraryData?.endDate).format('DD MMM ')
       });
-      clearCart();
+      // clearCart();
       router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
     } catch (error) {
       console.error('Error generating itinerary:', error);
@@ -238,7 +244,7 @@ const ChoosePlaces = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View className="flex-1 justify-end mb-7 p-1 ">
+        <View className="flex-1 justify-end  p-1 ">
           <View className="bg-white p-5 rounded-t-lg border-t-2 ">
             <Text className="text-lg font-ksemibold mb-3">Your Itinerary</Text>
             {cart.length === 0 ? (
@@ -258,8 +264,8 @@ const ChoosePlaces = () => {
                 title={loading ? 'Generating...' : 'Generate Itinerary'}
                 textColor="text-white"
                 style="bg-primary w-4/5 mt-5"
-                // handlePress={handleGenerateItinerary}
-                handlePress={console.log(cart)}
+                handlePress={handleGenerateItinerary}
+                // handlePress={console.log(cart)}
                 disabled={loading} // Disable button while loading
               />
             </View>

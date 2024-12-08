@@ -53,8 +53,8 @@ const ReviewDetails = () => {
             <View>
               <Text className="font-ksemibold text-base text-gray-400">Travel Date:</Text>
               <Text className="font-kregular text-base">
-                {moment(itineraryData?.startDate).format('DD MMM')} -{' '}
-                {moment(itineraryData?.endDate).format('DD MMM')} ({itineraryData?.totalNoOfDays} days)
+                {moment(itineraryData?.startDate).format('DD MMM ')} -{' '}
+                {moment(itineraryData?.endDate).format('DD MMM ')} ({itineraryData?.totalNoOfDays} days)
               </Text>
             </View>
           </View>

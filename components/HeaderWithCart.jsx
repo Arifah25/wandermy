@@ -17,7 +17,7 @@ const HeaderWithCart = ({ onCartPress }) => {
         <Image source={icons.left} style={{ width: 24, height: 24, tintColor: '#000' }} />
       </TouchableOpacity>
       <TouchableOpacity onPress={onCartPress} style={{  marginTop: 5 }}>
-    <Feather name="edit" size={24} color="black" />
+        <Feather name="edit" size={24} color="black" />
       </TouchableOpacity>
     </View>
   );

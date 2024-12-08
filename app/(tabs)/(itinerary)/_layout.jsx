@@ -37,7 +37,8 @@ const ItineraryLayout = () => {
       name="detailsiti"
       component={ItineraryDetails}
       options={{ 
-        headerTitle: 'Itinerary Crafting',
+        headerShown: false,
+        headerTitle: 'Itinerary',
         headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
         headerTitleAlign: 'center',
         headerStyle: { backgroundColor: '#A91D1D' },
