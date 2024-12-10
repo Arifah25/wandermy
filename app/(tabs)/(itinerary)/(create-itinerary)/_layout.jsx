@@ -10,6 +10,7 @@ import ChoosePlaces from './choose-places';
 import DetailsPlaces from './place-details';
 import ReviewDetails from './reviewdetails';
 import ReviewItinerary from './review-itinerary';
+import MyItinerary from '../index';
 
 const Stack = createNativeStackNavigator();
 
