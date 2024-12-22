@@ -47,7 +47,7 @@ const SearchPlace = () => {
       getDefaultValue={() => ''}
       query={{
         // available options: https://developers.google.com/places/web-service/autocomplete
-        key: 'AIzaSyASIQrA9EF_TCNoezobCyKCksCcW283mjU',
+        key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
         language: 'en', // language of the results
         // types: '(cities)', // default: 'geocode'
       }}
