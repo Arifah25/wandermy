@@ -55,6 +55,7 @@ const SearchPlace = () => {
         container: {
             width: '91.6667%',
             alignItems: 'center',
+            
           },
           textInputContainer: {
             width: '100%',
@@ -62,12 +63,13 @@ const SearchPlace = () => {
             borderWidth: 2,
             borderRadius: 6,
             textAlign: 'center',
+            alignItems: 'center',
           },
           description: {
             fontWeight: 'bold',
           },
           predefinedPlacesDescription: {
-            color: '#1faadb',
+            color: '#d9d9d9',
           },
           listView: {
             borderColor: '#d9d9d9',
@@ -76,7 +78,7 @@ const SearchPlace = () => {
             position: 'absolute', // Make sure the listView is positioned absolutely
             top: 49, // Adjust based on your layout
             zIndex: 9999, // High zIndex to ensure it appears on top of other components
-            elevation: 5, // For Android elevation
+            // elevation: 5, // For Android elevation
             backgroundColor: '#fff', // Ensure the background is white to overlay properly
             width: '100%', // Adjust width based on your needs
           },

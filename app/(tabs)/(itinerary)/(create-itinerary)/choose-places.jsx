@@ -199,7 +199,7 @@ const ChoosePlaces = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <HeaderWithCart onCartPress={() => setModalVisible(true)} />
+          <HeaderWithCart onCartPress={() => setModalVisible(true)} />
       <View className="flex-1 px-5">
         <View className="flex-row items-center mt-5 justify-center">
           <Search 
