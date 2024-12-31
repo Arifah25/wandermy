@@ -17,7 +17,6 @@ const workPlace = {
 
 const SearchPlace = () => {
     const {itineraryData, setItineraryData}=useContext(CreateItineraryContext);
-
     useEffect(() => {
         console.log(itineraryData); 
     }),[itineraryData]
@@ -47,7 +46,7 @@ const SearchPlace = () => {
       getDefaultValue={() => ''}
       query={{
         // available options: https://developers.google.com/places/web-service/autocomplete
-        key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        key: process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY,
         language: 'en', // language of the results
         // types: '(cities)', // default: 'geocode'
       }}
