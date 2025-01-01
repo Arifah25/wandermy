@@ -43,8 +43,8 @@ const ReviewDetails = () => {
             <Text className="text-3xl items-center justify-center w-1/6">📍</Text>
             <View>
               <Text className="font-ksemibold text-base text-gray-400">Destination:</Text>
-              {/* <Text className="font-kregular text-base">{itineraryData?.locationInfo?.name}</Text> */}
-              <Text className="font-kregular text-base">{itineraryData?.location}</Text>
+              <Text className="font-kregular text-base">{itineraryData?.locationInfo?.name}</Text>
+              {/* <Text className="font-kregular text-base">{itineraryData?.location}</Text> */}
             </View>
           </View>
           {/* Travel Date */}
@@ -81,8 +81,8 @@ const ReviewDetails = () => {
               title="Choose Places"
               textColor="text-white"
               style="bg-primary w-4/5 mt-5"
-              // handlePress={()=> router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')}
-              handlePress={console.log(itineraryData)}
+              handlePress={()=> router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')}
+              // handlePress={console.log(itineraryData)}
               // disabled={loading} // Disable button while loading
             />
           </View>

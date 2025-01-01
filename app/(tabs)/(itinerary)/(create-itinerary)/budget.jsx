@@ -1,6 +1,6 @@
 import { View, Text, FlatList } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, OptionCard } from '../../../../components';
+import { Button, OptionCard, SearchPlace } from '../../../../components';
 import { useNavigation, useRouter } from 'expo-router';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { SelectBudgetList } from '../../../../constants/option';
@@ -23,34 +23,7 @@ const SelectBudget = () => {
     <View
     className="bg-white flex-1 p-5 h-full items-center justify-start"
     >
-      <Text
-      className="text-3xl font-ksemibold text-center"
-      >
-        Choose your spending habits
-      </Text>
-      <View className="w-full mt-7">
-        <FlatList
-        data={SelectBudgetList}
-        renderItem={({item, index}) => (
-          <View className="items-center">
-            <TouchableOpacity
-            onPress={() => setSelectedBudget(item)}
-            >
-              <OptionCard 
-              option={item}
-              selected={selectedBudget}
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-        />
-      </View>
-      <Button
-      title="Next"
-      textColor="text-white"
-      style="bg-primary w-3/4 mt-5"
-      handlePress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/reviewdetails')}
-      />
+      <SearchPlace />
     </View>
     )
 }

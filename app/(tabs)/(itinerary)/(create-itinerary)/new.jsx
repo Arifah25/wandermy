@@ -72,14 +72,9 @@ const NewItinerary = () => {
 
   const renderContent = () => (
     <View className="bg-white">
-    <View className="m-5 flex-1 h-full items-center justify-start ">
-      <View className="w-full items-center">
-        <Text className="font-kregular text-xl">Select A Destination</Text>
-        <View className="w-full h-14 items-center mt-2 z-50 text-secondary">
-          <SearchPlace />
-        </View>
-      </View>
-      <View className="w-full items-center mt-5">
+    <View className="mx-5 flex-1 h-full items-center justify-start ">
+      
+      <View className="w-full items-center ">
         <Text className="font-kregular text-xl">Trip Name</Text>
         <View className="w-11/12 border-2 border-secondary rounded-md mt-2 h-14 p-3 justify-center focus:border-black">
           <TextInput
@@ -145,7 +140,7 @@ const NewItinerary = () => {
         <Button
           title="Start Crafting"
           textColor="text-white"
-          style="bg-primary mt-7 mb-10 w-3/5"
+          style="bg-primary mt-7 mb-40 w-3/5"
           handlePress={OnDateSelectionContinue}
         />
       </View>
@@ -154,11 +149,19 @@ const NewItinerary = () => {
   );
 
   return (
+    <View className="bg-white">
+      <View className="m-5 w-11/12 items-center">
+        <Text className="font-kregular text-xl">Select A Destination</Text>
+        <View className="w-full h-14 items-center mt-2 z-50 text-secondary">
+          <SearchPlace />
+        </View>
+      </View>
     <FlatList
       data={[{ key: 'content' }]}
       renderItem={renderContent}
       keyExtractor={(item) => item.key}
     />
+    </View>
   );
 };
 

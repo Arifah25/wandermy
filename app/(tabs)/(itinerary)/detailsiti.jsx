@@ -8,6 +8,7 @@ import { icons } from '../../../constants'
 import { Button } from '../../../components'
 import { useRouter } from 'expo-router'
 import Feather from '@expo/vector-icons/Feather';
+import { getDatabase, onValue, ref } from 'firebase/database'
 
 const ItineraryDetails = () => {
   const route = useRoute();
@@ -60,53 +61,63 @@ const ItineraryDetails = () => {
     fetchPosterUrls();
   }, [itineraryData]);
 
-  const renderTransportRecommendation = useMemo(() => {
-    if (!itineraryData) return null;
-    return (
-      <View>
-        <Text className="text-lg font-kregular mt-3">🚌 Transport Recommendation:</Text>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {itineraryData.publicTransport.map((item, index) => (
-            <View key={index} className="border border-secondary p-2 mx-2 rounded-lg mt-2">
-              <Text className="font-kregular">{item.mode}</Text>
-              <Text className="font-kregular">{item.route}</Text>
-              <Text className="font-kregular">Operator: {item.operator}</Text>
-              <Text className="font-kregular">Price: {item.estimatedPrice.min} - {item.estimatedPrice.max}</Text>
-              <View className="items-end">
-                <TouchableOpacity>
-                  <Text className="font-kregular text-blue-500">Book Now</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    );
-  }, [itineraryData]);
+  const testData = (placeID) => {
+    const db = getDatabase();
+    let url;
+    const posterRef = ref(db, `places/${placeID} `);
+          onValue(posterRef, (snapshot) => {
+            url = snapshot.val();
+          });
+    console.log(url);
+  }
 
-  const renderHotelRecommendation = useMemo(() => {
-    if (!itineraryData) return null;
-    return (
-      <View>
-        <Text className="text-lg font-kregular mt-3">🏨 Hotel Recommendation:</Text>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {itineraryData.accommodation.map((item, index) => (
-            <View key={index} className="mx-3 border border-secondary rounded-lg mt-2">
-              <View className="items-center bg-secondary rounded-lg ">
-                <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
+  const renderTransportRecommendation = useMemo(() => {
+      if (!itineraryData) return null;
+      return (
+        <View>
+          <Text className="text-lg font-kregular mt-3">🚌 Transport Recommendation:</Text>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            {itineraryData.publicTransport.map((item, index) => (
+              <View key={index} className="border border-secondary p-2 mx-2 rounded-lg mt-2" style={{ width: 200 }}>
+                <Text className="font-ksemibold">{item.mode}</Text>
+                <Text className="font-kregular">{item.route}</Text>
+                <Text className="font-kregular">Operator: {item.operator}</Text>
+                <Text className="font-kregular mb-6">Price: {item.estimatedPrice.min} - {item.estimatedPrice.max}</Text>
+                <View className="absolute right-2 bottom-2">
+                  <TouchableOpacity>
+                    <Text className="font-kregular text-blue-500">Book Now</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View className=" rounded-lg p-2 mt-2">
-                <Text className="font-kregular">{item.name}</Text>
-                <Text className="font-kregular">{item.location}</Text>
-                <Text className="font-kregular">{item.priceRange.min} - {item.priceRange.max}</Text>
-                <Text className="font-kregular text-right ">⭐ {item.rating}</Text>
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }, [itineraryData]);
+  
+    const renderHotelRecommendation = useMemo(() => {
+      if (!itineraryData) return null;
+      return (
+        <View>
+          <Text className="text-lg font-kregular mt-3">🏨 Hotel Recommendation:</Text>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            {itineraryData.accommodation.map((item, index) => (
+              <View key={index} className="mx-3 border border-secondary rounded-lg mt-2" style={{ width: 200 }}>
+                <View className="items-center bg-secondary rounded-lg">
+                  <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
+                </View>
+                <View className="rounded-lg p-2 mt-2">
+                  <Text className="font-kregular">{item.name}</Text>
+                  <Text className="font-kregular">{item.location}</Text>
+                  <Text className="font-kregular">{item.priceRange.min} - {item.priceRange.max}</Text>
+                  <Text className="font-kregular text-right">⭐ {item.rating}</Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    );
-  }, [itineraryData]);
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }, [itineraryData]);
 
   const renderItinerary = useMemo(() => {
     if (!itineraryData) return null;
@@ -125,7 +136,8 @@ const ItineraryDetails = () => {
           <View key={index}>
             <Text className="text-lg font-kregular mb-2">Day {index + 1}:</Text>
             {itineraryData.itinerary[day].map((item, index) => (
-              <View key={index} className="rounded-lg border mb-5 p-2 flex-row items-center">
+              <TouchableOpacity key={index} className="rounded-lg border mb-5 p-2 flex-row items-center"
+              onPress={testData(item.placeID)}>
                 <View className="mx-3">
                 {posterUrls[item.placeID] ? (
                   <Image source={{ uri: posterUrls[item.placeID] }} style={{ width: 100, height: 100 }} />
@@ -139,8 +151,9 @@ const ItineraryDetails = () => {
                   <Text className="font-kregular text-sm">{item.time}</Text>
                   <Text className="font-kregular text-sm">💸 {item.budget} </Text>
                   <Text className="font-kregular text-sm text-right">⏱️ {item.hoursToSpend} hours</Text>
+                  <TouchableOpacity><Text className="font-kregular text-sm text-right">🔎 Get Direction</Text></TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         ))}

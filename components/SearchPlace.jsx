@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { Image, Text } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 //import Geolocation from 'react-native-geolocation-service'; // or 'react-native-geolocation-service'
 import { CreateItineraryContext } from './../context/CreateItineraryContext';
@@ -17,11 +17,13 @@ const workPlace = {
 
 const SearchPlace = () => {
     const {itineraryData, setItineraryData}=useContext(CreateItineraryContext);
+
     useEffect(() => {
         console.log(itineraryData); 
     }),[itineraryData]
      
   return (
+    <View>
     <GooglePlacesAutocomplete
       placeholder='Search'
       minLength={2} // minimum length of text to search
@@ -33,7 +35,7 @@ const SearchPlace = () => {
       renderDescription={(row) => row.description} // custom description render
       onPress={(data, details = null) => {
         // 'details' is provided when fetchDetails = true
-        console.log(details);
+        console.log(data.description);
         setItineraryData({ ...itineraryData,
             locationInfo:{
                 name: data.description,
@@ -115,6 +117,7 @@ const SearchPlace = () => {
     //   predefinedPlaces={[homePlace, workPlace]}
       debounce={200} // debounce the requests in ms. Set to 0 to remove debounce. By default 0ms.
     />
+    </View>
   );
 };
 
