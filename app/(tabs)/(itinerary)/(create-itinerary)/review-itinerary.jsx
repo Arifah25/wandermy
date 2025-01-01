@@ -88,8 +88,8 @@ const ReviewItinerary = () => {
         {Object.keys(itineraryData.itinerary).map((day, index) => (
           <View key={index}>
             <Text className="text-lg font-kregular mb-2">Day {index + 1}:</Text>
-            {itineraryData.itinerary[day].map((item, index) => (
-              <View key={index} className="rounded-lg border mb-3 p-2 flex-row items-center">
+            {itineraryData.itinerary[day].map((item, itemIndex) => (
+              <View key={itemIndex} className="rounded-lg border mb-3 p-2 flex-row items-center">
                 <View className="mx-3">
                   <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
                 </View>
@@ -97,10 +97,11 @@ const ReviewItinerary = () => {
                   <Text className="font-kregular text-lg">{item.place}</Text>
                   <Text className="font-kregular text-sm">{item.activities}</Text>
                   <Text className="font-kregular text-sm">{item.time}</Text>
-                  <Text className="font-kregular text-sm">💸 {item.budget} </Text>
-                  <Text className="font-kregular text-sm">💸 {item.budget} </Text>
-                  <Text className="font-kregular text-sm">💸 {item.budget} </Text>
+                  <Text className="font-kregular text-sm">💸 {item.budget}</Text>
                   <Text className="font-kregular text-sm text-right">⏱️ {item.hoursToSpend} hours</Text>
+                  <Text className="font-kregular text-sm">Nearest Mosque: {item.nearestMosque.name}</Text>
+                  <Text className="font-kregular text-sm">Location: {item.nearestMosque.location}</Text>
+                  <Text className="font-kregular text-sm">Distance: {item.nearestMosque.distanceKm}</Text>
                 </View>
               </View>
             ))}

@@ -131,8 +131,7 @@ const ChoosePlaces = () => {
   const handleAddToCart = (place) => {
     addToCart({ 
       placeID : place.placeID, 
-      name: place.name, 
-      category: place.category,
+      name: place.name,
       address: place.address,
       latitude: place.latitude,
       longitude: place.longitude,
@@ -155,13 +154,13 @@ const ChoosePlaces = () => {
     try {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{destination}', 'Kuala Lumpur, Malaysia')
+        .replace('{destination}', itineraryData?.locationInfo?.name || '')
         .replace('{origin}',  'Penang, Malaysia')
         .replace('{places}', formattedPlaces || '')
         .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
         .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-        .replace('{traveler}', itineraryData?.traveler?.title || '')
-        .replace('{budget}', itineraryData?.budget?.title || '');
+        .replace('{traveler}', itineraryData?.traveler || '')
+        .replace('{budget}', itineraryData?.budget || '');
 
       console.log('AI Prompt:', FINAL_PROMPT);
 
