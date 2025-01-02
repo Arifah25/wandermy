@@ -16,6 +16,7 @@ import Visit from "./Visit";
 import SearchPlace from "./SearchPlace";
 import OptionCard from "./OptionCard";
 import HeaderWithCart from "./HeaderWithCart";
+import Header from "./Header";
 
 export{
     FormField,
@@ -36,4 +37,5 @@ export{
     SearchPlace,
     OptionCard,
     HeaderWithCart,
+    Header,
 };

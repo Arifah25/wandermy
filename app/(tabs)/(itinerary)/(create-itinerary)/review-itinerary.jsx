@@ -99,9 +99,9 @@ const ReviewItinerary = () => {
                   <Text className="font-kregular text-sm">{item.time}</Text>
                   <Text className="font-kregular text-sm">💸 {item.budget}</Text>
                   <Text className="font-kregular text-sm text-right">⏱️ {item.hoursToSpend} hours</Text>
-                  <Text className="font-kregular text-sm">Nearest Mosque: {item.nearestMosque.name}</Text>
+                  {/* <Text className="font-kregular text-sm">Nearest Mosque: {item.nearestMosque.name}</Text>
                   <Text className="font-kregular text-sm">Location: {item.nearestMosque.location}</Text>
-                  <Text className="font-kregular text-sm">Distance: {item.nearestMosque.distanceKm}</Text>
+                  <Text className="font-kregular text-sm">Distance: {item.nearestMosque.distanceKm}</Text> */}
                 </View>
               </View>
             ))}

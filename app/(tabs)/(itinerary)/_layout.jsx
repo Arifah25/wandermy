@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import MyItinerary from '.';
 import CreateItineraryLayout from './(create-itinerary)/_layout';
 import ItineraryDetails from './detailsiti';
+import DetailsPlaces from './detailsplaces';
 const Stack = createNativeStackNavigator();
 
 const HeaderIcon = ({ onPress, icon }) => (
@@ -36,6 +37,18 @@ const ItineraryLayout = () => {
       <Stack.Screen
       name="detailsiti"
       component={ItineraryDetails}
+      options={{ 
+        headerShown: false,
+        headerTitle: 'Itinerary',
+        headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+        headerTitleAlign: 'center',
+        headerStyle: { backgroundColor: '#A91D1D' },
+        headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+      }}
+      />
+      <Stack.Screen
+      name="detailsplaces"
+      component={DetailsPlaces}
       options={{ 
         headerShown: false,
         headerTitle: 'Itinerary',

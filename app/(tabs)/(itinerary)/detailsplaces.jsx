@@ -1,94 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Modal } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { Poster, HeaderWithCart, Button } from '../../../../components';
 import { getDatabase, ref, onValue, get } from 'firebase/database';
-import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
-import { CartContext } from "../../../../context/CartContext";
-import { AI_PROMPT } from '../../../../constants/option';
-import { chatSession } from '../../../../configs/AImodule';
-import { setDoc, doc } from 'firebase/firestore';
-import { auth, firestore } from '../../../../configs/firebaseConfig';
-import { icons } from '../../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import moment from 'moment';
+import { icons } from '../../../constants';
+import { Poster, Header } from '../../../components';
 
 const DetailsPlaces = () => {
   const [loading, setLoading] = useState(false);
   const [event, setEvent] = useState({});
   const [hour, setOperatingHours] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const router = useRouter();
   const route = useRoute();
-  const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
-  const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
-  const user = auth.currentUser;
 
   const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude } = route.params;
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-
-  const handleAddToCart = () => {
-    addToCart({ 
-      placeID, 
-      name, 
-      category,
-      address,
-      latitude,
-      longitude,
-    });
-  };
-
-  const handleRemoveFromCart = (placeID) => {
-    removeFromCart(placeID);
-  };
-  
-  const handleGenerateItinerary = async () => {
-    setModalVisible(false);
-    if (loading) return; // Prevent multiple executions while loading
-    setLoading(true);
-
-    const formattedPlaces = JSON.stringify(cart);
-
-    console.log('Formatted Places:', formattedPlaces);
-
-    try {
-      const FINAL_PROMPT = AI_PROMPT
-        .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{destination}', itineraryData?.locationInfo?.name || 'Kuala Lumpur, Malaysia')
-        .replace('{origin}',  'Penang, Malaysia')
-        .replace('{places}', formattedPlaces || '')
-        .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
-        .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-        .replace('{traveler}', itineraryData?.traveler?.title || '')
-        .replace('{budget}', itineraryData?.budget?.title || '');
-
-      console.log('AI Prompt:', FINAL_PROMPT);
-
-      const result = await chatSession.sendMessage(FINAL_PROMPT);
-      const response = JSON.parse(result.response.text()); // Assuming JSON response
-
-      console.log('AI Response:', response);
-
-      const docId = Date.now().toString();
-      await setDoc(doc(firestore, 'userItinerary', docId), {
-        docId: docId,
-        userEmail: user?.email,
-        itineraryData: response,
-        cart: cart,
-        startDate: moment(itineraryData?.startDate).format('DD MMM '),
-        endDate: moment(itineraryData?.endDate).format('DD MMM ')
-      });
-      // clearCart();
-      router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
-    } catch (error) {
-      console.error('Error generating itinerary:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Fetch operating hours
   useEffect(() => {
@@ -128,8 +54,8 @@ const DetailsPlaces = () => {
       const eventRef = ref(db, `event/${placeID}`);
       const snapshot = await get(eventRef);
       const eventData = snapshot.exists() ? snapshot.val() : {};
-        setEvent(eventData);
-        setLoading(false);
+      setEvent(eventData);
+      setLoading(false);
     };
 
     if (category === 'event') fetchEvent();
@@ -207,11 +133,11 @@ const DetailsPlaces = () => {
             </View>
           </View>   
                  
-        ):(
+        ):( 
         <View className="w-full items-start mt-3">
           {category === 'attraction' ? (
             <Text className="text-lg font-ksemibold">Price:</Text>
-          ):(
+          ):( 
             <Text className="text-lg font-ksemibold">Menu:</Text>
           )}
           <View className="w-full">
@@ -232,17 +158,12 @@ const DetailsPlaces = () => {
   );
 
   if (loading) {
-    return 
-    (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#A91D1D" />
-      </View>
-    );
+    return <ActivityIndicator size="large" color="#000" />;
   }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <HeaderWithCart onCartPress={() => setModalVisible(true)} />
+      <Header />
       <ScrollView className=" w-full">
        <View className="m-5">
         <Poster image={poster} />
@@ -255,51 +176,6 @@ const DetailsPlaces = () => {
           
         </View>
       </ScrollView>
-      <TouchableOpacity
-        onPress={handleAddToCart}
-        className="absolute bottom-5 right-5 bg-primary h-10 rounded-md items-center justify-center w-1/3"
-      >
-        <Text className="text-white font-kregular text-sm">Add to Itinerary</Text>
-      </TouchableOpacity>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View className=" flex-1 justify-end pb-7 p-1 ">
-          <View className="bg-white p-5 rounded-t-lg border-t-2 ">
-            <Text className="text-lg font-ksemibold mb-3">Your Itinerary</Text>
-            {cart.length === 0 ? (
-              <Text>No places added yet</Text>
-            ) : (
-              cart.map((item, index) => (
-                <View key={index} className="mb-2 flex-row justify-between items-center">
-                  <Text className="font-kregular">{item.name}</Text>
-                  <TouchableOpacity onPress={() => handleRemoveFromCart(item.placeID)}>
-                    <Text className="text-red-500">Remove</Text>
-                  </TouchableOpacity>
-                </View>
-              ))
-            )}
-            <View className="w-full mt-5 items-center h-16">
-              <Button
-                title={loading ? 'Generating...' : 'Generate Itinerary'}
-                textColor="text-white"
-                style="bg-primary w-4/5 mt-5"
-                handlePress={handleGenerateItinerary}
-                disabled={loading} // Disable button while loading
-              />
-            </View>
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              className=" absolute top-6 right-6"
-            >
-                <Image source={icons.close} className="w-5 h-5 align-top"/>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };

@@ -219,7 +219,9 @@ const ChoosePlaces = () => {
         <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
         <View style={{ flex: 1, marginTop: 16 }}>
           {loading ? (
+            <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#A91D1D" />
+            </View>
           ) : (
             <FlatList
               data={getFilteredPlaces()}
