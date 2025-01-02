@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { icons } from '@/constants';
 
-const Header = ({ onCartPress }) => {
+const Header = () => {
   const router = useRouter();
 
   const handleBack = () => {

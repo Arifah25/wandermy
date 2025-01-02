@@ -67,14 +67,7 @@ const ItineraryDetails = () => {
   const redirectToMaps = (latitude, longitude, destinationName) => {
     const latLong = `${latitude},${longitude}`;
   
-    // Google Maps URL
-    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationName)}&destination_place_id=${latLong}&travelmode=driving`;
-  
-    // Apple Maps URL (iOS only)
-    const appleMapsUrl = `http://maps.apple.com/?daddr=${latLong}&q=${encodeURIComponent(destinationName)}&dirflg=d`;
-  
-    // Waze URL
-    const wazeUrl = `https://waze.com/ul?ll=${latLong}&navigate=yes&q=${encodeURIComponent(destinationName)}`;
+   
   
     // Decide which app to open
     if (Platform.OS === 'ios') {
@@ -105,6 +98,39 @@ const ItineraryDetails = () => {
         });
     }
   };
+
+  const navigateToLocation = (latitude, longitude, destinationName) => {
+    const latLong = `${latitude},${longitude}`;
+
+     // Google Maps URL
+     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationName)}&destination_place_id=${latLong}&travelmode=driving`;
+  
+     // Apple Maps URL (iOS only)
+     const appleMapsUrl = `http://maps.apple.com/?daddr=${latLong}&q=${encodeURIComponent(destinationName)}&dirflg=d`;
+   
+     // Waze URL
+     const wazeUrl = `https://waze.com/ul?ll=${latLong}&navigate=yes&q=${encodeURIComponent(destinationName)}`;
+    // Present options for preferred maps
+    Alert.alert(
+      'Choose Navigation App',
+      'Select your preferred maps application:',
+      [
+        {
+          text: 'Google Maps',
+          onPress: () => Linking.openURL(googleMapsUrl),
+        },
+        {
+          text: 'Apple Maps',
+          onPress: () => Linking.openURL(appleMapsUrl),
+        },
+        {
+          text: 'Waze',
+          onPress: () => Linking.openURL(wazeUrl),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  }; 
 
 const findNearestMosque = async (latitude, longitude) => {
   
@@ -226,13 +252,13 @@ const findNearestMosque = async (latitude, longitude) => {
                   
                   <View className="flex-row justify-between w-full mt-2 p-1">
                     <TouchableOpacity className="flex-row bg-blue-500 p-2 rounded-full items-center mr-2"
-                      onPress={() => findNearestMosque(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude)}
+                      onPress={() => findNearestMosque(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude, item.place)}
                       >
                       <FontAwesome6 name="mosque" size={18} color="white" />
                       <Text className="mx-2 font-kregular text-white text-sm">Nearest Mosque</Text>
                     </TouchableOpacity>
                     <TouchableOpacity className="flex-row bg-blue-500 px-3 rounded-full items-center"
-                      onPress={() => redirectToMaps(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude, item.place)}
+                      onPress={() => navigateToLocation(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude)}
                     >
                       <FontAwesome name="map-marker" size={24} color="white" />
                       <Text className="mx-2 font-kregular text-white text-sm">Get Directions</Text>
@@ -263,7 +289,7 @@ const findNearestMosque = async (latitude, longitude) => {
   }
 
   const handleBack = () => {
-    router.back();
+    router.push('(tabs)/(itinerary)/');
   }
 
   return (

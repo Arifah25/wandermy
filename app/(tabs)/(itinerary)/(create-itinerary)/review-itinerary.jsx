@@ -5,11 +5,13 @@ import { firestore } from '../../../../configs/firebaseConfig';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../../../constants';
 import { useRouter } from 'expo-router';
+import { getDatabase, ref, onValue } from 'firebase/database';
 
 const ReviewItinerary = () => {
   const [itineraryData, setItineraryData] = useState(null);
   const [date, setDate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [placeDetails, setPlaceDetails] = useState({});
   const router = useRouter();
 
   useEffect(() => {
@@ -31,6 +33,28 @@ const ReviewItinerary = () => {
 
     fetchLatestItinerary();
   }, []);
+
+  useEffect(() => {
+    const fetchPlaceDetails = async () => {
+      const db = getDatabase();
+      const newPlaceDetails = {};
+
+      if (itineraryData) {
+        Object.keys(itineraryData.itinerary).forEach((day) => {
+          itineraryData.itinerary[day].forEach((item) => {
+            const placeRef = ref(db, `places/${item.placeID}`);
+            onValue(placeRef, (snapshot) => {
+              const details = snapshot.val();
+              newPlaceDetails[item.placeID] = details;
+              setPlaceDetails((prevDetails) => ({ ...prevDetails, [item.placeID]: details }));
+            });
+          });
+        });
+      }
+    };
+
+    fetchPlaceDetails();
+  }, [itineraryData]);
 
   const renderTransportRecommendation = useMemo(() => {
     if (!itineraryData) return null;
@@ -89,27 +113,39 @@ const ReviewItinerary = () => {
           <View key={index}>
             <Text className="text-lg font-kregular mb-2">Day {index + 1}:</Text>
             {itineraryData.itinerary[day].map((item, itemIndex) => (
-              <View key={itemIndex} className="rounded-lg border mb-3 p-2 flex-row items-center">
-                <View className="mx-3">
-                  <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
+              <TouchableOpacity key={itemIndex} className="rounded-lg border mb-5 p-2 items-center"
+              onPress={() => handlePlacePress(placeDetails[item.placeID])}>
+              <View className="items-start flex-row w-full">
+                <View className="mr-2 rounded-lg items-center w-1/2 h-32">
+                  {placeDetails[item.placeID]?.poster ? (
+                    <Image source={{ uri: placeDetails[item.placeID].poster[0] }}
+                      resizeMode='cover'
+                      className="rounded-lg w-full h-full"
+                    />
+                  ) : (
+                    <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
+                  )}
                 </View>
-                <View className="w-3/5">
+                <View className="w-[45%] items-start ml-2 ">
                   <Text className="font-kregular text-lg">{item.place}</Text>
-                  <Text className="font-kregular text-sm">{item.activities}</Text>
-                  <Text className="font-kregular text-sm">{item.time}</Text>
+                  <Text className="font-kregular text-sm">⏱️ {item.time}</Text>
                   <Text className="font-kregular text-sm">💸 {item.budget}</Text>
-                  <Text className="font-kregular text-sm text-right">⏱️ {item.hoursToSpend} hours</Text>
-                  {/* <Text className="font-kregular text-sm">Nearest Mosque: {item.nearestMosque.name}</Text>
-                  <Text className="font-kregular text-sm">Location: {item.nearestMosque.location}</Text>
-                  <Text className="font-kregular text-sm">Distance: {item.nearestMosque.distanceKm}</Text> */}
                 </View>
               </View>
+            </TouchableOpacity>
             ))}
           </View>
         ))}
       </View>
     );
-  }, [itineraryData]);
+  }, [itineraryData, placeDetails]);
+
+  const navigateDetails = (docId) => {
+    router.push({
+      pathname: '(tabs)/(itinerary)/detailsiti',
+      params: { docId },
+    });
+  };
 
   if (loading) {
     return <ActivityIndicator size="large" color="#000" />;
@@ -142,7 +178,7 @@ const ReviewItinerary = () => {
             <Text className="text-white font-kregular text-sm">Edit</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => router.push('(tabs)/(itinerary)/')}
+            onPress={() => navigateDetails(date.docId)}
             className="bg-primary h-10 rounded-md items-center justify-center w-1/3"
           >
             <Text className="text-white font-kregular text-sm">Done</Text>
