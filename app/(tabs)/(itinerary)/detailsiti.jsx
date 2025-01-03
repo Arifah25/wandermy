@@ -176,12 +176,12 @@ const findNearestMosque = async (latitude, longitude) => {
               <Text className="font-ksemibold">{item.mode}</Text>
               <Text className="font-kregular">{item.route}</Text>
               <Text className="font-kregular">Operator: {item.operator}</Text>
-              <Text className="font-kregular mb-6">Price: {item.estimatedPrice.min} - {item.estimatedPrice.max}</Text>
-              <View className="absolute right-2 bottom-2">
+              <Text className="font-kregular">Price: {item.estimatedPrice.min} - {item.estimatedPrice.max}</Text>
+              {/* <View className="absolute right-2 bottom-2">
                 <TouchableOpacity>
                   <Text className="font-kregular text-blue-500">Book Now</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
             </View>
           ))}
         </ScrollView>
@@ -197,11 +197,11 @@ const findNearestMosque = async (latitude, longitude) => {
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {itineraryData.accommodation.map((item, index) => (
             <View key={index} className="mx-3 border border-secondary rounded-lg mt-2" style={{ width: 200 }}>
-              <View className="items-center bg-secondary rounded-lg">
+              {/* <View className="items-center bg-secondary rounded-lg">
                 <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
-              </View>
-              <View className="rounded-lg p-2 mt-2">
-                <Text className="font-kregular">{item.name}</Text>
+              </View> */}
+              <View className="rounded-lg px-2 mt-2">
+                <Text className="font-ksemibold">{item.name}</Text>
                 <Text className="font-kregular">{item.location}</Text>
                 <Text className="font-kregular">{item.priceRange.min} - {item.priceRange.max}</Text>
                 <Text className="font-kregular text-right">⭐ {item.rating}</Text>
