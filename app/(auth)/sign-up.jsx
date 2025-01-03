@@ -1,32 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, ToastAndroid, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ToastAndroid, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormField, Button } from "../../components";
 import { Link, useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { auth } from "../../configs/firebaseConfig";
 import { getDatabase, ref as databaseRef, set } from "firebase/database";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { icons } from '../../constants';
-import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
 import * as ImagePicker from 'expo-image-picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const SignUp = () => {
-  // for navigation
   const router = useRouter();
-
   const database = getDatabase();
-  const storage = getStorage();
 
-  // Initialize state variables
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [reenterPassword, setReenterPassword] = useState(""); // Re-enter password field
   const [username, setUsername] = useState("");
   const [userPreference, setUserPreference] = useState("");
   const [profileImage, setProfileImage] = useState(null);
+  const [religion, setReligion] = useState("Islam");
 
-  // Function to pick an image
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -37,6 +32,41 @@ const SignUp = () => {
 
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const OnCreateAccount = async () => {
+    if (!email || !password || !reenterPassword || !username || !userPreference || !religion) {
+      ToastAndroid.show('Please fill in all fields', ToastAndroid.BOTTOM);
+      return;
+    }
+
+    if (password !== reenterPassword) {
+      Alert.alert('Password Mismatch', 'The passwords do not match. Please try again.');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await set(databaseRef(database, `users/${user.uid}`), {
+        email,
+        username,
+        userPreference,
+        profilePicture: profileImage || icons.profile,
+        religion,
+      });
+
+      await sendEmailVerification(user);
+      ToastAndroid.show('Check your email to verify your account.', ToastAndroid.BOTTOM);
+
+      router.push({
+        pathname: "(auth)/sign-in",
+        params: { email, username, userPreference, religion },
+      });
+    } catch (error) {
+      console.error(error.message);
     }
   };
 
@@ -70,43 +100,6 @@ const SignUp = () => {
   //   }
   // };
 
-  // Define the OnCreateAccount function to handle the sign-up process
-  const OnCreateAccount = async () => {
-    // Check if all fields are filled in
-    if (!email && !password && !username && !userPreference) {
-      // If not, display a toast message to the user
-      ToastAndroid.show('Please fill in all fields', ToastAndroid.BOTTOM);
-      return;
-    }
-
-    try {
-      // Create the user with Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const selectedImage = profileImage || icons.profile;  // Default to icons.profile if no image is picked      uploadDefaultProfileImage(user.uid);
-
-      // Save user data to Firebase Realtime Database
-      await set(databaseRef(database, `users/${user.uid}`), {
-        email: email,
-        username: username,
-        userPreference: userPreference,
-        profilePicture: profileImage || icons.profile,  // Use the default image if not set
-      });
-
-      // Send email verification
-      await sendEmailVerification(user);
-      ToastAndroid.show('Check your email to verify your account.', ToastAndroid.BOTTOM);
-
-    // Navigate to a verification screen
-    router.push({
-      pathname: "(auth)/sign-in",
-      params: { email: email, username: username, password: password, userPreference: userPreference, profileImage: profileImage }
-  });
-  } catch (error) {
-    console.error(error.message);
-  }
-};
-
   //     // Save the user data to Firebase Realtime Database
   //     await set(databaseRef(database, 'users/' + user.uid), {
   //       email: email,
@@ -124,49 +117,89 @@ const SignUp = () => {
   //   }
   // };
 
+  
   return (
-    <SafeAreaView
-      className="bg-white h-full flex-1 p-5 items-center justify-evenly"
-    >
-      <Text
-        className="font-kregular text-2xl"
+    <SafeAreaView className="bg-white h-full flex-1">
+      <KeyboardAwareScrollView
+        contentContainerStyle={{ padding: 20, alignItems: 'center' }}
+        showsVerticalScrollIndicator={false}
       >
-        Create Account
-      </Text>
+        <Text className="font-kregular text-2xl">Create Account</Text>
+        <View className="flex w-full items-center">
+          <TouchableOpacity onPress={pickImage}>
+            <Image
+              source={profileImage ? { uri: profileImage } : icons.profile}
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                marginBottom: 20,
+              }}
+            />
+          </TouchableOpacity>
 
-      <View className="flex w-full items-center">
-     
-      {/* Profile Image */}
-      <TouchableOpacity onPress={pickImage}>
-        <Image
-          source={profileImage ? { uri: profileImage } : icons.profile}  // Default to icons.profile
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 50,
-            marginBottom: 20,
-          }}
+          <FormField title="Username" handleChangeText={(value) => setUsername(value)} />
+          <FormField title="Email" handleChangeText={(value) => setEmail(value)} keyboardType="email-address" />
+          <FormField title="Password" handleChangeText={(value) => setPassword(value)} secureTextEntry />
+          <FormField title="Re-enter Password" handleChangeText={(value) => setReenterPassword(value)} secureTextEntry/>
+          <FormField title="User Preference (eg: nature)" handleChangeText={(value) => setUserPreference(value)} />
+
+          <View className="mb-5 ml-2">
+            <Text className="font-kregular text-xl">Religion :</Text>
+            <View className="flex-row items-center mt-2">
+              {['Islam', 'Hindu', 'Buddha', 'Others'].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => setReligion(option)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginRight: 20,
+                  }}
+                >
+                  <View
+                    style={{
+                      height: 20,
+                      width: 20,
+                      borderRadius: 10,
+                      borderWidth: 2,
+                      borderColor: religion === option ? '#A91D1D' : '#ccc',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 8,
+                    }}
+                  >
+                    {religion === option && (
+                      <View
+                        style={{
+                          height: 10,
+                          width: 10,
+                          borderRadius: 5,
+                          backgroundColor: '#A91D1D',
+                        }}
+                      />
+                    )}
+                  </View>
+                  <Text>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        <Button
+          title="Sign Up"
+          handlePress={OnCreateAccount}
+          style="bg-primary w-11/12 mt-10"
+          textColor="text-white"
         />
-      </TouchableOpacity>
 
-        <FormField title="Username" handleChangeText={(value) => setUsername(value)} />
-        <FormField title="Email" handleChangeText={(value) => setEmail(value)} keyboardType="email-address" />
-        <FormField title="Password" handleChangeText={(value) => setPassword(value)} />
-        <FormField title="User Preference" handleChangeText={(value) => setUserPreference(value)}/>
-      </View>
-
-      <Button
-        title="Sign Up"
-        handlePress={OnCreateAccount}
-        style="bg-primary w-11/12"
-        textColor="text-white"
-      />
-
-      <Link href="sign-in" className="text-base font-kregular">
-        I'm already a member
-      </Link>
+        <Link href="sign-in" className="text-base font-kregular">
+          I'm already a member
+        </Link>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 export default SignUp;
