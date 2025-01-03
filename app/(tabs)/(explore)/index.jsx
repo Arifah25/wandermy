@@ -5,8 +5,9 @@ import { getDatabase, ref, onValue } from 'firebase/database';
 import { PlaceCard, Search, TabPlace } from '../../../components';
 import { icons } from '../../../constants';
 
+
 const Explore = () => {
-  
+ 
   const [places, setPlaces] = useState([]); // State to store places data
   const [loading, setLoading] = useState(true); // Loading state for data fetching
   const [activeTab, setActiveTab] = useState('attraction'); // Active category tab
@@ -16,14 +17,16 @@ const Explore = () => {
   const [isSortModalVisible, setIsSortModalVisible] = useState(false); // Sorting modal visibility
   const router = useRouter(); // Navigation handler
 
+
   // Fetch data based on the active category
   useEffect(() => {
     setLoading(true);
     const db = getDatabase();
 
+
     // Switch between the different categories: 'attractions', 'dining', and 'events'
     const placesRef = ref(db, 'places'); // Assuming all places are under one 'places' node
-    
+   
     const unsubscribe = onValue(placesRef, (snapshot) => {
       const data = snapshot.val();
       const placesArray = data
@@ -32,40 +35,46 @@ const Explore = () => {
             ...data[key],
           }))
         : [];
-      
+     
       // Filter the data based on the selected tab/category
-      const filteredPlaces = placesArray.filter(place => place.category === activeTab && place.status === 'approved'); 
+      const filteredPlaces = placesArray.filter(place => place.category === activeTab && place.status === 'approved');
+
 
       setPlaces(filteredPlaces);
       setLoading(false); // Stop loading after data is fetched
     });
 
-    
+
+   
     // Clean up the listener on unmount
     return () => unsubscribe();
   }, [activeTab]); // Re-fetch when activeTab changes
 
 
+
+
   const parseTime = (timeString) => {
     // Check if timeString is valid
     if (!timeString) return [0, 0]; // Return 00:00 if time is not available
-    
+   
     const timeParts = timeString.split(' ');
     const time = timeParts[0]; // e.g., "10:00"
     const period = timeParts[1]; // e.g., "AM" or "PM"
-  
+ 
     let [hours, minutes] = time.split(':').map(Number);
-    
+   
     // Convert to 24-hour format
     if (period === 'PM' && hours !== 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
-  
+ 
     return [hours, minutes];
   };
+
 
   // Sorting Function
   const sortData = (order) => {
     let sorted;
+
 
     switch (order) {
       case 'asc':
@@ -82,10 +91,13 @@ const Explore = () => {
         break;  
     }
 
+
     setSortOrder(order);
     setFilteredPlaces(sorted);
     setIsSortModalVisible(false); // Close the modal after sorting
   };
+
+
 
 
   // Handle pressing a place card to navigate to its details, passing all place data
@@ -96,38 +108,45 @@ const Explore = () => {
     });
   };
 
+
   const toggleSortModal = () => {
     setIsSortModalVisible(!isSortModalVisible);
   };
+
 
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
   };
 
+
   const handleAdd = () => {
     toggleModalVisibility();
   };
+
 
   const addAttraction = () => {
     router.push("(tabs)/(explore)/(create)/attraction");
     toggleModalVisibility();
   };
 
+
   const addDining = () => {
     router.push("(tabs)/(explore)/(create)/dining");
     toggleModalVisibility();
   };
+
 
   const addEvent = () => {
     router.push("(tabs)/(explore)/(create)/event");
     toggleModalVisibility();
   };
 
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View className="bg-white flex-1 p-5 items-center justify-start">
         <View className="flex-row items-center w-full justify-evenly">
-          <Search 
+          <Search
           width="w-5/6"
           places={places} // Pass the places data
           activeTab={activeTab} // Pass the active category
@@ -143,8 +162,10 @@ const Explore = () => {
           </TouchableOpacity>
         </View>  
 
+
         {/* Category Tabs */}
         <TabPlace activeTab={activeTab} setActiveTab={setActiveTab} />
+
 
         {/* Places List or Loading Indicator */}
     <View className="h-full w-full mt-2 " style={{ paddingBottom: 120, paddingTop: 10 }}>
@@ -166,14 +187,14 @@ const Explore = () => {
             />
           )}
         </View>
-        
+       
         <TouchableOpacity
           className="absolute bottom-5 right-5 bg-primary p-4 rounded-full shadow-sm shadow-black"
           onPress={handleAdd}
         >
           <Image source={icons.plus} tintColor="#fff" className="w-7 h-7"/>
-        </TouchableOpacity>   
-        
+        </TouchableOpacity>  
+       
         <Modal
           visible={isModalVisible}
           transparent={true}
@@ -217,6 +238,7 @@ const Explore = () => {
           </View>
         </Modal>
 
+
         {/* Sort Modal */}
         <Modal visible={isSortModalVisible} transparent animationType="slide">
           <View className="flex-1 justify-center items-center bg-black/50">
@@ -232,7 +254,7 @@ const Explore = () => {
                 <Text className="text-base">Date posted: Latest</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => sortData('oldest')} className="mb-3">
-                <Text className="text-base">Date posted: Older</Text>
+                <Text className="text-base">Date posted: Oldest</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleSortModal} className="mt-4">
                 <Text className="text-center text-red-500">Cancel</Text>
@@ -244,5 +266,6 @@ const Explore = () => {
     </SafeAreaView>
   )
 }
+
 
 export default Explore

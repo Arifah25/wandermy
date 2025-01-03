@@ -8,7 +8,9 @@ import EditLayout from './(edit)/_layout';
 import HomeAdmin from './index';
 import HomeDetails from './homedetails';
 
+
 const Stack = createNativeStackNavigator();
+
 
 const HeaderIcon = ({ onPress, icon }) => (
   <TouchableOpacity onPress={onPress} style={{ margin: 10 }}>
@@ -16,35 +18,54 @@ const HeaderIcon = ({ onPress, icon }) => (
   </TouchableOpacity>
 );
 
+
 const HomeLayout = () => {
   const router = useRouter();
   const handleBack = () => {
     router.back();
   }
 
-  const logoutAdmin = () => {
-    router.replace('(auth)/sign-in')// Navigate to Login page (logout)}/>,
-    console.log('Sign Out Admin Successful');
-  }
 
-  
+  const logoutAdmin = () => {
+    Alert.alert(
+      'Logout Confirmation',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Logout Cancelled'),
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          onPress: () => {
+            router.replace('(auth)/sign-in'); // Navigate to Login page
+            console.log('Sign Out Admin Successful');
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+
+ 
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="index"
         component={HomeAdmin}
-        options={{ 
+        options={{
           // headerShown: false,
           headerTitle: 'Admin',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
-          headerRight: () => <HeaderIcon icon={icons.bell}/>,
-          headerLeft: () => <HeaderIcon icon={icons.logout} onPress={logoutAdmin}/> 
+          headerLeft: () => <HeaderIcon icon={icons.logout} onPress={logoutAdmin}/>
         }}
       />
-      
-      <Stack.Screen 
+     
+      <Stack.Screen
         name="homedetails"
         component={HomeDetails}
         options={{
@@ -57,23 +78,26 @@ const HomeLayout = () => {
         }}
       />
 
+
       <Stack.Screen
         name="(create)"
         component={CreateLayout}
-        options={{ 
+        options={{
           headerShown: false,
         }}
       />
 
+
       <Stack.Screen
         name="(edit)"
         component={EditLayout}
-        options={{ 
+        options={{
           headerShown: false,
         }}
       />
     </Stack.Navigator>
   )
 }
+
 
 export default HomeLayout

@@ -17,11 +17,32 @@ const logUserInteraction = async (placeID) => {
 
   try {
     const interactionRef = ref(db, `user_interactions/${userId}`);
+
+    // Fetch existing interactions
+    const snapshot = await get(interactionRef);
+    const interactions = snapshot.val();
+
+    if (interactions) {
+      const interactionEntries = Object.entries(interactions); // Convert to an array of [key, value]
+      
+      // If there are 30 or more interactions, find the oldest one by timestamp and delete it
+      if (interactionEntries.length >=10){
+        const oldestInteraction = interactionEntries.reduce((oldest, current) =>
+          new Date(oldest[1].timestamp) < new Date(current[1].timestamp) ? oldest : current
+        );
+
+        const oldestKey = oldestInteraction[0]; // Get the key of the oldest interaction
+        await set(ref(db, `user_interactions/${userId}/${oldestKey}`), null); // Delete the oldest interaction
+      }
+    }
+
+    // Add the new interaction
     const newInteractionRef = push(interactionRef);
     await set(newInteractionRef, {
       placeID,
       timestamp: new Date().toISOString(),
     });
+
     console.log("User interaction logged successfully.");
   } catch (error) {
     console.error("Error logging user interaction:", error);
@@ -70,10 +91,14 @@ const Home = () => {
     try {
       console.log("Fetching recommendations...");
       const response = await axios.post(
-        //everytime nak run, kena check ipaddress dulu, kena match jugak baru boleh run
-        'http://172.20.10.4:5000/recommendations', // Replace with your server's IP
-        { userId },
-        { timeout: 30000 } // Set timeout to 30 seconds
+        'http://10.164.238.30:5000/recommendations', // Flask endpoint
+        { userId }, // The payload
+        {
+          headers: {
+            'Content-Type': 'application/json', // Ensure correct content type
+          },
+          timeout: 30000, // Timeout for the request
+        }
       );
       console.log("Backend response:", response.data);
 
