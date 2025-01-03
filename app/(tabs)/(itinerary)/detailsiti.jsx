@@ -289,7 +289,7 @@ const findNearestMosque = async (latitude, longitude) => {
   }
 
   const handleBack = () => {
-    router.push('(tabs)/(itinerary)/');
+    router.replace('(tabs)/(itinerary)/');
   }
 
   return (
