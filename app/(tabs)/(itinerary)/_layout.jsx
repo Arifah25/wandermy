@@ -43,7 +43,7 @@ const ItineraryLayout = () => {
         headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
         headerTitleAlign: 'center',
         headerStyle: { backgroundColor: '#A91D1D' },
-        headerLeft: () => <HeaderIcon icon={icons.left} onPress={()=> router.replace()} />,
+        headerLeft: () => <HeaderIcon icon={icons.left} onPress={()=> router.replace('(tabs)/(itinerary)/')} />,
       }}
       />
       <Stack.Screen
