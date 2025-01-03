@@ -14,20 +14,56 @@ const MyItinerary = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    user && GetMyItinerary();
+    if (user) {
+      GetMyItinerary();
+    }
   }, [user]);
-
+  
   const GetMyItinerary = async () => {
     setLoading(true);
     setItinerary([]);
-    const q = query(collection(firestore, 'userItinerary'), where('userEmail', '==', user?.email));
-    const querySnapshot = await getDocs(q);
-
-    querySnapshot.forEach((doc) => {
-      setItinerary(prev => [...prev, { id: doc.id, ...doc.data() }]);
-    });
-    setLoading(false);
-  }
+    
+    try {
+      const userEmail = user?.email;
+      
+      // Query itineraries where the user is the owner or a collaborator
+      const q = query(
+        collection(firestore, 'userItinerary'),
+        where('collaborators', 'array-contains', userEmail),
+      );
+      const qOwner = query(
+        collection(firestore, 'userItinerary'),
+        where('userEmail', '==', userEmail)
+      );
+    
+      const [collaboratorQuerySnapshot, ownerQuerySnapshot] = await Promise.all([
+        getDocs(q),
+        getDocs(qOwner),
+      ]);
+  
+      const itineraries = [];
+      
+      collaboratorQuerySnapshot.forEach((doc) => {
+        itineraries.push({ id: doc.id, ...doc.data() });
+      });
+  
+      ownerQuerySnapshot.forEach((doc) => {
+        itineraries.push({ id: doc.id, ...doc.data() });
+      });
+  
+      // Remove duplicates in case the user is both owner and collaborator
+      const uniqueItineraries = Array.from(
+        new Map(itineraries.map(itinerary => [itinerary.id, itinerary])).values()
+      );
+  
+      setItinerary(uniqueItineraries);
+    } catch (error) {
+      console.error('Error fetching itineraries:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   const New = () => {
     router.push("(tabs)/(itinerary)/(create-itinerary)/new");
