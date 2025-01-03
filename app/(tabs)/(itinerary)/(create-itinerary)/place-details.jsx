@@ -8,7 +8,7 @@ import { CreateItineraryContext } from '../../../../context/CreateItineraryConte
 import { CartContext } from "../../../../context/CartContext";
 import { AI_PROMPT } from '../../../../constants/option';
 import { chatSession } from '../../../../configs/AImodule';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, firestore } from '../../../../configs/firebaseConfig';
 import { icons } from '../../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,7 +26,7 @@ const DetailsPlaces = () => {
   const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
   const user = auth.currentUser;
 
-  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude } = route.params;
+  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude, docId } = route.params;
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
@@ -72,15 +72,25 @@ const DetailsPlaces = () => {
 
       console.log('AI Response:', response);
 
-      const docId = Date.now().toString();
-      await setDoc(doc(firestore, 'userItinerary', docId), {
-        docId: docId,
-        userEmail: user?.email,
-        itineraryData: response,
-        cart: cart,
-        startDate: moment(itineraryData?.startDate).format('DD MMM '),
-        endDate: moment(itineraryData?.endDate).format('DD MMM ')
-      });
+      if (docId) {
+        const docRef = doc(firestore, 'userItinerary', docId); // Use existing docId
+        await updateDoc(docRef, {
+          itineraryData: response,
+          cart: formattedPlaces,
+          startDate: moment(itineraryData?.startDate).format('DD MMM '),
+          endDate: moment(itineraryData?.endDate).format('DD MMM ')
+        });
+      } else{
+        const docId = Date.now().toString();
+        await setDoc(doc(firestore, 'userItinerary', docId), {
+          docId: docId,
+          userEmail: user?.email,
+          cart: formattedPlaces,
+          itineraryData: response,
+          startDate: moment(itineraryData?.startDate).format('DD MMM '),
+          endDate: moment(itineraryData?.endDate).format('DD MMM ')
+        });
+      }
       // clearCart();
       router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
     } catch (error) {
