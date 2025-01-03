@@ -7,10 +7,11 @@ import { CreateItineraryContext } from '../../../../context/CreateItineraryConte
 import { CartContext } from "../../../../context/CartContext";
 import { AI_PROMPT } from '../../../../constants/option';
 import { chatSession } from '../../../../configs/AImodule';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, firestore } from '../../../../configs/firebaseConfig';
 import { icons } from '../../../../constants';
 import moment from 'moment';
+import { useRoute } from '@react-navigation/native';
 
 const ChoosePlaces = () => {
   const [places, setPlaces] = useState([]);
@@ -121,10 +122,10 @@ const ChoosePlaces = () => {
     fetchBookmarks();
   }, [user]);
 
-  const handlePlacePress = (place) => {
+  const handlePlacePress = (place, docId) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/place-details',
-      params: { ...place },
+      params: { ...place, docId },
     });
   };
 
@@ -132,6 +133,7 @@ const ChoosePlaces = () => {
     addToCart({ 
       placeID : place.placeID, 
       name: place.name,
+      category: place.category,
       address: place.address,
       latitude: place.latitude,
       longitude: place.longitude,
@@ -141,6 +143,9 @@ const ChoosePlaces = () => {
   const handleRemoveFromCart = (placeID) => {
     removeFromCart(placeID);
   };
+
+  const route = useRoute();
+  const { docId } = route.params; 
 
   const handleGenerateItinerary = async () => {
     setModalVisible(false)
@@ -169,14 +174,25 @@ const ChoosePlaces = () => {
 
       console.log('AI Response:', response);
 
-      const docId = Date.now().toString();
-      await setDoc(doc(firestore, 'userItinerary', docId), {
-        docId: docId,
-        userEmail: user?.email,
-        itineraryData: response,
-        startDate: moment(itineraryData?.startDate).format('DD MMM '),
-        endDate: moment(itineraryData?.endDate).format('DD MMM ')
+      if (docId) {
+        const docRef = doc(firestore, 'userItinerary', docId); // Use existing docId
+        await updateDoc(docRef, {
+          itineraryData: response,
+          cart: formattedPlaces,
+          startDate: moment(itineraryData?.startDate).format('DD MMM '),
+          endDate: moment(itineraryData?.endDate).format('DD MMM ')
+        });
+      } else{
+        const docIdn = Date.now().toString();
+        await setDoc(doc(firestore, 'userItinerary', docIdn), {
+          docId: docIdn,
+          userEmail: user?.email,
+          cart: formattedPlaces,
+          itineraryData: response,
+          startDate: moment(itineraryData?.startDate).format('DD MMM '),
+          endDate: moment(itineraryData?.endDate).format('DD MMM ')
       });
+      }
       // clearCart();
       router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
     } catch (error) {
@@ -229,7 +245,7 @@ const ChoosePlaces = () => {
                 <PlaceCard
                   name={item.name}
                   image={item.poster ? item.poster[0] : null}
-                  handlePress={() => handlePlacePress(item)}
+                  handlePress={() => handlePlacePress(item, docId)}
                   handleAddToCart={() => handleAddToCart(item)}
                 />
               )}

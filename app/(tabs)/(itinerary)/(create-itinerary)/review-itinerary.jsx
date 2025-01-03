@@ -68,11 +68,11 @@ const ReviewItinerary = () => {
               <Text className="font-kregular">{item.route}</Text>
               <Text className="font-kregular">Operator: {item.operator}</Text>
               <Text className="font-kregular mb-6">Price: {item.estimatedPrice.min} - {item.estimatedPrice.max}</Text>
-              <View className="absolute right-2 bottom-2">
+              {/* <View className="absolute right-2 bottom-2">
                 <TouchableOpacity>
                   <Text className="font-kregular text-blue-500">Book Now</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
             </View>
           ))}
         </ScrollView>
@@ -88,11 +88,11 @@ const ReviewItinerary = () => {
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {itineraryData.accommodation.map((item, index) => (
             <View key={index} className="mx-3 border border-secondary rounded-lg mt-2" style={{ width: 200 }}>
-              <View className="items-center bg-secondary rounded-lg">
+              {/* <View className="items-center bg-secondary rounded-lg">
                 <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
-              </View>
+              </View> */}
               <View className="rounded-lg p-2 mt-2">
-                <Text className="font-kregular">{item.name}</Text>
+                <Text className="font-ksemibold">{item.name}</Text>
                 <Text className="font-kregular">{item.location}</Text>
                 <Text className="font-kregular">{item.priceRange.min} - {item.priceRange.max}</Text>
                 <Text className="font-kregular text-right">⭐ {item.rating}</Text>
@@ -113,8 +113,9 @@ const ReviewItinerary = () => {
           <View key={index}>
             <Text className="text-lg font-kregular mb-2">Day {index + 1}:</Text>
             {itineraryData.itinerary[day].map((item, itemIndex) => (
-              <TouchableOpacity key={itemIndex} className="rounded-lg border mb-5 p-2 items-center"
-              onPress={() => handlePlacePress(placeDetails[item.placeID])}>
+              <View key={itemIndex} className="rounded-lg border mb-5 p-2 items-center"
+              // onPress={() => handlePlacePress(placeDetails[item.placeID])}
+              >
               <View className="items-start flex-row w-full">
                 <View className="mr-2 rounded-lg items-center w-1/2 h-32">
                   {placeDetails[item.placeID]?.poster ? (
@@ -132,7 +133,7 @@ const ReviewItinerary = () => {
                   <Text className="font-kregular text-sm">💸 {item.budget}</Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </View>
             ))}
           </View>
         ))}
@@ -146,6 +147,13 @@ const ReviewItinerary = () => {
       params: { docId },
     });
   };
+
+  const navigateEdit = (docId) => {
+    router.push({
+      pathname: '(tabs)/(itinerary)/(create-itinerary)/choose-places',
+      params: { docId },
+    });
+  }
 
   if (loading) {
     return <ActivityIndicator size="large" color="#000" />;
@@ -172,7 +180,7 @@ const ReviewItinerary = () => {
         {renderItinerary}
         <View className="flex-row justify-evenly mt-5">
           <TouchableOpacity
-            onPress={() => router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')}
+            onPress={() => navigateEdit(date.docId)}
             className="bg-primary h-10 rounded-md items-center justify-center w-1/3"
           >
             <Text className="text-white font-kregular text-sm">Edit</Text>
