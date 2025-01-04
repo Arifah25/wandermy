@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../../constants';
 import { ItineraryCard } from '../../../components';
-import { collection, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, deleteDoc, doc, getDoc, some } from 'firebase/firestore';
 import { auth, firestore } from '../../../configs/firebaseConfig';
 import { useRouter } from 'expo-router';
 
@@ -15,6 +15,7 @@ const MyItinerary = () => {
 
   useEffect(() => {
     if (user) {
+      
       GetMyItinerary();
     }
   }, [user]);
@@ -24,46 +25,35 @@ const MyItinerary = () => {
     setItinerary([]);
     
     try {
-      const userEmail = user?.email;
-      
-      // Query itineraries where the user is the owner or a collaborator
-      const q = query(
-        collection(firestore, 'userItinerary'),
-        where('collaborators', 'array-contains', userEmail),
-      );
-      const qOwner = query(
-        collection(firestore, 'userItinerary'),
-        where('userEmail', '==', userEmail)
-      );
-    
-      const [collaboratorQuerySnapshot, ownerQuerySnapshot] = await Promise.all([
-        getDocs(q),
-        getDocs(qOwner),
-      ]);
+      const userEmail = user.email; // Replace with the logged-in user's email
+  
+      // Fetch all itineraries from Firestore
+      const querySnapshot = await getDocs(collection(firestore, 'userItinerary'));
   
       const itineraries = [];
-      
-      collaboratorQuerySnapshot.forEach((doc) => {
-        itineraries.push({ id: doc.id, ...doc.data() });
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        
+        // Ensure `collaborators` is always an array
+        const collaborators = Array.isArray(data.collaborators) ? data.collaborators : [];
+  
+        const isOwner = data.userEmail === userEmail;
+        const isCollaborator = collaborators.some((collab) => collab.email === userEmail);
+  
+        // Add the itinerary if the user is either the owner or a collaborator
+        if (isOwner || isCollaborator) {
+          itineraries.push({ id: doc.id, ...data });
+        }
       });
   
-      ownerQuerySnapshot.forEach((doc) => {
-        itineraries.push({ id: doc.id, ...doc.data() });
-      });
-  
-      // Remove duplicates in case the user is both owner and collaborator
-      const uniqueItineraries = Array.from(
-        new Map(itineraries.map(itinerary => [itinerary.id, itinerary])).values()
-      );
-  
-      setItinerary(uniqueItineraries);
+      // Set the filtered itineraries
+      setItinerary(itineraries);
     } catch (error) {
       console.error('Error fetching itineraries:', error);
     } finally {
       setLoading(false);
     }
   };
-  
 
   const New = () => {
     router.push("(tabs)/(itinerary)/(create-itinerary)/new");
@@ -86,7 +76,40 @@ const MyItinerary = () => {
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const getUserRole = async (docId, userEmail) => {
+    try {
+      // Reference the specific itinerary document by docId
+      const docRef = doc(firestore, 'userItinerary', docId);
+      const docSnapshot = await getDoc(docRef);
+  
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        
+        // Ensure collaborators is an array
+        const collaborators = Array.isArray(data.collaborators) ? data.collaborators : [];
+  
+        // Find the collaborator with the matching email
+        const collaborator = collaborators.find(collab => collab.email === userEmail);
+  
+        if (collaborator) {
+          return collaborator.role; // Return the role of the user
+        } else if (data.userEmail === userEmail) {
+          return 'owner'; // If the user is the owner, return 'owner'
+        } else {
+          return null; // User not found as owner or collaborator
+        }
+      } else {
+        console.error('Document does not exist.');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error retrieving user role:', error);
+      return null;
+    }
+  };
+  
 
   return (
     <View className="bg-white h-full flex-1 p-5 justify-start">
@@ -110,6 +133,8 @@ const MyItinerary = () => {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
               <ItineraryCard
+                docId={item.id}
+                rolePromise = {getUserRole(item.id, user.email)}
                 itinerary={item}
                 name={item.itineraryData.tripDetails?.tripName}
                 handlePress={() => navigateDetails(item.id)}

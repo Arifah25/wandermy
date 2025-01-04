@@ -10,6 +10,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { get, getDatabase, onValue, ref } from 'firebase/database';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Picker } from '@react-native-picker/picker';
 
 const ItineraryDetails = () => {
   const route = useRoute();
@@ -21,6 +22,7 @@ const ItineraryDetails = () => {
   const [collaborators, setCollaborators] = useState([]);
   const [placeDetails, setPlaceDetails] = useState({});
   const userEmail = auth.currentUser.email;
+  const [role, setRole] = useState('viewer');
 
   useEffect(() => {
     const fetchItinerary = async () => {
@@ -92,19 +94,20 @@ const ItineraryDetails = () => {
       Alert.alert('Error', 'Please enter an email.');
       return;
     }
-
+  
     if (!userExists) {
       Alert.alert('Error', 'User does not exist.');
       return;
     }
-
+  
     try {
       const docRef = doc(firestore, 'userItinerary', docId);
       await updateDoc(docRef, {
-        collaborators: arrayUnion(email),
+        collaborators: arrayUnion({ email, role }),
       });
-      Alert.alert('Success', `${email} added as a collaborator!`);
+      Alert.alert('Success', `${email} added as a ${role}!`);
       setEmail('');
+      setRole('viewer'); // Reset role to default
       setUserExists(null);
     } catch (error) {
       console.error('Error adding collaborator:', error);
@@ -112,11 +115,10 @@ const ItineraryDetails = () => {
     }
   };
 
-  // Function to remove collaborator
-  const handleRemoveCollaborator = (email) => {
+  const handleRemoveCollaborator = (collaborator) => {
     Alert.alert(
       'Remove Collaborator',
-      `Are you sure you want to remove ${email} as a collaborator?`,
+      `Are you sure you want to remove ${collaborator.email} as a collaborator?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -125,10 +127,13 @@ const ItineraryDetails = () => {
           onPress: async () => {
             try {
               const docRef = doc(firestore, 'userItinerary', docId);
+  
+              // Use arrayRemove to remove the exact object (email + role)
               await updateDoc(docRef, {
-                collaborators: arrayRemove(email),
+                collaborators: arrayRemove(collaborator),
               });
-              Alert.alert('Success', `${email} removed as a collaborator.`);
+  
+              Alert.alert('Success', `${collaborator.email} removed as a collaborator.`);
             } catch (error) {
               console.error('Error removing collaborator:', error);
               Alert.alert('Error', 'Failed to remove collaborator. Please try again.');
@@ -137,7 +142,7 @@ const ItineraryDetails = () => {
         },
       ]
     );
-  };
+  };  
     
 
   useEffect(() => {
@@ -424,68 +429,85 @@ const findNearestMosque = async (latitude, longitude) => {
           onRequestClose={() => setModalVisible(false)}
         >
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '90%' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Collaborators</Text>
-            
-            {/* Collaborator List */}
-            
+            <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '90%' }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Collaborators</Text>
+              
+              {/* Collaborator List */}
               <FlatList
-              data={collaborators}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <Text style={{ fontSize: 16 }}>{item}</Text>
-                  {userEmail === date.userEmail && 
-                  <TouchableOpacity onPress={() => handleRemoveCollaborator(item)}>
-                    <Feather name="x-circle" size={24} color="red" />
-                  </TouchableOpacity>}
-                </View>
-              )}
-              ListEmptyComponent={<Text style={{ textAlign: 'center', color: 'gray', marginVertical: 10 }}>No collaborators yet.</Text>}
-            />
-            
-            
-            {/* Add Collaborator */}
-            {userEmail === date.userEmail && 
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: '#ddd',
-                borderRadius: 5,
-                padding: 10,
-                marginBottom: 10,
-              }}
-              placeholder="Enter email"
-              value={email}
-              onChangeText={(text) => setEmail(text)}
-              // onBlur={() => checkUserExists(email)}
-            />}
-            {email.length > 0 && (
-              <Text style={{ color: userExists ? 'green' : 'red', marginBottom: 10 }}>
-                {userExists ? 'User exists' : 'User not found'}
-              </Text>
-            )}
-            
-            {userEmail === date.userEmail && 
-            <TouchableOpacity
-              onPress={handleAddCollaborator}
-              style={{
-                backgroundColor: '#007bff',
-                padding: 10,
-                borderRadius: 5,
-                alignItems: 'center',
-                marginBottom: 10,
-              }}
-            >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>Add Collaborator</Text>
-            </TouchableOpacity>}
-
-            {/* Close Button */}
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ alignItems: 'center' }}>
-              <Text style={{ color: '#007bff', fontWeight: 'bold' }}>Close</Text>
-            </TouchableOpacity>
+                data={collaborators}
+                keyExtractor={(item) => item.email}
+                renderItem={({ item }) => (
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <Text style={{ fontSize: 16 }}>{item.email} ({item.role})</Text>
+                    {userEmail === date.userEmail && 
+                    <TouchableOpacity onPress={() => handleRemoveCollaborator(item)}>
+                      <Feather name="x-circle" size={24} color="red" />
+                    </TouchableOpacity>}
+                  </View>
+                )}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', color: 'gray', marginVertical: 10 }}>No collaborators yet.</Text>}
+              />
+              
+              {/* Add Collaborator */}
+              {userEmail === date.userEmail && 
+              <>
+                <TextInput
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#ddd',
+                    borderRadius: 5,
+                    padding: 10,
+                  }}
+                  placeholder="Enter email"
+                  value={email}
+                  onChangeText={(text) => setEmail(text)}
+                />
+                {Platform.OS === 'ios'? (
+                  <Picker
+                  selectedValue={role}
+                  onValueChange={(itemValue) => setRole(itemValue)}
+                  style={{ marginVertical: -24 }}
+                >
+                  <Picker.Item label="Viewer" value="viewer"/>
+                  <Picker.Item label="Editor" value="editor" />
+                </Picker>
+                ) : (
+                  <Picker
+                  selectedValue={role}
+                  onValueChange={(itemValue) => setRole(itemValue)}
+                  
+                >
+                  <Picker.Item label="Viewer" value="viewer"/>
+                  <Picker.Item label="Editor" value="editor" />
+                </Picker>
+                )
+                }
+                
+                {email.length > 0 && (
+                  <Text style={{ color: userExists ? 'green' : 'red', marginBottom: 10 }}>
+                    {userExists ? 'User exists' : 'User not found'}
+                  </Text>
+                )}
+                <TouchableOpacity
+                  onPress={handleAddCollaborator}
+                  style={{
+                    backgroundColor: '#007bff',
+                    padding: 10,
+                    borderRadius: 5,
+                    alignItems: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Add Collaborator</Text>
+                </TouchableOpacity>
+              </>}
+              
+              {/* Close Button */}
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={{ alignItems: 'center' }}>
+                <Text style={{ color: '#007bff', fontWeight: 'bold' }}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
         </Modal>
       </View>
     </SafeAreaView>
