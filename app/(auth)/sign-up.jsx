@@ -1,11 +1,12 @@
+import { View, Text, ToastAndroid, TouchableOpacity, Image, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { View, Text, ToastAndroid, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormField, Button } from "../../components";
 import { Link, useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { auth } from "../../configs/firebaseConfig";
 import { getDatabase, ref as databaseRef, set } from "firebase/database";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { icons } from '../../constants';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -13,6 +14,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 const SignUp = () => {
   const router = useRouter();
   const database = getDatabase();
+  const storage = getStorage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +23,20 @@ const SignUp = () => {
   const [userPreference, setUserPreference] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [religion, setReligion] = useState("Islam");
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    return (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /\d/.test(password) &&
+      /[@$!%*?&]/.test(password)
+    );
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -41,8 +57,24 @@ const SignUp = () => {
       return;
     }
 
+    if (!validateEmail(email)) {
+      ToastAndroid.show('Invalid email format.', ToastAndroid.BOTTOM);
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      ToastAndroid.show(
+        'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.',
+        ToastAndroid.BOTTOM
+      );
+      return;
+    }
+
     if (password !== reenterPassword) {
-      Alert.alert('Password Mismatch', 'The passwords do not match. Please try again.');
+      ToastAndroid.show(
+        'Password Mismatch. The passwords do not match. Please try again.',
+        ToastAndroid.BOTTOM
+      );
       return;
     }
 
@@ -66,7 +98,20 @@ const SignUp = () => {
         params: { email, username, userPreference, religion },
       });
     } catch (error) {
-      console.error(error.message);
+      const errorCode = error.code;
+      switch (errorCode) {
+        case 'auth/email-already-in-use':
+          ToastAndroid.show('This email is already registered.', ToastAndroid.BOTTOM);
+          break;
+        case 'auth/weak-password':
+          ToastAndroid.show('The password is too weak.', ToastAndroid.BOTTOM);
+          break;
+        case 'auth/invalid-email':
+          ToastAndroid.show('Invalid email address.', ToastAndroid.BOTTOM);
+          break;
+        default:
+          ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.BOTTOM);
+      }
     }
   };
 

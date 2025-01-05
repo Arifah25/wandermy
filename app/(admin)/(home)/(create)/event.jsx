@@ -1,10 +1,11 @@
-import { View, Text, ScrollView, Modal, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, Modal, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, DateField, Map, TimeField, } from '../../../../components'
 import { getDatabase, ref, push, set } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const CreateEvent = () => {
   
@@ -30,7 +31,8 @@ const CreateEvent = () => {
     websiteLink: '',
     contactNum: '',
     price: [],
-    poster: [], 
+    poster: [],
+    facilities: [], 
     tags: '',
     description: '',
     startDate: '',
@@ -44,7 +46,18 @@ const CreateEvent = () => {
   // Store selected images in state
   const [posterImages, setPosterImages] = useState([]);
   const [priceImages, setPriceImages] = useState([]);
+  const [errors, setErrors] = useState({});
+  const facilitiesList = ['Surau', 'WiFi', 'Parking', 'Toilet'];
 
+  const handleFacilityToggle = (facility) => {
+    setForm((prevForm) => {
+      const facilities = prevForm.facilities.includes(facility)
+        ? prevForm.facilities.filter((item) => item !== facility)
+        : [...prevForm.facilities, facility];
+      return { ...prevForm, facilities };
+    });
+  };
+  
   const handleAdmissionTypeChange = (type) => {
     setForm((prevForm) => ({
       ...prevForm,
@@ -103,21 +116,41 @@ const CreateEvent = () => {
   }, []);
   
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = 'Name is required.';
+    if (!form.address.trim()) newErrors.address = 'Address is required.';
+    if (!form.contactNum.trim()) newErrors.contactNum = 'Contact number is required.';
+    if (!posterImages.length) newErrors.poster = 'At least one poster is required.';
+    if (!form.tags.trim()) newErrors.tags = 'Tags are required.';
+    if (!form.description.trim()) newErrors.description = 'Description is required.';
+    if (!form.admissionType.trim()) newErrors.admissionType = 'Choose admission type.';
+    if (!form.startDate.trim()) newErrors.startDate = 'Start date is required.';
+    if (!form.endDate.trim()) newErrors.endDate = 'End date is required.';
+    // if (!form.facilities.length) newErrors.facilities = 'At least one facility is required.';
+
+  //   form.operatingHours.forEach((day) => {
+  //     if (day.isOpen && (!day.openingTime || !day.closingTime)) {
+  //       newErrors.operatingHours = 'Operating hours must be set for open days.';
+  //     }
+  //   }
+  // );
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handlePost = async () => {
-    if (
-      !form.name.trim() ||
-      !posterImages.length ||
-      !form.description.trim() ||
-      !form.startDate.trim() ||
-      !form.endDate.trim() ||
-      !form.contactNum.trim() ||
-      !form.address.trim() ||
-      !form.admissionType.trim() ||
-      !form.tags.trim()
-    ) {
-      alert("Please fill in all the required(*) fields.");
-      return; // Prevent submission
+    if (!validateForm()) {
+      Alert.alert(
+        "Incomplete Form",
+        "Please fill in all required fields before submitting.",
+        [{ text: "OK" }]
+      );
+      return;
     }
+      
     setIsSubmitting(true);
     try {
       // Upload images and get the URLs
@@ -139,6 +172,7 @@ const CreateEvent = () => {
         status: 'pending',
         user: userId,
         admissionType: form.admissionType,
+        facilities: form.facilities,
         feeAmount: form.admissionType === 'paid' ? form.feeAmount : 'Free',
       };
       await set(newPlaceRef, placeData);
@@ -161,6 +195,11 @@ const CreateEvent = () => {
         setIsSubmitting(false);
     }
   };
+
+  const renderError = (field) => {
+    return errors[field] ? <Text style={{ color: 'red', fontSize: 12 }}>{errors[field]}</Text> : null;
+  };
+  
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -195,9 +234,11 @@ const CreateEvent = () => {
   };
   
   return (
-    // <SafeAreaView>
-      <ScrollView
-      className="flex-1 h-full px-8 bg-white"
+      <KeyboardAwareScrollView
+        className="flex-1 h-full px-8 bg-white"
+        contentContainerStyle={{ flexGrow: 1 }}
+        enableOnAndroid={true}
+        keyboardShouldPersistTaps="handled"
       >
         <Modal
         visible={isModalVisible}
@@ -210,26 +251,23 @@ const CreateEvent = () => {
            placeholderText="Select your preferred location on the map"
           />
         </Modal>
-        <View
-        className="my-5"
-        >
-          <Text
-          className="font-kregular text-xl"
-          >
-            Poster :
-          </Text>
+
+        <View className="mt-5">
+          <Text className="font-kregular text-xl">Poster :</Text>
           {/* image picker for poster */}
           <AddPhoto
             images={posterImages}
             setImages={setPosterImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
+          {renderError('poster')}
         </View>
         
         <CreateForm 
         title="Event name :"
         value={form.name}
-        handleChangeText={(e) => setForm({ ...form, name: e })}      
+        handleChangeText={(e) => setForm({ ...form, name: e })} 
+        error={errors.name}     
         />
 
         <CreateForm
@@ -238,6 +276,7 @@ const CreateEvent = () => {
           handleChangeText={(e) => setForm({ ...form, description: e })}
           keyboardType="default"
           tags="true"
+          error={errors.description}
         /> 
 
         <View className="mb-5">
@@ -256,11 +295,13 @@ const CreateEvent = () => {
               placeholder="Start Date"
               value={form.startDate}
               handleChangeText={(e) => setForm({ ...form, startDate: e })}
+              error={errors.startDate}
               />
               <DateField 
               placeholder="End Date"
               value={form.endDate}
               handleChangeText={(e) => setForm({ ...form, endDate: e })}
+              error={errors.endDate}
               />
             </View>
           </View>
@@ -289,27 +330,27 @@ const CreateEvent = () => {
           value={form.contactNum}
           handleChangeText={(e) => setForm({ ...form, contactNum: e })}
           keyboardType="phone-pad"
-          />
+          error={errors.contactNum}
+        />
 
-        <View className="items-center mb-5">
-          <CreateForm
+        <CreateForm
           title="Address :"
           value={form.address}
           tags="true"
-          handleChangeText={(e) => setForm({ ...form, address: e })}       
-           />
+          handleChangeText={(e) => setForm({ ...form, address: e })} 
+          error={errors.address}      
+        />
           {/* pin location */}
-          <Button 
+        <Button 
           title="Pin Location"
           handlePress={handleMap}
-          style="bg-secondary w-full"
+          style="bg-secondary w-full mt-2"
           textColor="text-black ml-5"
           location="true"
-          />
-        </View>
+        />
 
         {/* Radio Buttons for Admission Type */}
-        <View className="mb-5">
+        <View className="mb-5 mt-5">
           <Text className="font-kregular text-xl">Admission Type:</Text>
           <View className="flex-row items-center mt-2">
             <TouchableOpacity
@@ -386,7 +427,7 @@ const CreateEvent = () => {
           </View>
         )}
         
-        <View className="mb-5">
+        <View >
           <Text className="font-kregular text-xl">
             Infographics (Optional) :
           </Text>
@@ -405,7 +446,33 @@ const CreateEvent = () => {
         handleChangeText={(e) => setForm({ ...form, tags: e })}
         keyboardType="default"
         tags="true"
+        error={errors.tags}
         />
+
+        <View className="mb-5 mt-4">
+          <Text className="font-kregular text-xl">Facilities (if any) :</Text>
+          <View className="flex-row flex-wrap mt-2">
+            {facilitiesList.map((facility) => (
+              <TouchableOpacity
+                key={facility}
+                onPress={() => handleFacilityToggle(facility)}
+                style={{
+                  backgroundColor: form.facilities.includes(facility) ? '#A91D1D' : '#F5F5F5',
+                  borderRadius: 20,
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  marginRight: 10,
+                  marginBottom: 10,
+                }}
+              >
+                <Text style={{ color: form.facilities.includes(facility) ? '#FFF' : '#000' }}>
+                  {facility}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         <View
         className="flex-row items-center justify-evenly mt-5 mb-10">
           <Button 
@@ -420,8 +487,7 @@ const CreateEvent = () => {
           style="bg-primary w-2/5"
           textColor="text-white"/>
         </View>
-      </ScrollView>      
-    // </SafeAreaView>
+      </KeyboardAwareScrollView>      
   )
 }
 

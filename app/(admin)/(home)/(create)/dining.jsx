@@ -1,11 +1,11 @@
-import { View, Text, ScrollView, Modal, Switch } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, Modal, Switch } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../../components'
 import { getDatabase, ref, push, set } from "firebase/database";
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
-
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const CreateDining = () => {
   
@@ -32,6 +32,8 @@ const CreateDining = () => {
     contactNum: '',
     price: [],
     poster: [], 
+    halalStatus: '',
+    facilities: [],
     tags: '',
     operatingHours: [
       { dayOfWeek: 'MON', isOpen: true, openingTime: '9:00 AM', closingTime: '10:00 PM' },
@@ -47,6 +49,17 @@ const CreateDining = () => {
   // Store selected images in state
   const [posterImages, setPosterImages] = useState([]);
   const [priceImages, setPriceImages] = useState([]);
+  const [errors, setErrors] = useState({});
+  const facilitiesList = ['Surau', 'WiFi', 'Parking', 'Toilet'];
+
+  const handleFacilityToggle = (facility) => {
+    setForm((prevForm) => {
+      const facilities = prevForm.facilities.includes(facility)
+        ? prevForm.facilities.filter((item) => item !== facility)
+        : [...prevForm.facilities, facility];
+      return { ...prevForm, facilities };
+    });
+  };
 
   const uploadImages = async (images, folderName) => {
     const storage = getStorage();
@@ -97,6 +110,27 @@ const CreateDining = () => {
     generatePlaceID();
   }, []);
   
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = 'Name is required.';
+    if (!form.address.trim()) newErrors.address = 'Address is required.';
+    if (!form.contactNum.trim()) newErrors.contactNum = 'Contact number is required.';
+    if (!posterImages.length) newErrors.poster = 'At least one poster is required.';
+    if (!form.tags.trim()) newErrors.tags = 'Tags are required.';
+    if (!form.halalStatus.trim()) newErrors.halalStatus = 'Halal status is required.'; // Validate Halal status
+    // if (!form.facilities.length) newErrors.facilities = 'At least one facility is required.';
+
+    form.operatingHours.forEach((day) => {
+      if (day.isOpen && (!day.openingTime || !day.closingTime)) {
+        newErrors.operatingHours = 'Operating hours must be set for open days.';
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChangeOpeningTime = (dayOfWeek, time) => {
     const updatedOperatingHours = form.operatingHours.map((day) =>
       day.dayOfWeek === dayOfWeek ? { ...day, openingTime: time } : day
@@ -121,20 +155,15 @@ const CreateDining = () => {
 
   const handlePost = async () => {
     // Validate required fields
-    if (
-      !posterImages.length ||
-      !form.name.trim() ||
-      !form.address.trim() ||
-      !form.contactNum.trim() ||
-      !form.admissionType.trim() ||
-      form.operatingHours.some(
-        (day) => day.isOpen && (!day.openingTime || !day.closingTime)
-      ) ||
-      !form.tags.trim()
-    ) {
-      alert("Please fill all the required(*) fields.");
-      return; // Prevent submission
+    if (!validateForm()) {
+      Alert.alert(
+        "Incomplete Form",
+        "Please fill in all required fields before submitting.",
+        [{ text: "OK" }]
+      );
+      return;
     }
+
     setIsSubmitting(true);
     try {
       // Upload images and get the URLs
@@ -154,7 +183,9 @@ const CreateDining = () => {
         tags: form.tags,
         category: 'dining',
         status: 'pending',
+        halalStatus: form.halalStatus,
         user: userId,
+        facilities: form.facilities,
       };
       await set(newPlaceRef, placeData);
 
@@ -210,12 +241,17 @@ const CreateDining = () => {
     setForm({ ...form, price: [...form.price, ...imageURLs] }); // Append multiple image URLs
   };
   
-  
+  const renderError = (field) => {
+    return errors[field] ? <Text style={{ color: 'red', fontSize: 12 }}>{errors[field]}</Text> : null;
+  };
+
   return (
-    // <SafeAreaView>
-      <ScrollView
-      className="flex-1 h-full px-8 bg-white"
-      >
+    <KeyboardAwareScrollView
+          className="flex-1 h-full px-8 bg-white"
+          contentContainerStyle={{ flexGrow: 1 }}
+          enableOnAndroid={true}
+          keyboardShouldPersistTaps="handled"
+        >
         <Modal
         visible={isModalVisible}
         transparent={true}
@@ -227,64 +263,93 @@ const CreateDining = () => {
            placeholderText="Select your preferred location on the map"
           />
         </Modal>
-        <View
-        className="my-5"
-        >
-          <Text
-          className="font-kregular text-xl"
-          >
-            Poster* :
-          </Text>
-          {/* image picker for poster */}
+
+        <View className="mt-5">
+          <Text className="font-kregular text-xl">Poster* :</Text>
           <AddPhoto
             images={posterImages}
-            setImages={setPosterImages} // Pass the state setters to AddPhoto
+            setImages={setPosterImages}
             isLoading={isSubmitting}
           />
+          {renderError('poster')}
         </View>
+
         <CreateForm 
         title="Restaurant name* :"
         value={form.name}
-        handleChangeText={(e) => setForm({ ...form, name: e })}      />
-        <View
-        className="items-center mb-5"
-        >
-          <CreateForm
+        handleChangeText={(e) => setForm({ ...form, name: e })}
+        error={errors.name}      
+        />
+
+        <View className="mt-3">
+          <Text className="font-kregular text-xl">Halal Status* :</Text>
+          <View className="flex-row mt-2">
+            <TouchableOpacity
+              onPress={() => setForm({ ...form, halalStatus: 'Halal' })}
+              style={{
+                backgroundColor: form.halalStatus === 'Halal' ? '#A91D1D' : '#F5F5F5',
+                borderRadius: 20,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                marginRight: 10,
+              }}
+            >
+              <Text style={{ color: form.halalStatus === 'Halal' ? '#FFF' : '#000' }}>Halal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setForm({ ...form, halalStatus: 'Non-Halal' })}
+              style={{
+                backgroundColor: form.halalStatus === 'Non-Halal' ? '#A91D1D' : '#F5F5F5',
+                borderRadius: 20,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+              }}
+            >
+              <Text style={{ color: form.halalStatus === 'Non-Halal' ? '#FFF' : '#000' }}>Non-Halal</Text>
+            </TouchableOpacity>
+          </View>
+        {renderError('halalStatus')}
+      </View>
+
+        
+        <CreateForm
           title="Address* :"
           value={form.address}
           tags="true"
-          handleChangeText={(e) => setForm({ ...form, address: e })}       
-           />
-          {/* pin location */}
-          <Button 
-          title="Pin Location"
-          handlePress={handleMap}
-          style="bg-secondary w-full"
-          textColor="text-black ml-5"
-          location="true"
+          handleChangeText={(e) => setForm({ ...form, address: e })}
+          error={errors.address}
+        />
+        <Button
+            title="Pin Location"
+            handlePress={() => setIsModalVisible(true)}
+            style="bg-secondary w-full mt-2"
+            textColor="text-black ml-5"
+            location="true"
           />
 
-        </View>
         <CreateForm 
-        title="Website Link (if any) :"
-        value={form.websiteLink}
-        handleChangeText={(e) => setForm({ ...form, websiteLink: e })}
-        keyboardType="url"
+          title="Website Link (if any) :"
+          value={form.websiteLink}
+          handleChangeText={(e) => setForm({ ...form, websiteLink: e })}
+          keyboardType="url"
         />
+
         <CreateForm 
         title="Contact Number* :"
         value={form.contactNum}
         handleChangeText={(e) => setForm({ ...form, contactNum: e })}
         keyboardType="phone-pad"
+        error={errors.contactNum}
         />
+
           {/* Operating Hours with Open/Close toggle */}
-        <View className="w-full">
+        <View className="w-full mt-4">
           <Text className="font-kregular text-xl mb-3">
             Operating Hours* :
           </Text>
         {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
-          <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
-            <View className="flex-row items-center w-1/3 justify-start mb-2">
+          <View key={dayOfWeek} className="mb-3 flex-row w-full justify-start">
+            <View className="flex-row items-center w-1/3 justify-start mb-1">
               <Text className="text-base font-semibold w-1/3">{dayOfWeek}</Text>
               <Switch 
                 value={isOpen}
@@ -308,13 +373,11 @@ const CreateDining = () => {
             )}
           </View>
         ))}
+        {renderError('operatingHours')}
         </View>
-        <View
-        className="mb-5"
-        >
-          <Text
-          className="font-kregular text-xl"
-          >
+
+        <View>
+          <Text className="font-kregular text-xl">
             Menu :
           </Text>
           {/* image picker for price */}
@@ -324,30 +387,55 @@ const CreateDining = () => {
             setImages={setPriceImages} // Pass the state setters to AddPhoto
             isLoading={isSubmitting}
           />
-
         </View>
+
         <CreateForm 
         title="Tags* :"
         value={form.tags}
         handleChangeText={(e) => setForm({ ...form, tags: e })}
         keyboardType="default"
         tags="true"
+        error={errors.tags}
         />
-        <View
-        className="flex-row items-center justify-evenly mt-5 mb-10">
+
+        <View className="mb-5 mt-3">
+          <Text className="font-kregular text-xl">Facilities (if any) :</Text>
+          <View className="flex-row flex-wrap mt-2">
+            {facilitiesList.map((facility) => (
+              <TouchableOpacity
+                key={facility}
+                onPress={() => handleFacilityToggle(facility)}
+                style={{
+                  backgroundColor: form.facilities.includes(facility) ? '#A91D1D' : '#F5F5F5',
+                  borderRadius: 20,
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  marginRight: 10,
+                  marginBottom: 10,
+                }}
+              >
+                <Text style={{ color: form.facilities.includes(facility) ? '#FFF' : '#000' }}>
+                  {facility}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View className="flex-row items-center justify-evenly mt-5 mb-10">
           <Button 
-          title="Cancel"
-          handlePress={() => router.back()}
-          style="bg-secondary w-2/5"
-          textColor="text-primary"
+            title="Cancel"
+            handlePress={() => router.back()}
+            style="bg-secondary w-2/5"
+            textColor="text-primary"
           />
           <Button 
-          title="Submit"
-          handlePress={handlePost}
-          style="bg-primary w-2/5"
-          textColor="text-white"/>
+            title="Submit"
+            handlePress={handlePost}
+            style="bg-primary w-2/5"
+            textColor="text-white"/>
         </View>
-      </ScrollView>      
+      </KeyboardAwareScrollView>      
     // </SafeAreaView>
   )
 }
