@@ -179,8 +179,8 @@ const ReviewItinerary = () => {
   }
 
   return (
-    <SafeAreaView className="bg-white h-full flex-1  ">
-      <View className="flex-row items-center mx-6 justify-between">
+    <SafeAreaView className="bg-white h-full flex-1 pb-10">
+      <View className="flex-row items-center mx-6 justify-between ">
         <TouchableOpacity onPress={() => navigateEdit(date.docId)} style={{ marginTop: 5 }}>
           <AntDesign name="edit" size={28} color="black" />
         </TouchableOpacity>

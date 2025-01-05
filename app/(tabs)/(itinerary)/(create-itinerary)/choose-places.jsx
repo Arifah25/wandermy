@@ -129,7 +129,7 @@ const ChoosePlaces = () => {
   const handlePlacePress = (place, docId) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/place-details',
-      params: { ...place, docId },
+      params: { ...place, docId, info },
     });
   };
 
