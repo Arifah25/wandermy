@@ -1,15 +1,16 @@
-import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
+import { View, Text, Image, ScrollView, ActivityIndicator, FlatList, TouchableOpacity, Linking, TextInput, Platform, Alert, Modal, StyleSheet, } from 'react-native';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { collection, doc, getDoc } from 'firebase/firestore';
-import { firestore } from '../../../configs/firebaseConfig';
+import { collection, doc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { auth, database, firestore } from '../../../configs/firebaseConfig';
 import { icons } from '../../../constants';
 import { useRouter } from 'expo-router';
 import Feather from '@expo/vector-icons/Feather';
-import { getDatabase, onValue, ref } from 'firebase/database';
+import { get, getDatabase, onValue, ref } from 'firebase/database';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Picker } from '@react-native-picker/picker';
 
 const ItineraryDetails = () => {
   const route = useRoute();
@@ -18,7 +19,10 @@ const ItineraryDetails = () => {
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(null);
   const router = useRouter();
+  const [collaborators, setCollaborators] = useState([]);
   const [placeDetails, setPlaceDetails] = useState({});
+  const userEmail = auth.currentUser.email;
+  const [role, setRole] = useState('viewer');
 
   useEffect(() => {
     const fetchItinerary = async () => {
@@ -41,6 +45,105 @@ const ItineraryDetails = () => {
 
     fetchItinerary();
   }, [docId]);
+
+  // const ManageCollaborators = ({ itineraryDocId, owner, collaborators, userEmail }) => {
+    const [modalVisible, setModalVisible] = useState(false);
+    const [newCollaborator, setNewCollaborator] = useState("");
+    const [email, setEmail] = useState('');
+    // const [loading, setLoading] = useState(false);
+  
+    const [userExists, setUserExists] = useState(null);  
+
+  // Function to check if user exists
+  useEffect(() => {
+    const checkUserExists = async () => {
+      if (!email) return;
+      try {
+        const usersRef = ref(database, 'users');
+        const snapshot = await get(usersRef);
+        if (snapshot.exists()) {
+          const users = snapshot.val();
+          const exists = Object.values(users).some((user) => user.email === email);
+          setUserExists(exists);
+        } else {
+          setUserExists(false);
+        }
+      } catch (error) {
+        console.error('Error checking user existence:', error);
+        setUserExists(false);
+      }
+    };
+    checkUserExists();
+  }, [email]); 
+
+  useEffect(() => {
+    const docRef = doc(firestore, 'userItinerary', docId);
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCollaborators(data.collaborators || []);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [docId]);
+
+  // Function to add collaborator
+  const handleAddCollaborator = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter an email.');
+      return;
+    }
+  
+    if (!userExists) {
+      Alert.alert('Error', 'User does not exist.');
+      return;
+    }
+  
+    try {
+      const docRef = doc(firestore, 'userItinerary', docId);
+      await updateDoc(docRef, {
+        collaborators: arrayUnion({ email, role }),
+      });
+      Alert.alert('Success', `${email} added as a ${role}!`);
+      setEmail('');
+      setRole('viewer'); // Reset role to default
+      setUserExists(null);
+    } catch (error) {
+      console.error('Error adding collaborator:', error);
+      Alert.alert('Error', 'An error occurred while adding the collaborator.');
+    }
+  };
+
+  const handleRemoveCollaborator = (collaborator) => {
+    Alert.alert(
+      'Remove Collaborator',
+      `Are you sure you want to remove ${collaborator.email} as a collaborator?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const docRef = doc(firestore, 'userItinerary', docId);
+  
+              // Use arrayRemove to remove the exact object (email + role)
+              await updateDoc(docRef, {
+                collaborators: arrayRemove(collaborator),
+              });
+  
+              Alert.alert('Success', `${collaborator.email} removed as a collaborator.`);
+            } catch (error) {
+              console.error('Error removing collaborator:', error);
+              Alert.alert('Error', 'Failed to remove collaborator. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };  
+    
 
   useEffect(() => {
     const fetchPlaceDetails = async () => {
@@ -298,7 +401,7 @@ const findNearestMosque = async (latitude, longitude) => {
         <TouchableOpacity onPress={handleBack} style={{ marginTop: 5 }}>
           <Image source={icons.left} style={{ width: 24, height: 24, tintColor: '#000' }} />
         </TouchableOpacity>
-        <TouchableOpacity style={{ marginTop: 5 }}>
+        <TouchableOpacity onPress={() => setModalVisible(true)} style={{ marginTop: 5 }}>
           <Feather name="share" size={24} color="black" />
         </TouchableOpacity>
       </View>
@@ -318,9 +421,142 @@ const findNearestMosque = async (latitude, longitude) => {
           {renderItinerary}
           <Text></Text>
         </ScrollView>
+        {/* Collaborator Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '90%' }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Collaborators</Text>
+              
+              {/* Collaborator List */}
+              <FlatList
+                data={collaborators}
+                keyExtractor={(item) => item.email}
+                renderItem={({ item }) => (
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <Text style={{ fontSize: 16 }}>{item.email} ({item.role})</Text>
+                    {userEmail === date.userEmail && 
+                    <TouchableOpacity onPress={() => handleRemoveCollaborator(item)}>
+                      <Feather name="x-circle" size={24} color="red" />
+                    </TouchableOpacity>}
+                  </View>
+                )}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', color: 'gray', marginVertical: 10 }}>No collaborators yet.</Text>}
+              />
+              
+              {/* Add Collaborator */}
+              {userEmail === date.userEmail && 
+              <>
+                <TextInput
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#ddd',
+                    borderRadius: 5,
+                    padding: 10,
+                  }}
+                  placeholder="Enter email"
+                  value={email}
+                  onChangeText={(text) => setEmail(text)}
+                />
+                {Platform.OS === 'ios'? (
+                  <Picker
+                  selectedValue={role}
+                  onValueChange={(itemValue) => setRole(itemValue)}
+                  style={{ marginVertical: -24 }}
+                >
+                  <Picker.Item label="Viewer" value="viewer"/>
+                  <Picker.Item label="Editor" value="editor" />
+                </Picker>
+                ) : (
+                  <Picker
+                  selectedValue={role}
+                  onValueChange={(itemValue) => setRole(itemValue)}
+                  
+                >
+                  <Picker.Item label="Viewer" value="viewer"/>
+                  <Picker.Item label="Editor" value="editor" />
+                </Picker>
+                )
+                }
+                
+                {email.length > 0 && (
+                  <Text style={{ color: userExists ? 'green' : 'red', marginBottom: 10 }}>
+                    {userExists ? 'User exists' : 'User not found'}
+                  </Text>
+                )}
+                <TouchableOpacity
+                  onPress={handleAddCollaborator}
+                  style={{
+                    backgroundColor: '#007bff',
+                    padding: 10,
+                    borderRadius: 5,
+                    alignItems: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Add Collaborator</Text>
+                </TouchableOpacity>
+              </>}
+              
+              {/* Close Button */}
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={{ alignItems: 'center' }}>
+                <Text style={{ color: '#007bff', fontWeight: 'bold' }}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  addButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  addButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    color: '#FF0000',
+    fontSize: 16,
+  },
+});
 
 export default ItineraryDetails;

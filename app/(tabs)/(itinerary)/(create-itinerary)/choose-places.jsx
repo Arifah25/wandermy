@@ -23,7 +23,7 @@ const ChoosePlaces = () => {
   const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
   const router = useRouter();
   const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
-  const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
+  const { cart, addToCart, removeFromCart, clearCart, setCartData } = useContext(CartContext);
   const user = auth.currentUser;
 
   const isNearby = (placeLocation, placeCoordinates, targetLocation, targetCoordinates, radius = 10) => {
@@ -53,6 +53,10 @@ const ChoosePlaces = () => {
   };
 
   useEffect(() => {
+    if(cartD){
+      setCartData(JSON.parse(cartD));
+    }
+    // console.log(cartD);
     const db = getDatabase();
     const placesRef = ref(db, 'places');
 
@@ -65,8 +69,8 @@ const ChoosePlaces = () => {
           }))
         : [];
 
-      const targetCoordinates = { lat: 3.139, lng: 101.6869 };
-      const targetLocation = 'Kuala Lumpur';
+      const targetCoordinates = itineraryData?.locationInfo?.coordinates || info?.coordinates;
+      const targetLocation = itineraryData?.locationInfo?.name || info?.name;
 
       const filtered = placesArray
         .filter(
@@ -125,7 +129,7 @@ const ChoosePlaces = () => {
   const handlePlacePress = (place, docId) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/place-details',
-      params: { ...place, docId },
+      params: { ...place, docId, info },
     });
   };
 
@@ -145,7 +149,7 @@ const ChoosePlaces = () => {
   };
 
   const route = useRoute();
-  const { docId } = route.params; 
+  const { docId, cartD, info } = route.params; 
 
   const handleGenerateItinerary = async () => {
     setModalVisible(false)
@@ -159,13 +163,13 @@ const ChoosePlaces = () => {
     try {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{destination}', itineraryData?.locationInfo?.name || '')
+        .replace('{destination}', itineraryData?.locationIfo?.name || info?.name || '')
         .replace('{origin}',  'Penang, Malaysia')
         .replace('{places}', formattedPlaces || '')
         .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
         .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-        .replace('{traveler}', itineraryData?.traveler || '')
-        .replace('{budget}', itineraryData?.budget || '');
+        .replace('{traveler}', itineraryData?.traveler || info?.traveler || '')
+        .replace('{budget}', itineraryData?.budget || info?.budget || '');
 
       console.log('AI Prompt:', FINAL_PROMPT);
 
@@ -179,22 +183,29 @@ const ChoosePlaces = () => {
         await updateDoc(docRef, {
           itineraryData: response,
           cart: formattedPlaces,
-          startDate: moment(itineraryData?.startDate).format('DD MMM '),
-          endDate: moment(itineraryData?.endDate).format('DD MMM ')
+        });
+        router.push({
+          pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
+          params: { docId },
         });
       } else{
-        const docIdn = Date.now().toString();
-        await setDoc(doc(firestore, 'userItinerary', docIdn), {
-          docId: docIdn,
+        const docId = Date.now().toString();
+        await setDoc(doc(firestore, 'userItinerary', docId), {
+          docId: docId,
           userEmail: user?.email,
           cart: formattedPlaces,
+          info: itineraryData?.locationInfo,
           itineraryData: response,
           startDate: moment(itineraryData?.startDate).format('DD MMM '),
           endDate: moment(itineraryData?.endDate).format('DD MMM ')
       });
+      router.push({
+        pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
+        params: { docId },
+      });
       }
       // clearCart();
-      router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
+
     } catch (error) {
       console.error('Error generating itinerary:', error);
     } finally {

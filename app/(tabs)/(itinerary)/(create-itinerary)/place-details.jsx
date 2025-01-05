@@ -26,7 +26,7 @@ const DetailsPlaces = () => {
   const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
   const user = auth.currentUser;
 
-  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude, docId } = route.params;
+  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude, docId, info } = route.params;
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
@@ -46,59 +46,66 @@ const DetailsPlaces = () => {
   };
   
   const handleGenerateItinerary = async () => {
-    setModalVisible(false);
-    if (loading) return; // Prevent multiple executions while loading
-    setLoading(true);
-
-    const formattedPlaces = JSON.stringify(cart);
-
-    console.log('Formatted Places:', formattedPlaces);
-
-    try {
-      const FINAL_PROMPT = AI_PROMPT
-        .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{destination}', itineraryData?.locationInfo?.name || 'Kuala Lumpur, Malaysia')
-        .replace('{origin}',  'Penang, Malaysia')
-        .replace('{places}', formattedPlaces || '')
-        .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
-        .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-        .replace('{traveler}', itineraryData?.traveler?.title || '')
-        .replace('{budget}', itineraryData?.budget?.title || '');
-
-      console.log('AI Prompt:', FINAL_PROMPT);
-
-      const result = await chatSession.sendMessage(FINAL_PROMPT);
-      const response = JSON.parse(result.response.text()); // Assuming JSON response
-
-      console.log('AI Response:', response);
-
-      if (docId) {
-        const docRef = doc(firestore, 'userItinerary', docId); // Use existing docId
-        await updateDoc(docRef, {
-          itineraryData: response,
-          cart: formattedPlaces,
-          startDate: moment(itineraryData?.startDate).format('DD MMM '),
-          endDate: moment(itineraryData?.endDate).format('DD MMM ')
+      setModalVisible(false)
+      if (loading) return; // Prevent multiple executions while loading
+      setLoading(true);
+  
+      const formattedPlaces = JSON.stringify(cart);
+  
+      console.log('Formatted Places:', formattedPlaces);
+  
+      try {
+        const FINAL_PROMPT = AI_PROMPT
+          .replace('{tripName}', itineraryData?.tripName || '')
+          .replace('{destination}', itineraryData?.locationIfo?.name || info?.name || '')
+          .replace('{origin}',  'Penang, Malaysia')
+          .replace('{places}', formattedPlaces || '')
+          .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
+          .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
+          .replace('{traveler}', itineraryData?.traveler || info?.traveler || '')
+          .replace('{budget}', itineraryData?.budget || info?.budget || '');
+  
+        console.log('AI Prompt:', FINAL_PROMPT);
+  
+        const result = await chatSession.sendMessage(FINAL_PROMPT);
+        const response = JSON.parse(result.response.text()); // Assuming JSON response
+  
+        console.log('AI Response:', response);
+  
+        if (docId) {
+          const docRef = doc(firestore, 'userItinerary', docId); // Use existing docId
+          await updateDoc(docRef, {
+            itineraryData: response,
+            cart: formattedPlaces,
+          });
+          router.push({
+            pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
+            params: { docId },
+          });
+        } else{
+          const docId = Date.now().toString();
+          await setDoc(doc(firestore, 'userItinerary', docId), {
+            docId: docId,
+            userEmail: user?.email,
+            cart: formattedPlaces,
+            info: itineraryData?.locationInfo,
+            itineraryData: response,
+            startDate: moment(itineraryData?.startDate).format('DD MMM '),
+            endDate: moment(itineraryData?.endDate).format('DD MMM ')
         });
-      } else{
-        const docId = Date.now().toString();
-        await setDoc(doc(firestore, 'userItinerary', docId), {
-          docId: docId,
-          userEmail: user?.email,
-          cart: formattedPlaces,
-          itineraryData: response,
-          startDate: moment(itineraryData?.startDate).format('DD MMM '),
-          endDate: moment(itineraryData?.endDate).format('DD MMM ')
+        router.push({
+          pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
+          params: { docId },
         });
+        }
+        // clearCart();
+  
+      } catch (error) {
+        console.error('Error generating itinerary:', error);
+      } finally {
+        setLoading(false);
       }
-      // clearCart();
-      router.push('(tabs)/(itinerary)/(create-itinerary)/review-itinerary');
-    } catch (error) {
-      console.error('Error generating itinerary:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   // Fetch operating hours
   useEffect(() => {
