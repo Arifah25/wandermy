@@ -156,6 +156,7 @@ const ReviewItinerary = () => {
   }, [itineraryData, placeDetails]);
 
   const navigateDetails = (docId) => {
+    
     router.replace({
       pathname: '(tabs)/(itinerary)/detailsiti',
       params: { docId },

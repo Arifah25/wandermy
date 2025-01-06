@@ -1,4 +1,4 @@
-import { View, Text, Image, ToastAndroid, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ToastAndroid, Modal, TouchableOpacity, Alert } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from "../../constants";
@@ -23,7 +23,7 @@ const SignIn = () => {
     // Check if all fields are filled in
     if (!email && !password) {
       // If not, display a toast message to the user
-      ToastAndroid.show('Please enter all details', ToastAndroid.BOTTOM)
+      Alert.alert('Error','Please enter all details');
     } else {
       // Sign in with email and password
       signInWithEmailAndPassword(auth, email, password)
@@ -42,7 +42,7 @@ const SignIn = () => {
                 router.push("(admin)/");
               }, 1500);
             }else{
-              ToastAndroid.show('Sign In Successful', ToastAndroid.BOTTOM, ToastAndroid.LONG);
+              Alert.alert('Success','Sign In Successful');
               // Navigate to the home index under tabs after 3 seconds
               setTimeout(() => {
                 router.push("(tabs)/(home)/");
@@ -60,7 +60,7 @@ const SignIn = () => {
           // Log the error message and code to the console for debugging
           console.log(errorMessage, errorCode);
           if (errorCode=='auth/invalid-credential') {
-            ToastAndroid.show('Invalid Email or Password', ToastAndroid.BOTTOM)            
+            Alert.alert('Error','Invalid Email or Password');            
           }
         });
     }
@@ -71,15 +71,15 @@ const SignIn = () => {
       setLoading(true);
       try {
         await sendPasswordResetEmail(auth, forgotPasswordEmail);
-        ToastAndroid.show('Password reset link sent to your email!', ToastAndroid.BOTTOM);
+        Alert.alert('Password reset link sent to your email!');
         setShowModal(false); // Close the modal
       } catch (error) {
-        ToastAndroid.show('Error sending reset email. Try again!', ToastAndroid.BOTTOM);
+        Alert.alert('Error','Error sending reset email. Try again!');
       } finally {
         setLoading(false);
       }
     } else {
-      ToastAndroid.show('Please enter your email address.', ToastAndroid.BOTTOM);
+      Alert.alert('Please enter your email address.');
     }
   };
 

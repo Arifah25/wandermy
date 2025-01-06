@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../../constants';
 import { useRouter } from 'expo-router';
 import { getAuth } from 'firebase/auth';
-import { getDatabase, ref, get } from 'firebase/database';
+import { getDatabase, ref, get, remove } from 'firebase/database';
 
 
 const Profile = () => {
@@ -75,28 +75,30 @@ const Profile = () => {
             const userId = user.uid;
  
             // Delete user data from Realtime Database
-            getDatabase().ref(`users/${userId}`).remove()
-              .then(() => {
-                // Delete user account from Firebase Authentication
-                user.delete()
-                  .then(() => {
-                    // Account deleted successfully, redirect to login page or show success message
-                    router.replace('(auth)/sign-in');
-                    // or
-                    alert('Account deleted successfully!');
-                  })
-                  .catch(error => {
-                    console.error('Error deleting user account:', error);
-                  });
-              })
-              .catch(error => {
-                console.error('Error deleting user data:', error);
-              });
-          },
+          const db = getDatabase();
+          const userRef = ref(db, `users/${userId}`);
+          remove(userRef)
+            .then(() => {
+              // Delete user account from Firebase Authentication
+              user.delete()
+                .then(() => {
+                  // Account deleted successfully, redirect to login page or show success message
+                  
+                  router.replace('(auth)/sign-in');
+                  alert('Account deleted successfully!');
+                })
+                .catch(error => {
+                  console.error('Error deleting user account:', error);
+                });
+            })
+            .catch(error => {
+              console.error('Error deleting user data:', error);
+            });
         },
-      ],
-    );
-  };
+      },
+    ],
+  );
+};
 
 
   return (

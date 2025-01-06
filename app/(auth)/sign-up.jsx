@@ -53,27 +53,26 @@ const SignUp = () => {
 
   const OnCreateAccount = async () => {
     if (!email || !password || !reenterPassword || !username || !userPreference || !religion) {
-      ToastAndroid.show('Please fill in all fields', ToastAndroid.BOTTOM);
+      Alert.alert('Error', 'Please fill in all fields to continue.');
       return;
     }
 
     if (!validateEmail(email)) {
-      ToastAndroid.show('Invalid email format.', ToastAndroid.BOTTOM);
+      Alert.alert('Error', 'Invalid email format');
       return;
     }
 
     if (!validatePassword(password)) {
-      ToastAndroid.show(
-        'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.',
-        ToastAndroid.BOTTOM
-      );
+      Alert.alert(
+        'Error',
+        'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.');
       return;
     }
 
     if (password !== reenterPassword) {
-      ToastAndroid.show(
-        'Password Mismatch. The passwords do not match. Please try again.',
-        ToastAndroid.BOTTOM
+      Alert.alert(
+        'Error',
+        'Password Mismatch. The passwords do not match. Please try again.'
       );
       return;
     }
@@ -93,6 +92,7 @@ const SignUp = () => {
       await sendEmailVerification(user);
       ToastAndroid.show('Check your email to verify your account.', ToastAndroid.BOTTOM);
 
+      Alert.alert('Success', 'Account created successfully.');
       router.push({
         pathname: "(auth)/sign-in",
         params: { email, username, userPreference, religion },
@@ -101,16 +101,16 @@ const SignUp = () => {
       const errorCode = error.code;
       switch (errorCode) {
         case 'auth/email-already-in-use':
-          ToastAndroid.show('This email is already registered.', ToastAndroid.BOTTOM);
+          Alert.alert('Error',' This email is already registered.');
           break;
         case 'auth/weak-password':
-          ToastAndroid.show('The password is too weak.', ToastAndroid.BOTTOM);
+          Alert.alert('Error','The password is too weak.');
           break;
         case 'auth/invalid-email':
-          ToastAndroid.show('Invalid email address.', ToastAndroid.BOTTOM);
+          Alert.alert('Error','Invalid email address.');
           break;
         default:
-          ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.BOTTOM);
+          Alert.alert('Error','An error occurred. Please try again.');
       }
     }
   };
