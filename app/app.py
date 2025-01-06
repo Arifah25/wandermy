@@ -42,7 +42,11 @@ def get_recommendations():
         if not user_id:
             return jsonify({"error": "User ID is required"}), 400
 
-        # Fetch bookmarks and interactions for the user
+        # Fetch bookmarks, interactions, user data, and places
+        user_ref = db.reference(f'users/{user_id}')
+        user_data = user_ref.get() or {}
+        religion = user_data.get("religion", "").lower()  # Fetch religion
+
         bookmark_ref = db.reference(f'bookmark/{user_id}')
         interaction_ref = db.reference(f'user_interactions/{user_id}')
         places_ref = db.reference('places')
@@ -69,10 +73,19 @@ def get_recommendations():
                 "description": place_info.get("description", ""),
                 "address": place_info.get("address", ""),
                 "state": extract_state(place_info.get("address", "")),
+                "category": place_info.get("category", ""),  # Add category to filter dining places
+                "halalStatus": place_info.get("halalStatus", "").lower()  # Add halal status for filtering
             }
             for place_id, place_info in places_data.items()
             if place_id not in all_user_places  # Exclude already interacted/bookmarked
         ]
+
+        # Filter places based on religion for dining category
+        if religion == "islam":
+            places = [
+                place for place in places
+                if place["category"].lower() != "dining" or place["halalStatus"] == "halal"
+            ]
 
         # If no places are left to recommend
         if not places:
