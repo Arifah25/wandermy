@@ -204,7 +204,7 @@ const ChoosePlaces = () => {
         params: { docId },
       });
       }
-      // clearCart();
+      clearCart();
 
     } catch (error) {
       console.error('Error generating itinerary:', error);
