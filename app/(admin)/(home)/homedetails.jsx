@@ -81,6 +81,37 @@ const HomeDetails = () => {
     }
   }, [placeID]);
   
+  // Render facilities
+  const renderFacilities = () => {
+    const { facilities, halalStatus } = placeData;
+
+    if ((!facilities || facilities.length === 0) && !(category === 'dining' && halalStatus === 'halal')) {
+      return null; // Skip rendering if there are no facilities or halalStatus
+    }
+
+    return (
+      <View className="flex-row justify-start mb-3">
+        {/* <Text className="text-lg font-ksemibold mr-2">Facilities:</Text> */}
+        {/* Halal Icon for Dining Category */}
+        {category === 'dining' && halalStatus === 'Halal' && (
+          <Image source={icons.halal} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('Surau') && (
+          <Image source={icons.surau} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('WiFi') && (
+          <Image source={icons.wifi} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('Toilet') && (
+          <Image source={icons.toilet} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('Parking') && (
+          <Image source={icons.parking} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+      </View>
+    );
+  };
+  
   // Fetch operating hours
   useEffect(() => {
     const hourRef = ref(db, `operatingHours/${placeID}`);
@@ -176,6 +207,7 @@ useEffect(() => {
       <View className="items-center mx-7 justify-center">
         {category === 'event'? (
           <View className="w-full items-start mt-3">
+            {renderFacilities()}
             <View >
               <Text className="text-lg font-ksemibold">Description :</Text>
               <Text className="font-kregular">{description}</Text>
@@ -228,7 +260,7 @@ useEffect(() => {
                  
         ):category === 'attraction' ? (
           <View className="w-full items-start mt-3">
-
+            {renderFacilities()}
             <View className="w-full items-start">
               <Text className="text-lg font-ksemibold">Address :</Text>
               <Text className="font-kregular">{address}</Text>
@@ -286,7 +318,7 @@ useEffect(() => {
 
         ) : category === 'dining' ? (
           <View className="w-full items-start mt-3">
-
+            {renderFacilities()}
             <View className="w-full items-start">
               <Text className="text-lg font-ksemibold">Address :</Text>
               <Text className="font-kregular">{address}</Text>

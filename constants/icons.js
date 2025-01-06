@@ -18,6 +18,11 @@ import close from "../assets/icons/close.png";
 import clock from "../assets/icons/clock.png";
 import wandermy from "../assets/icons/wandermy.png";
 import wandermy1 from "../assets/icons/wandermy1.png";
+import parking from "../assets/icons/parking.png";
+import wifi from "../assets/icons/wifi.png";
+import toilet from "../assets/icons/toilet.png";
+import surau from "../assets/icons/surau.png";
+import halal from "../assets/icons/halal.png";
 
 export default {
     home,
@@ -40,4 +45,9 @@ export default {
     clock,
     wandermy,
     wandermy1,
+    surau,
+    parking,
+    wifi,
+    halal,
+    toilet
 };
