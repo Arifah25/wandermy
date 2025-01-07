@@ -61,7 +61,7 @@ const ItineraryCard = ({
             <View className="w-10">
                 <AntDesign name="calendar" size={24} color="black" />
             </View>
-            <TouchableOpacity className={role === 'viewer' ? 'w-3/4' : 'w-3/5'}
+            <TouchableOpacity className={role !== 'owner' ? 'w-3/5' : 'w-3/5'}
             onPress={handlePress}>
             <Text
             className="text-base font-kregular"
@@ -69,15 +69,18 @@ const ItineraryCard = ({
                 {name} 
             </Text>
             </TouchableOpacity>
+            <View className="flex-row items-end justify-end w-1/6">
             {role !== 'viewer' && (
-              <TouchableOpacity className="w-10" onPress={handleEdit}>
+              <TouchableOpacity className="" onPress={handleEdit}>
                 <MaterialIcons name="edit" size={24} color="black" />
               </TouchableOpacity>
             )}
-            <TouchableOpacity className=""
+            {role === 'owner' && (<TouchableOpacity className="ml-3"
             onPress={confirmDelete}>
             <MaterialIcons name="delete" size={24} color="red" />
-            </TouchableOpacity>
+            </TouchableOpacity>)}
+            </View>
+            
         </View>
     </View>
   )
