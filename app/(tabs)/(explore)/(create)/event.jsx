@@ -177,7 +177,7 @@ const CreateEvent = () => {
       };
       await set(newPlaceRef, placeData);
 
-      // Save opening hours
+      // Save event date and time
       const eventRef = ref(db, `event/${placeID}`);
       
         await set(eventRef, {

@@ -22,11 +22,8 @@ const Explore = () => {
   useEffect(() => {
     setLoading(true);
     const db = getDatabase();
-
-
-    // Switch between the different categories: 'attractions', 'dining', and 'events'
-    const placesRef = ref(db, 'places'); // Assuming all places are under one 'places' node
-   
+    const placesRef = ref(db, "places");
+  
     const unsubscribe = onValue(placesRef, (snapshot) => {
       const data = snapshot.val();
       const placesArray = data
@@ -35,23 +32,41 @@ const Explore = () => {
             ...data[key],
           }))
         : [];
-     
-      // Filter the data based on the selected tab/category
-      const filteredPlaces = placesArray.filter(place => place.category === activeTab && place.status === 'approved');
-
-
+  
+      let filteredPlaces;
+  
+      if (activeTab === "event") {
+        // Fetch events data
+        filteredPlaces = placesArray.filter((place) => {
+          if (place.category === "events" && place.status === "approved") {
+            // Parse the startDate in DD/MM/YYYY format
+            const [day, month, year] = place.startDate.split("/").map(Number);
+            const startDate = new Date(year, month - 1, day); // Convert to Date object
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset today's time to midnight for accurate comparison
+  
+            console.log(today);
+            return startDate >= today; // Include events whose startDate is today or later'
+          }
+          return false;
+        });
+      } else {
+        // Fetch data for other categories
+        filteredPlaces = placesArray.filter(
+          (place) =>
+            place.category === activeTab && place.status === "approved"
+        );
+      }
+  
       setPlaces(filteredPlaces);
       setLoading(false); // Stop loading after data is fetched
     });
-
-
-   
+  
     // Clean up the listener on unmount
     return () => unsubscribe();
-  }, [activeTab]); // Re-fetch when activeTab changes
-
-
-
+  }, [activeTab]);
+   // Re-fetch when activeTab changes
 
   const parseTime = (timeString) => {
     // Check if timeString is valid
