@@ -1,10 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, ActivityIndicator, TouchableOpacity, Image, Modal, Text, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getAuth } from 'firebase/auth'; // Ensure this is imported
+import { getDatabase, ref, onValue, get, push, set } from 'firebase/database';
 import { PlaceCard, Search, TabPlace } from '../../../components';
 import { icons } from '../../../constants';
 
+const logUserInteraction = async (placeID) => {
+  const db = getDatabase();
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
+
+  if (!userId) return; // Ensure user is logged in
+
+  try {
+    const interactionRef = ref(db, `user_interactions/${userId}`);
+
+    // Fetch existing interactions
+    const snapshot = await get(interactionRef);
+    const interactions = snapshot.val();
+
+    if (interactions) {
+      const interactionEntries = Object.entries(interactions); // Convert to an array of [key, value]
+
+      // If there are 10 or more interactions, find the oldest one by timestamp and delete it
+      if (interactionEntries.length >= 10) {
+        const oldestInteraction = interactionEntries.reduce((oldest, current) =>
+          new Date(oldest[1].timestamp) < new Date(current[1].timestamp) ? oldest : current
+        );
+
+        const oldestKey = oldestInteraction[0]; // Get the key of the oldest interaction
+        await set(ref(db, `user_interactions/${userId}/${oldestKey}`), null); // Delete the oldest interaction
+      }
+    }
+
+    // Add the new interaction
+    const newInteractionRef = push(interactionRef);
+    await set(newInteractionRef, {
+      placeID,
+      timestamp: new Date().toISOString(),
+    });
+
+    console.log("User interaction logged successfully.");
+  } catch (error) {
+    console.error("Error logging user interaction:", error);
+  }
+};
 
 const Explore = () => {
  
@@ -65,31 +106,11 @@ const Explore = () => {
   
     // Clean up the listener on unmount
     return () => unsubscribe();
-  }, [activeTab]);
-   // Re-fetch when activeTab changes
-
-  const parseTime = (timeString) => {
-    // Check if timeString is valid
-    if (!timeString) return [0, 0]; // Return 00:00 if time is not available
-   
-    const timeParts = timeString.split(' ');
-    const time = timeParts[0]; // e.g., "10:00"
-    const period = timeParts[1]; // e.g., "AM" or "PM"
- 
-    let [hours, minutes] = time.split(':').map(Number);
-   
-    // Convert to 24-hour format
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
- 
-    return [hours, minutes];
-  };
-
+  }, [activeTab]); // Re-fetch when activeTab changes
 
   // Sorting Function
   const sortData = (order) => {
     let sorted;
-
 
     switch (order) {
       case 'asc':
@@ -105,24 +126,19 @@ const Explore = () => {
         sorted = [...filteredPlaces].sort((a, b) => new Date(a.dateApproved) - new Date(b.dateApproved));
         break;  
     }
-
-
     setSortOrder(order);
     setFilteredPlaces(sorted);
     setIsSortModalVisible(false); // Close the modal after sorting
   };
 
-
-
-
   // Handle pressing a place card to navigate to its details, passing all place data
-  const handlePlacePress = (place) => {
+  const handlePlacePress = (item) => {
+    logUserInteraction(item.id);
     router.push({
       pathname: '(tabs)/(explore)/details',
-      params: { ...place }, // Pass all the place data as route params
+      params: { ...item }, // Pass data to the details page
     });
   };
-
 
   const toggleSortModal = () => {
     setIsSortModalVisible(!isSortModalVisible);
@@ -183,7 +199,7 @@ const Explore = () => {
 
 
         {/* Places List or Loading Indicator */}
-    <View className="h-full w-full mt-2 " style={{ paddingBottom: 120, paddingTop: 10 }}>
+        <View className="h-full w-full mt-2 " style={{ paddingBottom: 120, paddingTop: 10 }}>
           {loading ? (
             <ActivityIndicator size="large" color="#A91D1D" />
           ) : (
