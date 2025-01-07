@@ -61,34 +61,58 @@ const Explore = () => {
 
   // Fetch data based on the active category
   useEffect(() => {
-    setLoading(true);
-    const db = getDatabase();
-    const placesRef = ref(db, "places");
+    const fetchData = async () => {
+      setLoading(true);
+      const db = getDatabase();
+      const placesRef = ref(db, "places");
+      const eventRef = ref(db, "event");
   
-    const unsubscribe = onValue(placesRef, (snapshot) => {
-      const data = snapshot.val();
-      const placesArray = data
-        ? Object.keys(data).map((key) => ({
-            id: key,
-            ...data[key],
-          }))
-        : [];
+      try {
+        // Fetch places
+        const placesSnapshot = await get(placesRef);
+        const placesData = placesSnapshot.val();
+        const placesArray = placesData
+          ? Object.keys(placesData).map((key) => ({
+              id: key,
+              ...placesData[key],
+            }))
+          : [];
+  
+        // Fetch event data
+        const eventSnapshot = await get(eventRef);
+        const eventData = eventSnapshot.val();
+  
+        // Combine places with event data
+        const combinedData = placesArray.map((place) => ({
+          ...place,
+          eventDetails: eventData ? eventData[place.id] : null, // Match event data with place ID
+        }));  
   
       let filteredPlaces;
   
       if (activeTab === "event") {
         // Fetch events data
-        filteredPlaces = placesArray.filter((place) => {
-          if (place.category === "events" && place.status === "approved") {
-            // Parse the startDate in DD/MM/YYYY format
-            const [day, month, year] = place.startDate.split("/").map(Number);
-            const startDate = new Date(year, month - 1, day); // Convert to Date object
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Reset today's time to midnight for accurate comparison
+        filteredPlaces = combinedData.filter((item) => {
+          if (
+            item.category === "event" &&
+            item.status === "approved" &&
+            item.eventDetails &&
+            item.eventDetails.startDate &&
+            item.eventDetails.endDate
+          ) {
+            const [startDay, startMonth, startYear] = item.eventDetails.startDate
+              .split("/")
+              .map(Number);
+            const [endDay, endMonth, endYear] = item.eventDetails.endDate
+              .split("/")
+              .map(Number);
   
-            console.log(today);
-            return startDate >= today; // Include events whose startDate is today or later'
+            const startDate = new Date(startYear, startMonth - 1, startDay);
+            const endDate = new Date(endYear, endMonth - 1, endDay);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+  
+            return endDate >= today;
           }
           return false;
         });
@@ -99,14 +123,16 @@ const Explore = () => {
             place.category === activeTab && place.status === "approved"
         );
       }
-  
-      setPlaces(filteredPlaces);
-      setLoading(false); // Stop loading after data is fetched
-    });
-  
-    // Clean up the listener on unmount
-    return () => unsubscribe();
-  }, [activeTab]); // Re-fetch when activeTab changes
+      setPlaces(filteredPlaces); // Update state with filtered places
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [activeTab]);  // Re-fetch when activeTab changes
 
   // Sorting Function
   const sortData = (order) => {
