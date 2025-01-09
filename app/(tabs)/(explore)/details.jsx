@@ -466,9 +466,17 @@ useEffect(() => {
         <View className="m-5">
           {category === 'event' ? (
             <Image
-              source={{ uri: poster }}
-              className="w-full h-auto rounded-lg bg-secondary"
-              style={{ aspectRatio: 1 }}
+              source={{
+                uri: poster,
+                cache: 'force-cache', // Options: 'default', 'reload', 'force-cache', 'only-if-cached'
+              }}
+              style={{
+                width: '100%',
+                aspectRatio: 1,
+                borderRadius: 10,
+                backgroundColor: '#E5E5E5', // Optional fallback background
+              }}
+              resizeMode="contain"
             />
           ) : (
             <Poster image={poster} />

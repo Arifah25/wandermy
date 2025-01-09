@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, TouchableOpacity } from 'react-native';
+import { Image, TouchableOpacity, Alert } from 'react-native';
 import {icons} from '../../../constants';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRouter } from 'expo-router';
@@ -47,7 +47,6 @@ const HomeLayout = () => {
       { cancelable: true }
     );
   };
-
 
  
   return (

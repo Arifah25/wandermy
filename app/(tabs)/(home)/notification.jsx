@@ -14,30 +14,39 @@ const Notification = () => {
 
   useEffect(() => {
     if (userId) {
-        const placesRef = ref(db, 'places');
-        const unsubscribe = onValue(placesRef, (snapshot) => {
+      const placesRef = ref(db, 'places');
+      const unsubscribe = onValue(placesRef, (snapshot) => {
         const data = snapshot.val();
         const userNotifications = [];
-
+  
         // Filter places for the logged-in user
         Object.keys(data).forEach((placeID) => {
           const place = data[placeID];
-          if (place.user === userId && place.status === "approved") {
-            userNotifications.push({
-              id: placeID,
-              message: `${place.name} has been approved!`,
-              placeID,
-              poster: place.poster,
-            });
+          if (place.user === userId) {
+            if (place.status === "approved") {
+              userNotifications.push({
+                id: placeID,
+                message: `Congratulations! ${place.name} has been approved!`,
+                placeID,
+                poster: place.poster,
+              });
+            } else if (place.status === "rejected") {
+              userNotifications.push({
+                id: placeID,
+                message: `We're sorry to inform you but ${place.name} has been rejected.`,
+                placeID,
+                poster: place.poster,
+              });
+            }
           }
         });
-
+  
         setNotifications(userNotifications);
       });
-
+  
       return () => unsubscribe(); // Cleanup listener
     }
-  }, [userId]);
+  }, [userId]);  
 
   //tak functioning lagi
   const handleNotificationClick = (placeID) => {
