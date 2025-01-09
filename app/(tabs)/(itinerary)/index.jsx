@@ -59,10 +59,10 @@ const MyItinerary = () => {
     router.push("(tabs)/(itinerary)/(create-itinerary)/new");
   }
 
-  const navigateDetails = (docId) => {
+  const navigateDetails = (docId, startDate, endDate) => {
     router.push({
       pathname: '(tabs)/(itinerary)/detailsiti',
-      params: { docId },
+      params: { docId, startDate, endDate },
     });
   }
 
@@ -137,7 +137,7 @@ const MyItinerary = () => {
                 rolePromise = {getUserRole(item.id, user.email)}
                 itinerary={item}
                 name={item.itineraryData.tripDetails?.tripName}
-                handlePress={() => navigateDetails(item.id)}
+                handlePress={() => navigateDetails(item.id, item.startDate, item.endDate)}
                 handleDelete={() => handleDelete(item.id)}
               />
             )}

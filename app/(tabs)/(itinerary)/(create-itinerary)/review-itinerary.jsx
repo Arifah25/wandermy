@@ -166,7 +166,7 @@ const ReviewItinerary = () => {
   const navigateEdit = (docId) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/choose-places',
-      params: { docId, cartD: date.cart, info: date.info },
+      params: { docId, cartD: date.cart, info: date.info, startDate: date.startDate, endDate: date.endDate },
     });
     console.log(date.info);
   }

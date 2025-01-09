@@ -53,46 +53,105 @@ const ChoosePlaces = () => {
   };
 
   useEffect(() => {
-    if(cartD){
-      setCartData(JSON.parse(cartD));
-    }
-    // console.log(cartD);
-    const db = getDatabase();
-    const placesRef = ref(db, 'places');
+    const fetchData = async () => {
+      if(cartD){
+        setCartData(JSON.parse(cartD));
+      }
+      setLoading(true);      
+      const db = getDatabase();
+      const placesRef = ref(db, "places");
+      const eventRef = ref(db, "event");
+  
+      try {
+        // Fetch places
+        const placesSnapshot = await get(placesRef);
+        const placesData = placesSnapshot.val();
+        const placesArray = placesData
+          ? Object.keys(placesData).map((key) => ({
+              id: key,
+              ...placesData[key],
+            }))
+          : [];
+  
+        // Fetch event data
+        const eventSnapshot = await get(eventRef);
+        const eventData = eventSnapshot.val();
+  
+        // Combine places with event data
+        const combinedData = placesArray.map((place) => ({
+          ...place,
+          eventDetails: eventData ? eventData[place.id] : null, // Match event data with place ID
+        }));
+  
+        let filteredPlaces;
 
-    const unsubscribe = onValue(placesRef, (snapshot) => {
-      const data = snapshot.val();
-      const placesArray = data
-        ? Object.keys(data).map((key) => ({
-            id: key,
-            ...data[key],
-          }))
-        : [];
+        let tripStartDate = moment(itineraryData?.startDate);
+        let tripEndDate = moment(itineraryData?.endDate);
 
-      const targetCoordinates = itineraryData?.locationInfo?.coordinates || info?.coordinates;
-      const targetLocation = itineraryData?.locationInfo?.name || info?.name;
+        if(startDate && endDate){
+           tripStartDate = moment(startDate, 'DD MMM YYYY')
+           tripEndDate = moment(endDate, 'DD MMM YYYY');
+        }
 
-      const filtered = placesArray
-        .filter(
-          (place) =>
-            place.category === activeTab &&
-            place.status === 'approved' &&
-            isNearby(
-              place.address,
-              { lat: place.latitude, lng: place.longitude },
-              targetLocation,
-              targetCoordinates
+        if (activeTab === "event") {
+          // Filter events data
+          filteredPlaces = combinedData.filter((item) => {
+            if (
+              item.category === "event" &&
+              item.status === "approved" &&
+              item.eventDetails &&
+              item.eventDetails.startDate &&
+              item.eventDetails.endDate 
+            ) {
+              // Parse event start and end dates
+              const eventStartDate = moment(item.eventDetails.startDate, "DD/MM/YYYY"); // Parse event date
+              const eventEndDate = moment(item.eventDetails.endDate, "DD/MM/YYYY"); // Parse event date
+              console.log("Event Start Date:", eventStartDate.format());
+              console.log("Event End Date:", eventEndDate.format());
+              console.log("Trip Start Date:", tripStartDate.format(), startDate);
+              console.log("Trip End Date:", tripEndDate.format());
+  
+              return (
+                eventEndDate.isSameOrAfter(tripStartDate) &&
+                eventStartDate.isSameOrBefore(tripEndDate)
+              );
+            }
+            return false;
+          });
+        } else {
+          // Additional filtering based on itinerary data and nearby places
+          const targetCoordinates =
+            itineraryData?.locationInfo?.coordinates || info?.coordinates;
+          const targetLocation =
+            itineraryData?.locationInfo?.name || info?.name;
+  
+          filteredPlaces = placesArray
+            .filter(
+              (place) =>
+                place.category === activeTab &&
+                place.status === "approved" &&
+                isNearby(
+                  place.address,
+                  { lat: place.latitude, lng: place.longitude },
+                  targetLocation,
+                  targetCoordinates
+                )
             )
-        )
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      setPlaces(filtered);
-      setFilteredPlaces(filtered);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+            .sort((a, b) => a.name.localeCompare(b.name));
+        }
+  
+        setPlaces(filteredPlaces);
+        setFilteredPlaces(filteredPlaces);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
   }, [activeTab, itineraryData?.locationInfo]);
+  
 
   useEffect(() => {
     const fetchBookmarks = async () => {
@@ -149,7 +208,7 @@ const ChoosePlaces = () => {
   };
 
   const route = useRoute();
-  const { docId, cartD, info } = route.params; 
+  const { docId, cartD, info, startDate, endDate } = route.params; 
 
   const handleGenerateItinerary = async () => {
     setModalVisible(false)
@@ -196,8 +255,8 @@ const ChoosePlaces = () => {
           cart: formattedPlaces,
           info: itineraryData?.locationInfo,
           itineraryData: response,
-          startDate: moment(itineraryData?.startDate).format('DD MMM '),
-          endDate: moment(itineraryData?.endDate).format('DD MMM ')
+          startDate: moment(itineraryData?.startDate).format('DD MMM YYYY'),
+          endDate: moment(itineraryData?.endDate).format('DD MMM YYYY')
       });
       router.push({
         pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',

@@ -61,33 +61,78 @@ const Explore = () => {
 
   // Fetch data based on the active category
   useEffect(() => {
-    setLoading(true);
-    const db = getDatabase();
+    const fetchData = async () => {
+      setLoading(true);
+      const db = getDatabase();
+      const placesRef = ref(db, "places");
+      const eventRef = ref(db, "event");
+  
+      try {
+        // Fetch places
+        const placesSnapshot = await get(placesRef);
+        const placesData = placesSnapshot.val();
+        const placesArray = placesData
+          ? Object.keys(placesData).map((key) => ({
+              id: key,
+              ...placesData[key],
+            }))
+          : [];
+  
+        // Fetch event data
+        const eventSnapshot = await get(eventRef);
+        const eventData = eventSnapshot.val();
+  
+        // Combine places with event data
+        const combinedData = placesArray.map((place) => ({
+          ...place,
+          eventDetails: eventData ? eventData[place.id] : null, // Match event data with place ID
+        }));  
+  
+      let filteredPlaces;
+  
+      if (activeTab === "event") {
+        // Fetch events data
+        filteredPlaces = combinedData.filter((item) => {
+          if (
+            item.category === "event" &&
+            item.status === "approved" &&
+            item.eventDetails &&
+            item.eventDetails.startDate &&
+            item.eventDetails.endDate
+          ) {
+            const [startDay, startMonth, startYear] = item.eventDetails.startDate
+              .split("/")
+              .map(Number);
+            const [endDay, endMonth, endYear] = item.eventDetails.endDate
+              .split("/")
+              .map(Number);
+  
+            const startDate = new Date(startYear, startMonth - 1, startDay);
+            const endDate = new Date(endYear, endMonth - 1, endDay);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+  
+            return endDate >= today;
+          }
+          return false;
+        });
+      } else {
+        // Fetch data for other categories
+        filteredPlaces = placesArray.filter(
+          (place) =>
+            place.category === activeTab && place.status === "approved"
+        );
+      }
+      setPlaces(filteredPlaces); // Update state with filtered places
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-    // Switch between the different categories: 'attractions', 'dining', and 'events'
-    const placesRef = ref(db, 'places'); // Assuming all places are under one 'places' node
-   
-    const unsubscribe = onValue(placesRef, (snapshot) => {
-      const data = snapshot.val();
-      const placesArray = data
-        ? Object.keys(data).map((key) => ({
-            id: key,
-            ...data[key],
-          }))
-        : [];
-     
-      // Filter the data based on the selected tab/category
-      const filteredPlaces = placesArray.filter(place => place.category === activeTab && place.status === 'approved');
-
-
-      setPlaces(filteredPlaces);
-      setLoading(false); // Stop loading after data is fetched
-    });
-   
-    // Clean up the listener on unmount
-    return () => unsubscribe();
-  }, [activeTab]); // Re-fetch when activeTab changes
+  fetchData();
+}, [activeTab]);  // Re-fetch when activeTab changes
 
   // Sorting Function
   const sortData = (order) => {
