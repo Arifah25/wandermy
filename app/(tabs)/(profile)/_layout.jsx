@@ -6,7 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Profile from '.';
 import BookmarkPlaces from './bookmark';
 import EditProfile from "./edit";
-import MyItineraries from "./itinerary"
 import { useRouter } from 'expo-router';
 import Details from "./details";
 
@@ -64,17 +63,6 @@ const ProfileLayout = () => {
         component={BookmarkPlaces}
         options={{ 
           headerTitle: 'Bookmarks',
-          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: '#A91D1D' },
-          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
-        }}
-      />
-      <Stack.Screen
-        name="itinerary"
-        component={MyItineraries}
-        options={{ 
-          headerTitle: 'My Itineraries',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },

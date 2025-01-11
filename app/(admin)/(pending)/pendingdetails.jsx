@@ -49,6 +49,28 @@ const PendingDetails = () => {
       router.back();
   };
 
+  const rejectPlace = (placeID, category) => {
+    const placeRef = ref(db, `places/${placeID}`);
+  
+    const localDate = new Date();
+    localDate.setHours(localDate.getHours() + 8); // Adjust to UTC+8
+    const currentDate = localDate.toISOString(); // ISO format
+  
+    // Update the status to rejected
+    update(placeRef, {
+      status: "rejected",
+      dateRejected: currentDate,
+    })
+      .then(() => {
+        console.log(`Place with ID ${placeID} has been rejected.`);
+        router.back(); // Navigate back after action
+      })
+      .catch((error) => {
+        console.error("Error updating status:", error);
+      });
+  };
+  
+
   const handleReject = () => {
     toggleModalVisibility();
   };
@@ -387,7 +409,7 @@ const PendingDetails = () => {
 
               <Button 
               title="Yes"
-              handlePress={() => deletePlace(placeID, category)}
+              handlePress={() => rejectPlace(placeID, category)}
               style="bg-primary w-2/5"
               textColor="text-white"/>
             </View>
