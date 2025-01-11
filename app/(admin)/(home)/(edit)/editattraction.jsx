@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, set, get, update } from 'firebase/database';
 import * as ImagePicker from 'expo-image-picker'; // to pick images
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const EditAttraction = () => {
   const db = getDatabase();
@@ -29,7 +30,9 @@ const EditAttraction = () => {
   const [latitude, setLatitude] = useState();
   const [admissionType, setAdmissionType] = useState();
   const [operatingHours, setOperatingHours] = useState([]);
- 
+  const [errors, setErrors] = useState({});
+  const [facilities, setFacilities] = useState(['Surau', 'WiFi', 'Parking', 'Toilet']);
+  
   const [placeData, setPlaceData] = useState({
     name: '',
     latitude: '',
@@ -41,7 +44,7 @@ const EditAttraction = () => {
     price_or_menu: [],
     poster: [], 
     tags: '',
-    description: '',
+    facilities: [],
     operatingHours: [],
     admissionType: '',
   });
@@ -57,7 +60,7 @@ const EditAttraction = () => {
     price_or_menu: [],
     poster: [], 
     tags: '',
-    admissionType:'',
+    facilities: [],
     operatingHours: [
       { dayOfWeek: 'MON', isOpen: false, openingTime: '', closingTime: '' },
       { dayOfWeek: 'TUE', isOpen: false, openingTime: '', closingTime: '' },
@@ -87,6 +90,7 @@ const EditAttraction = () => {
           setLatitude(data.latitude || "");
           setAdmissionType(data.admissionType || "free");
           setTags(data.tags);
+          setFacilities(data.facilities || []);
           setOperatingHours(data.operatingHours || []);
           setAdmissionType(data.admissionType);
           // console.log("Poster Images:", data.poster); // Log poster images
@@ -100,6 +104,16 @@ const EditAttraction = () => {
       });
     }
   }, [placeID]);
+
+  const handleFacilityToggle = (facility) => {
+    setFacilities((prevFacilities) => {
+      const isSelected = prevFacilities.includes(facility);
+      if (isSelected) {
+        return prevFacilities.filter((item) => item !== facility); // Remove facility
+      }
+      return [...prevFacilities, facility]; // Add facility
+    });
+  };
 
   useEffect(() => {
     const fetchOperatingHours = async () => {
@@ -244,34 +258,58 @@ const EditAttraction = () => {
     setIsModalVisible(!isModalVisible);
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = 'Name is required.';
+    if (!form.address.trim()) newErrors.address = 'Address is required.';
+    if (!form.contactNum.trim()) newErrors.contactNum = 'Contact number is required.';
+    if (!poster.length) newErrors.poster = 'At least one poster is required.';
+    if (!form.tags.trim()) newErrors.tags = 'Tags are required.';
+
+    form.operatingHours.forEach((day) => {
+      if (day.isOpen && (!day.openingTime || !day.closingTime)) {
+        newErrors.operatingHours = 'Operating hours must be set for open days.';
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   
   const updateDetail = async () => {
-    if (!placeID) return;
+    if (!validateForm()) {
+      Alert.alert('Incomplete Form', 'Please fill in all required fields before updating.', [{ text: 'OK' }]);
+      return;
+    }
 
-    let posterURL = await Promise.all(
-      poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
-    );
-  
-    // Handle uploading all price/menu images
-    let priceOrMenuURL = await Promise.all(
-      price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
-    );
-
-    // Update Firebase Realtime Database with new data
-    const updates = {
-      name: name || placeData.name,
-      websiteLink: websiteLink || placeData.websiteLink || "",
-      contactNum: contactNum || placeData.contactNum || "",
-      address: address || placeData.address || "",
-      admissionType: admissionType || placeData.admissionType || "",
-      longitude: longitude || placeData.longitude || "",
-      latitude: latitude || placeData.latitude || "",
-      tags: tags || placeData.tags || "",
-      poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
-      price_or_menu: admissionType === 'free' ? null : priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],      admissionType: admissionType || placeData.admissionType,
-    };
+    setIsSubmitting(true);
 
     try {
+      let posterURL = await Promise.all(
+        poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
+      );
+  
+      // Handle uploading all price/menu images
+      let priceOrMenuURL = await Promise.all(
+        price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
+      );
+
+      // Update Firebase Realtime Database with new data
+      const updates = {
+        name: name || placeData.name,
+        websiteLink: websiteLink || placeData.websiteLink || "",
+        contactNum: contactNum || placeData.contactNum || "",
+        address: address || placeData.address || "",
+        admissionType: admissionType || placeData.admissionType || "",
+        longitude: longitude || placeData.longitude || "",
+        latitude: latitude || placeData.latitude || "",
+        tags: tags || placeData.tags || "",
+        facilities: placeData.facilities || [],
+        poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
+        price_or_menu: admissionType === 'free' ? null : priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],      admissionType: admissionType || placeData.admissionType,
+      };
+
       const userRef = ref(db, `places/${placeID}`);
       await update(userRef, updates);
 
@@ -286,14 +324,15 @@ const EditAttraction = () => {
         });
       });
 
-      // Show a success message or navigate the user
-      console.log("Detail updated successfully.");
-      // router.push(`(admin)/(home)/details/${placeID}`); // nak change to updated detail page
-      router.back();
+      Alert.alert('Success', 'Details updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
     } catch (error) {
-      console.error("Error updating detail:", error);
+      console.error('Error updating detail:', error);
+      Alert.alert('Error', 'An error occurred while updating. Please try again.', [{ text: 'OK' }]);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+      
   
   const handleLocationSelected = (locationData) => {
     console.log('Selected Location:', locationData);

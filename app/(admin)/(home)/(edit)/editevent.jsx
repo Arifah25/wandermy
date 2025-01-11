@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, set, get, update } from 'firebase/database';
 import * as ImagePicker from 'expo-image-picker'; // to pick images
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const EditEvent = () => {
   const db = getDatabase();
@@ -33,6 +34,8 @@ const EditEvent = () => {
   const [endTime, setEndTime] = useState([]);
   const [admissionType, setAdmissionType] = useState(''); // State for admission type
   const [feeAmount, setFeeAmount] = useState(''); // State for fee amount (if paid)
+  const [facilities, setFacilities] = useState(['Surau', 'WiFi', 'Parking', 'Toilet']);
+  const [errors, setErrors] = useState({});
 
   const [placeData, setPlaceData] = useState({
     name: '',
@@ -50,6 +53,7 @@ const EditEvent = () => {
     endTime: '', 
     admissionType: '',
     feeAmount: '',
+    facilities: []
   });
   
   const [form, setForm] = useState({
@@ -68,6 +72,7 @@ const EditEvent = () => {
     endTime: '',
     admissionType: '',
     feeAmount: '',
+    facilities: []
   });
 
   useEffect(() => {
@@ -87,6 +92,7 @@ const EditEvent = () => {
           setLongitude(data.longitude);
           setLatitude(data.latitude);
           setTags(data.tags);
+          setFacilities(data.facilities || []);
           setDescription(data.description);
           setAdmissionType(data.admissionType); // Set admission type
           setFeeAmount(data.feeAmount || ''); // Set fee amount if paid
@@ -105,14 +111,13 @@ const EditEvent = () => {
         if (snapshot.exists()) {
           const data = snapshot.val();
           console.log("Fetched event data:", data); 
-          setStartDate(data.startDate);
-          setEndDate(data.endDate);
-          setStartTime(data.startTime);
-          setEndTime(data.endTime);
-          console.log("Start Date:", data.startDate);
-          console.log("End Date:", data.endDate);
-          console.log("Start Time:", data.startTime);
-          console.log("End Time:", data.endTime);
+          setForm({
+            ...form,
+            startDate: data.startDate || '',
+            endDate: data.endDate || '',
+            startTime: data.startTime || '',
+            endTime: data.endTime || '',
+          });
         } else {
           console.log("No event data available");
         }
@@ -152,6 +157,16 @@ const EditEvent = () => {
       console.error("Error uploading profile picture:", error);
       throw error;
     }
+  };
+
+  const handleFacilityToggle = (facility) => {
+    setFacilities((prevFacilities) => {
+      const isSelected = prevFacilities.includes(facility);
+      if (isSelected) {
+        return prevFacilities.filter((item) => item !== facility); // Remove facility
+      }
+      return [...prevFacilities, facility]; // Add facility
+    });
   };
 
   const handleChangePoster = async () => {
@@ -211,49 +226,93 @@ const EditEvent = () => {
     setIsModalVisible(!isModalVisible);
   };
 
-  
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = 'Name is required.';
+    if (!form.address.trim()) newErrors.address = 'Address is required.';
+    if (!form.contactNum.trim()) newErrors.contactNum = 'Contact number is required.';
+    if (!poster.length) newErrors.poster = 'At least one poster is required.';
+    if (!form.tags.trim()) newErrors.tags = 'Tags are required.';
+    if (!form.description.trim()) newErrors.description = 'Description is required.';
+    if (!form.startDate.trim()) newErrors.startDate = 'Start date is required.';
+    if (!form.endDate.trim()) newErrors.endDate = 'End date is required.';
+    if (!form.startTime.trim()) newErrors.startTime = 'Start time is required.';
+    if (!form.endTime.trim()) newErrors.endTime = 'End time is required.';
+    if (!form.admissionType) newErrors.admissionType = 'Admission type is required.';
+
+    form.operatingHours.forEach((day) => {
+      if (day.isOpen && (!day.openingTime || !day.closingTime)) {
+        newErrors.operatingHours = 'Operating hours must be set for open days.';
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const updateDetail = async () => {
-    if (!placeID) return;
+    if (!validateForm()) {
+      Alert.alert('Incomplete Form', 'Please fill in all required fields before updating.', [{ text: 'OK' }]);
+      return;
+    }
 
-    let posterURL = await Promise.all(
-      poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
-    );
-  
-    // Handle uploading all price/menu images
-    let priceOrMenuURL = await Promise.all(
-      price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
-    );
-
-    // Update Firebase Realtime Database with new data
-    const updates = {
-      name: name || placeData.name,
-      contactNum: contactNum || placeData.contactNum,
-      address: address || placeData.address,
-      longitude: longitude || placeData.longitude,
-      latitude: latitude || placeData.latitude,
-      tags: tags || placeData.tags,
-      poster: posterURL || placeData.poster,
-      price_or_menu: priceOrMenuURL || placeData.price_or_menu,
-      description: description || placeData.description,
-      startDate: startDate || placeData.startDate,
-      endDate: endDate || placeData.endDate,
-      startTime: startTime || placeData.startTime,
-      endTime: endTime || placeData.endTime,
-      admissionType: admissionType || placeData.admissionType,
-      feeAmount: admissionType === 'paid' ? feeAmount : null,
-    };
+    setIsSubmitting(true);
 
     try {
+      let posterURL = await Promise.all(
+        poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
+      );
+    
+      // Handle uploading all price/menu images
+      let priceOrMenuURL = await Promise.all(
+        price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
+      );
+
+      // Update Firebase Realtime Database with new data
+      const updates = {
+        name: name || placeData.name,
+        contactNum: contactNum || placeData.contactNum,
+        address: address || placeData.address,
+        longitude: longitude || placeData.longitude,
+        latitude: latitude || placeData.latitude,
+        tags: tags || placeData.tags,
+        poster: posterURL || placeData.poster,
+        price_or_menu: priceOrMenuURL || placeData.price_or_menu,
+        description: description || placeData.description,
+        startDate: startDate || placeData.startDate,
+        endDate: endDate || placeData.endDate,
+        startTime: startTime || placeData.startTime,
+        endTime: endTime || placeData.endTime,
+        admissionType: admissionType || placeData.admissionType,
+        feeAmount: admissionType === 'paid' ? feeAmount : null,
+      };
+    
       const userRef = ref(db, `places/${placeID}`);
       await update(userRef, updates);
 
-      // Show a success message or navigate the user
-      console.log("Detail updated successfully.");
-      // router.push(`(admin)/(home)/details/${placeID}`); // nak change to updated detail page
-      router.back();
+      // Save opening hours
+      form.operatingHours.forEach(async (day) => {
+        const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
+        await set(operatingHoursRef, {
+          // dayOfWeek: day.dayOfWeek,
+          isOpen: day.isOpen,
+          openingTime: day.isOpen ? day.openingTime : 'null',
+          closingTime: day.isOpen ? day.closingTime : null,
+        });
+      });
+
+      Alert.alert('Success', 'Details updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
     } catch (error) {
-      console.error("Error updating detail:", error);
+      console.error('Error updating detail:', error);
+      Alert.alert('Error', 'An error occurred while updating. Please try again.', [{ text: 'OK' }]);
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const renderError = (field) => {
+    return errors[field] ? <Text style={{ color: 'red', fontSize: 12 }}>{errors[field]}</Text> : null;
   };
   
   const handleLocationSelected = (locationData) => {
@@ -274,9 +333,13 @@ const EditEvent = () => {
 
   
   return (
-    // <SafeAreaView>
-    <ScrollView className="flex-1 h-full px-8 bg-white">
-      <Modal
+    <KeyboardAwareScrollView
+      className="flex-1 h-full px-8 bg-white"
+      contentContainerStyle={{ flexGrow: 1 }}
+      enableOnAndroid={true}
+      keyboardShouldPersistTaps="handled"
+    >      
+    <Modal
       visible={isModalVisible}
       transparent={true}
       animationType="fade"
@@ -289,7 +352,7 @@ const EditEvent = () => {
       </Modal>
       <View className="my-5">
         <Text className="font-kregular text-xl">
-          Poster :
+          Poster* :
         </Text>
         <TouchableOpacity onPress={handleChangePoster} className="items-center">
           <Image
@@ -303,10 +366,11 @@ const EditEvent = () => {
         setImages={setPoster} // Pass the state setters to AddPhoto
         isLoading={isSubmitting}
         />
+        {renderError('poster')}
       </View>
         
       <View className="my-2">
-        <Text className="font-kregular text-xl mb-2">Event Name : </Text>
+        <Text className="font-kregular text-xl mb-2">Event Name* : </Text>
         <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
           <TextInput
             className="font-pregular p-2"
@@ -314,12 +378,13 @@ const EditEvent = () => {
             placeholder="Enter event name"
             placeholderTextColor="#7E6C6C"
             onChangeText={(value) => setName(value)}
+            error={errors.name}
           />
         </View>
       </View>
 
       <View className="my-2">
-        <Text className="font-kregular text-xl mb-2">Address :</Text>
+        <Text className="font-kregular text-xl mb-2">Address* :</Text>
         <View className="w-full bg-white rounded-md h-32 justify-center border-2 border-secondary">
           <TextInput
             className="font-pregular p-2 h-32"
@@ -328,6 +393,7 @@ const EditEvent = () => {
             placeholderTextColor="#7E6C6C"
             onChangeText={(value) => setAddress(value)}
             multiline={true}
+            error={errors.address}
           />
         </View>
       </View>
@@ -345,56 +411,44 @@ const EditEvent = () => {
 
       {/* when start and end*/}
       <View className="mb-5">
-        <Text className="font-kregular text-xl mb-2">
-          When does the event start and end ? 
-        </Text>
-        <View className="flex-row justify-start my-5 items-center">
-          <Text className="w-14 text-lg font-kregular">
-            Date :
-          </Text>
-          <View className="w-4/5 flex-row justify-evenly">
-            <DateField 
-            className="font-pregular p-2"
-            value={startDate} // Controlled input
-            placeholder="Start Date"
-            placeholderTextColor="#7E6C6C"
-            onChangeText={(value) => setStartDate(value)}
-            />
+  <View className="flex-row justify-start my-5 items-center">
+    <Text className="w-14 text-lg font-kregular">Date:</Text>
+    <View className="w-4/5 flex-row justify-evenly">
+      <DateField
+        placeholder="Start Date"
+        value={form.startDate} // Controlled by state
+        handleChangeText={(e) => setForm({ ...form, startDate: e })}
+        error={errors.startDate}
+      />
+      <DateField
+        placeholder="End Date"
+        value={form.endDate} // Controlled by state
+        handleChangeText={(e) => setForm({ ...form, endDate: e })}
+        error={errors.endDate}
+      />
+    </View>
+  </View>
 
-            <DateField 
-            className="font-pregular p-2"
-            value={endDate} // Controlled input
-            placeholder="End Date"
-            placeholderTextColor="#7E6C6C"
-            onChangeText={(value) => setEndDate(value)}
-            />
-          </View>
-        </View>
-        <View className="flex-row justify-start items-center">
-          <Text className="w-14 text-lg font-kregular">
-              Time :
-          </Text>
-          <View className="w-4/5 flex-row justify-evenly">
-            <TimeField 
-            className="font-pregular p-2"
-            value={startTime} // Controlled input
-            placeholder="Start Time"
-            placeholderTextColor="#7E6C6C"
-            onChangeText={(value) => setStartTime(value)}
-            />
-            <TimeField 
-            className="font-pregular p-2"
-            value={endTime} // Controlled input
-            placeholder="End Time"
-            placeholderTextColor="#7E6C6C"
-            onChangeText={(value) => setEndTime(value)}
-            />
-          </View>
-        </View>
-      </View> 
+  <View className="flex-row justify-start items-center">
+    <Text className="w-14 text-lg font-kregular">Time:</Text>
+    <View className="w-4/5 flex-row justify-evenly">
+      <TimeField
+        placeholder="Start Time"
+        value={form.startTime} // Controlled by state
+        handleChangeText={(e) => setForm({ ...form, startTime: e })}
+      />
+      <TimeField
+        placeholder="End Time"
+        value={form.endTime} // Controlled by state
+        handleChangeText={(e) => setForm({ ...form, endTime: e })}
+      />
+    </View>
+  </View>
+</View>
+
 
       <View className="my-2">
-        <Text className="font-kregular text-xl mb-2">Contact Number : </Text>
+        <Text className="font-kregular text-xl mb-2">Contact Number* : </Text>
         <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
           <TextInput
             className="font-pregular p-2"
@@ -403,12 +457,13 @@ const EditEvent = () => {
             placeholderTextColor="#7E6C6C"
             onChangeText={(value) => setContactNum(value)}
             keyboardType="phone-pad"
+            error={errors.contactNum}
           />
         </View>
       </View>
 
       <View className="my-2">
-        <Text className="font-kregular text-xl mb-2">Description of the event :  </Text>
+        <Text className="font-kregular text-xl mb-2">Description of the event* :  </Text>
         <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
           <TextInput
             className="font-pregular p-2"
@@ -418,13 +473,14 @@ const EditEvent = () => {
             onChangeText={(value) => setTags(value)}
             keyboardType="default"
             tags="true"
+            error={errors.description}
           />
         </View>
       </View>
 
       {/* Radio Buttons for Admission Type */}
       <View className="mb-5">
-        <Text className="font-kregular text-xl">Admission Type:</Text>
+        <Text className="font-kregular text-xl">Admission Type*:</Text>
         <View className="flex-row items-center mt-2">
           <TouchableOpacity
             onPress={() => setAdmissionType('free')}
@@ -486,6 +542,11 @@ const EditEvent = () => {
             <Text>Paid Admission</Text>
           </TouchableOpacity>
         </View>
+        {errors.admissionType && (
+          <Text style={{ color: 'red', fontSize: 12, marginTop: 5 }}>
+            {errors.admissionType}
+          </Text>
+        )}
       </View>
 
       {/* Fee Amount Input if Paid */}
@@ -535,6 +596,27 @@ const EditEvent = () => {
           />
         </View>
       </View>
+      {/* Facilities Section */}
+      <View className="flex-row flex-wrap mt-2">
+        {['Surau', 'WiFi', 'Parking', 'Toilet'].map((facility) => (
+          <TouchableOpacity
+            key={facility}
+            onPress={() => handleFacilityToggle(facility)}
+            style={{
+              backgroundColor: facilities.includes(facility) ? '#A91D1D' : '#F5F5F5',
+              borderRadius: 20,
+              paddingVertical: 8,
+              paddingHorizontal: 16,
+              marginRight: 10,
+              marginBottom: 10,
+            }}
+          >
+            <Text style={{ color: facilities.includes(facility) ? '#FFF' : '#000' }}>
+              {facility}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
          
       <View className="flex-row items-center justify-evenly mt-5 mb-10">
         <Button 
@@ -549,8 +631,7 @@ const EditEvent = () => {
         style="bg-primary w-2/5"
         textColor="text-white"/>
       </View>
-    </ScrollView>      
-    // </SafeAreaView>
+    </KeyboardAwareScrollView>
   )
 }
 

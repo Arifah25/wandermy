@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView, TextInput, Switch, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, Switch, TouchableOpacity, Modal, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { AddPhoto, CreateForm, Button, Map, TimeField, } from '../../../../components';
+import { AddPhoto, CreateForm, Button, Map, TimeField } from '../../../../components';
 import { icons } from '../../../../constants';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, set, get, update } from 'firebase/database';
-import * as ImagePicker from 'expo-image-picker'; // to pick images
+import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const EditDining = () => {
   const db = getDatabase();
@@ -28,7 +28,10 @@ const EditDining = () => {
   const [longitude, setLongitude] = useState();
   const [latitude, setLatitude] = useState();
   const [operatingHours, setOperatingHours] = useState([]);
-
+  const [facilities, setFacilities] = useState(['Surau', 'WiFi', 'Parking', 'Toilet']);
+  const [halalStatus, setHalalStatus] = useState("");
+  const [errors, setErrors] = useState({});
+  
   const [placeData, setPlaceData] = useState({
     name: '',
     latitude: '',
@@ -37,9 +40,10 @@ const EditDining = () => {
     websiteLink: '',
     contactNum: '',
     price_or_menu: [],
-    poster: [], 
+    poster: [],
     tags: '',
-    description: '',
+    halalStatus: '',
+    facilities: [],
     operatingHours: [],
   });
   
@@ -53,6 +57,8 @@ const EditDining = () => {
     price_or_menu: [],
     poster: [], 
     tags: '',
+    halalStatus: '',
+    facilities: [],
     operatingHours: [
       { dayOfWeek: 'MON', isOpen: false, openingTime: '', closingTime: '' },
       { dayOfWeek: 'TUE', isOpen: false, openingTime: '', closingTime: '' },
@@ -81,6 +87,8 @@ const EditDining = () => {
           setLongitude(data.longitude || "");
           setLatitude(data.latitude || "");
           setTags(data.tags);
+          setHalalStatus(data.halalStatus || "");
+          setFacilities(data.facilities || []);
           setOperatingHours(data.operatingHours || []);
           // console.log("Poster Images:", data.poster); // Log poster images
           // console.log("Price Images:", data.price_or_menu); // Log price images
@@ -93,6 +101,16 @@ const EditDining = () => {
       });
     }
   }, [placeID]);
+
+  const handleFacilityToggle = (facility) => {
+    setFacilities((prevFacilities) => {
+      const isSelected = prevFacilities.includes(facility);
+      if (isSelected) {
+        return prevFacilities.filter((item) => item !== facility); // Remove facility
+      }
+      return [...prevFacilities, facility]; // Add facility
+    });
+  };
 
   useEffect(() => {
     const fetchOperatingHours = async () => {
@@ -228,33 +246,59 @@ const EditDining = () => {
     setIsModalVisible(!isModalVisible);
   };
 
-  
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = 'Name is required.';
+    if (!form.address.trim()) newErrors.address = 'Address is required.';
+    if (!form.contactNum.trim()) newErrors.contactNum = 'Contact number is required.';
+    if (!poster.length) newErrors.poster = 'At least one poster is required.';
+    if (!form.tags.trim()) newErrors.tags = 'Tags are required.';
+    if (!form.halalStatus.trim()) newErrors.halalStatus = 'Halal status is required.';
+
+    form.operatingHours.forEach((day) => {
+      if (day.isOpen && (!day.openingTime || !day.closingTime)) {
+        newErrors.operatingHours = 'Operating hours must be set for open days.';
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const updateDetail = async () => {
-    if (!placeID) return;
+    if (!validateForm()) {
+      Alert.alert('Incomplete Form', 'Please fill in all required fields before updating.', [{ text: 'OK' }]);
+      return;
+    }
 
-    let posterURL = await Promise.all(
-      poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
-    );
-  
-    // Handle uploading all price/menu images
-    let priceOrMenuURL = await Promise.all(
-      price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
-    );
-
-    // Update Firebase Realtime Database with new data
-    const updates = {
-      name: name || placeData.name,
-      websiteLink: websiteLink || placeData.websiteLink || "",
-      contactNum: contactNum || placeData.contactNum || "",
-      address: address || placeData.address || "",
-      longitude: longitude || placeData.longitude || "",
-      latitude: latitude || placeData.latitude || "",
-      tags: tags || placeData.tags || "",
-      poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
-      price_or_menu: priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],
-    };
+    setIsSubmitting(true);
 
     try {
+      let posterURL = await Promise.all(
+        poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
+      );
+    
+      // Handle uploading all price/menu images
+      let priceOrMenuURL = await Promise.all(
+        price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
+      );
+
+      // Update Firebase Realtime Database with new data
+      const updates = {
+        name: name || placeData.name,
+        websiteLink: websiteLink || placeData.websiteLink || "",
+        contactNum: contactNum || placeData.contactNum || "",
+        address: address || placeData.address || "",
+        longitude: longitude || placeData.longitude || "",
+        latitude: latitude || placeData.latitude || "",
+        tags: tags || placeData.tags || "",
+        halalStatus: placeData.halalStatus,
+        facilities: placeData.facilities || [],
+        poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
+        price_or_menu: priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],
+      };
+    
       const userRef = ref(db, `places/${placeID}`);
       await update(userRef, updates);
 
@@ -269,13 +313,17 @@ const EditDining = () => {
         });
       });
 
-      // Show a success message or navigate the user
-      console.log("Detail updated successfully.");
-      // router.push(`(admin)/(home)/details/${placeID}`); // nak change to updated detail page
-      router.back();
+      Alert.alert('Success', 'Details updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
     } catch (error) {
-      console.error("Error updating detail:", error);
+      console.error('Error updating detail:', error);
+      Alert.alert('Error', 'An error occurred while updating. Please try again.', [{ text: 'OK' }]);
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const renderError = (field) => {
+    return errors[field] ? <Text style={{ color: 'red', fontSize: 12 }}>{errors[field]}</Text> : null;
   };
   
   const handleLocationSelected = (locationData) => {
@@ -294,39 +342,43 @@ const EditDining = () => {
   };
   
   return (
-    // <SafeAreaView>
-      <ScrollView className="flex-1 h-full px-8 bg-white">
-        <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="fade"
-        >
-          <Map 
-           onLocationSelected={handleLocationSelected}
-           confirmButtonText="Set Location"
-           placeholderText="Select your preferred location on the map"
+    <KeyboardAwareScrollView
+      className="flex-1 h-full px-8 bg-white"
+      contentContainerStyle={{ flexGrow: 1 }}
+      enableOnAndroid={true}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Modal
+      visible={isModalVisible}
+      transparent={true}
+      animationType="fade"
+      >
+        <Map 
+          onLocationSelected={handleLocationSelected}
+          confirmButtonText="Set Location"
+          placeholderText="Select your preferred location on the map"
+        />
+      </Modal>
+      <View className="my-5">
+        <Text className="font-kregular text-xl">
+          Poster* :
+        </Text>
+        <TouchableOpacity onPress={handleChangePoster} className="items-center">
+          <Image
+            source={poster ? { uri: poster } : icons.profile}       
           />
-        </Modal>
-        <View className="my-5">
-          <Text className="font-kregular text-xl">
-            Poster :
-          </Text>
-          <TouchableOpacity onPress={handleChangePoster} className="items-center">
-            <Image
-              source={poster ? { uri: poster } : icons.profile}       
-            />
-          </TouchableOpacity>
-          
-          {/* image picker for poster   */}
-            <AddPhoto
-            images={poster}
-            setImages={setPoster} // Pass the state setters to AddPhoto
-            isLoading={isSubmitting}
-          />
-        </View>
+        </TouchableOpacity>
+        
+        {/* image picker for poster   */}
+        <AddPhoto
+        images={poster}
+        setImages={setPoster} // Pass the state setters to AddPhoto
+        isLoading={isSubmitting}/>
+        {renderError('poster')}
+      </View>
         
         <View className="my-2">
-          <Text className="font-kregular text-xl mb-2">Restaurant Name : </Text>
+          <Text className="font-kregular text-xl mb-2">Restaurant Name* : </Text>
           <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
             <TextInput
               className="font-pregular p-2"
@@ -334,143 +386,199 @@ const EditDining = () => {
               placeholder="Enter restaurant name"
               placeholderTextColor="#7E6C6C"
               onChangeText={(value) => setName(value)}
+              error={errors.name}
             />
           </View>
         </View>
 
-        <View className="my-2">
-          <Text className="font-kregular text-xl mb-2">Address :</Text>
-          <View className="w-full bg-white rounded-md h-32 justify-center border-2 border-secondary">
-            <TextInput
-              className="font-pregular p-2 h-32"
-              value={address} // Controlled input
-              placeholder="Enter address"
-              placeholderTextColor="#7E6C6C"
-              onChangeText={(value) => setAddress(value)}
-              multiline={true}
-            />
+        <View className="mt-3">
+          <Text className="font-kregular text-xl">Halal Status* :</Text>
+          <View className="flex-row mt-2">
+            <TouchableOpacity
+              onPress={() => setHalalStatus('Halal')}
+              style={{
+                backgroundColor: halalStatus === 'Halal' ? '#A91D1D' : '#F5F5F5',
+                borderRadius: 20,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                marginRight: 10,
+              }}
+            >
+              <Text style={{ color: halalStatus === 'Halal' ? '#FFF' : '#000' }}>Halal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setHalalStatus('Non-Halal')}
+              style={{
+                backgroundColor: halalStatus === 'Non-Halal' ? '#A91D1D' : '#F5F5F5',
+                borderRadius: 20,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+              }}
+            >
+              <Text style={{ color: halalStatus === 'Non-Halal' ? '#FFF' : '#000' }}>Non-Halal</Text>
+            </TouchableOpacity>
           </View>
+          {renderError('halalStatus')}
         </View>
- 
-        <View className="items-center mb-5">
-          {/* pin location */}
-          <Button 
-          title="Pin Location"
-          handlePress={handleMap}
-          style="bg-secondary w-full"
-          textColor="text-black ml-5"
-          location="true"
+
+      <View className="my-2">
+        <Text className="font-kregular text-xl mb-2">Address* :</Text>
+        <View className="w-full bg-white rounded-md h-32 justify-center border-2 border-secondary">
+          <TextInput
+            className="font-pregular p-2 h-32"
+            value={address} // Controlled input
+            placeholder="Enter address"
+            placeholderTextColor="#7E6C6C"
+            onChangeText={(value) => setAddress(value)}
+            multiline={true}
+            error={errors.address}
           />
-        </View> 
-
-        <View className="my-2">
-          <Text className="font-kregular text-xl mb-2">Website Link (if any) : </Text>
-          <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
-            <TextInput
-              className="font-pregular p-2"
-              value={websiteLink} // Controlled input
-              placeholder="Enter website link"
-              placeholderTextColor="#7E6C6C"
-              onChangeText={(value) => setWebsiteLink(value)}
-              keyboardType="url"
-            />
-          </View>
         </View>
+      </View>
+ 
+      <View className="items-center mb-5">
+        {/* pin location */}
+        <Button 
+        title="Pin Location"
+        handlePress={handleMap}
+        style="bg-secondary w-full"
+        textColor="text-black ml-5"
+        location="true"
+        />
+      </View> 
 
-        <View className="my-2">
-          <Text className="font-kregular text-xl mb-2">Contact Number : </Text>
-          <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
-            <TextInput
-              className="font-pregular p-2"
-              value={contactNum} // Controlled input
-              placeholder="Enter Contact Number"
-              placeholderTextColor="#7E6C6C"
-              onChangeText={(value) => setContactNum(value)}
-              keyboardType="phone-pad"
-            />
-          </View>
+      <View className="my-2">
+        <Text className="font-kregular text-xl mb-2">Website Link (if any) : </Text>
+        <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
+          <TextInput
+            className="font-pregular p-2"
+            value={websiteLink} // Controlled input
+            placeholder="Enter website link"
+            placeholderTextColor="#7E6C6C"
+            onChangeText={(value) => setWebsiteLink(value)}
+            keyboardType="url"
+          />
         </View>
+      </View>
+
+      <View className="my-2">
+        <Text className="font-kregular text-xl mb-2">Contact Number* : </Text>
+        <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
+          <TextInput
+            className="font-pregular p-2"
+            value={contactNum} // Controlled input
+            placeholder="Enter Contact Number"
+            placeholderTextColor="#7E6C6C"
+            onChangeText={(value) => setContactNum(value)}
+            keyboardType="phone-pad"
+            error={errors.contactNum}
+          />
+        </View>
+      </View>
       
 
-        {/* operatinghours */}
-        <View className="w-full">
-          {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
-            <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
-              <View className="flex-row items-center w-1/3 justify-start mb-2">
-                <Text className="text-base font-semibold w-1/3">{dayOfWeek}</Text>
-                <Switch 
-                  value={isOpen}
-                  onValueChange={() => handleToggleDayOpen(dayOfWeek)}
-                  label={isOpen ? 'Open' : 'Close'}
+      {/* operatinghours */}
+      <View className="w-full">
+        {form.operatingHours.map(({ dayOfWeek, isOpen, openingTime, closingTime }) => (
+          <View key={dayOfWeek} className="mb-5 flex-row w-full justify-start">
+            <View className="flex-row items-center w-1/3 justify-start mb-2">
+              <Text className="text-base font-semibold w-1/3">{dayOfWeek}</Text>
+              <Switch 
+                value={isOpen}
+                onValueChange={() => handleToggleDayOpen(dayOfWeek)}
+                label={isOpen ? 'Open' : 'Close'}
+              />
+            </View>
+
+            {isOpen && (
+              <View className="flex-row justify-evenly items-center">
+                <TimeField
+                  value={openingTime}
+                  handleChangeText={(time) => handleChangeOpeningTime(dayOfWeek, time)}
+                />
+                <Text className="mx-3">-</Text>
+                <TimeField
+                  value={closingTime}
+                  handleChangeText={(time) => handleChangeClosingTime(dayOfWeek, time)}
                 />
               </View>
-
-              {isOpen && (
-                <View className="flex-row justify-evenly items-center">
-                  <TimeField
-                    value={openingTime}
-                    handleChangeText={(time) => handleChangeOpeningTime(dayOfWeek, time)}
-                  />
-                  <Text className="mx-3">-</Text>
-                  <TimeField
-                    value={closingTime}
-                    handleChangeText={(time) => handleChangeClosingTime(dayOfWeek, time)}
-                  />
-                </View>
-              )}
-            </View>
-          ))}
-        </View>
-
-        <View className="my-5">
-          <Text className="font-kregular text-xl">
-            Menu :
-          </Text>
-          <TouchableOpacity onPress={handleChangePrice_Or_Menu} className="items-center">
-            <Image
-              source={price_or_menu ? { uri: price_or_menu } : icons.profile}       
-            />
-          </TouchableOpacity>
-          
-          {/* image picker for poster   */}
-            <AddPhoto
-            isMultiple={true}
-            images={price_or_menu}
-            setImages={setPrice_Or_Menu} // Pass the state setters to AddPhoto
-            isLoading={isSubmitting}
-          />
-        </View>
-
-        <View className="my-2">
-          <Text className="font-kregular text-xl mb-2">Tags :  </Text>
-          <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
-            <TextInput
-              className="font-pregular p-2"
-              value={tags} // Controlled input
-              placeholder="Enter tags"
-              placeholderTextColor="#7E6C6C"
-              onChangeText={(value) => setTags(value)}
-              keyboardType="default"
-              tags="true"
-            />
+            )}
           </View>
-        </View>
-         
-        <View className="flex-row items-center justify-evenly mt-5 mb-10">
-          <Button 
-          title="Cancel"
-          handlePress={() => router.back()}
-          style="bg-secondary w-2/5"
-          textColor="text-primary"
+        ))}
+      </View>
+
+      <View className="my-5">
+        <Text className="font-kregular text-xl">
+          Menu :
+        </Text>
+        <TouchableOpacity onPress={handleChangePrice_Or_Menu} className="items-center">
+          <Image
+            source={price_or_menu ? { uri: price_or_menu } : icons.profile}       
           />
-          <Button 
-          title="Update"
-          handlePress={updateDetail}
-          style="bg-primary w-2/5"
-          textColor="text-white"/>
+        </TouchableOpacity>
+        
+        {/* image picker for poster   */}
+          <AddPhoto
+          isMultiple={true}
+          images={price_or_menu}
+          setImages={setPrice_Or_Menu} // Pass the state setters to AddPhoto
+          isLoading={isSubmitting}
+        />
+      </View>
+
+      <View className="my-2">
+        <Text className="font-kregular text-xl mb-2">Tags :  </Text>
+        <View className="w-full bg-white rounded-md h-10 justify-center border-2 border-secondary">
+          <TextInput
+            className="font-pregular p-2"
+            value={tags} // Controlled input
+            placeholder="Enter tags"
+            placeholderTextColor="#7E6C6C"
+            onChangeText={(value) => setTags(value)}
+            keyboardType="default"
+            tags="true"
+            error={errors.tags}
+          />
         </View>
-      </ScrollView>      
-    // </SafeAreaView>
+      </View>
+
+      {/* Facilities Section */}
+      <View className="flex-row flex-wrap mt-2">
+        {['Surau', 'WiFi', 'Parking', 'Toilet'].map((facility) => (
+          <TouchableOpacity
+            key={facility}
+            onPress={() => handleFacilityToggle(facility)}
+            style={{
+              backgroundColor: facilities.includes(facility) ? '#A91D1D' : '#F5F5F5',
+              borderRadius: 20,
+              paddingVertical: 8,
+              paddingHorizontal: 16,
+              marginRight: 10,
+              marginBottom: 10,
+            }}
+          >
+            <Text style={{ color: facilities.includes(facility) ? '#FFF' : '#000' }}>
+              {facility}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+         
+      <View className="flex-row items-center justify-evenly mt-5 mb-10">
+        <Button 
+        title="Cancel"
+        handlePress={() => router.back()}
+        style="bg-secondary w-2/5"
+        textColor="text-primary"
+        />
+        <Button 
+        title="Update"
+        handlePress={updateDetail}
+        style="bg-primary w-2/5"
+        textColor="text-white"/>
+      </View>
+    </KeyboardAwareScrollView>
   )
 }
   

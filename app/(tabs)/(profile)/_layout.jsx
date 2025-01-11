@@ -6,7 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Profile from '.';
 import BookmarkPlaces from './bookmark';
 import EditProfile from "./edit";
-// import MyItineraries from "./itinerary"
 import { useRouter } from 'expo-router';
 import Details from "./details";
 

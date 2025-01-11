@@ -46,6 +46,10 @@ def get_recommendations():
         user_ref = db.reference(f'users/{user_id}')
         user_data = user_ref.get() or {}
         religion = user_data.get("religion", "").lower()  # Fetch religion
+        user_preference_string = user_data.get("userPreference", "")  # Fetch userPreference from the database
+
+        # Convert userPreference to a list of keywords
+        user_preferences = [pref.strip().lower() for pref in user_preference_string.split(",") if pref.strip()]
 
         bookmark_ref = db.reference(f'bookmark/{user_id}')
         interaction_ref = db.reference(f'user_interactions/{user_id}')
@@ -122,18 +126,47 @@ def get_recommendations():
         # Calculate similarity
         tfidf_similarities = cosine_similarity(user_vector, tfidf_matrix).flatten()
 
-        # Weighted scoring: Apply weights to similarity components
-        df_places['tag_similarity'] = df_places['clean_tags'].apply(lambda x: len(set(x.split()) & set(user_combined_features.split())))
-        df_places['description_similarity'] = df_places['clean_description'].apply(lambda x: len(set(x.split()) & set(user_combined_features.split())))
-        df_places['state_similarity'] = df_places['clean_state'].apply(lambda x: 1 if x in user_combined_features else 0)
+        # # Weighted scoring: Apply weights to similarity components
+        # df_places['tag_similarity'] = df_places['clean_tags'].apply(lambda x: len(set(x.split()) & set(user_combined_features.split())))
+        # df_places['description_similarity'] = df_places['clean_description'].apply(lambda x: len(set(x.split()) & set(user_combined_features.split())))
+        # df_places['state_similarity'] = df_places['clean_state'].apply(lambda x: 1 if x in user_combined_features else 0)
 
-        # Combine scores with weights
+        # # Combine scores with weights
+        # df_places['combined_score'] = (
+        #     0.5 * tfidf_similarities +
+        #     0.3 * df_places['tag_similarity'] +
+        #     0.2 * df_places['state_similarity']
+        # )
+
+        # Preference-Based Scoring
+        def preference_score(row):
+            score = 0
+            for keyword in user_preferences:
+                if (
+                    keyword in row['clean_tags'] or
+                    keyword in row['clean_description'] or
+                    keyword in row['clean_state']
+                ):
+                    score += 1
+            return score
+
+        df_places['preference_score'] = df_places.apply(preference_score, axis=1)
+
+        # Religion-Based Scoring Adjustment
+        def religion_score(row):
+            if religion == "islam" and row['category'].lower() == "dining" and row['halalStatus'] != "halal":
+                return -1  # Penalize for non-halal dining places for Islamic users
+            return 0
+
+        df_places['religion_score'] = df_places.apply(religion_score, axis=1)
+
+        # Weighted Scoring: Combine TF-IDF, Preferences, and Religion
         df_places['combined_score'] = (
-            0.5 * tfidf_similarities +
-            0.3 * df_places['tag_similarity'] +
-            0.2 * df_places['state_similarity']
+            0.5 * tfidf_similarities +            # Content similarity from user interactions
+            0.3 * df_places['preference_score'] + # Match with user preferences
+            0.2 * df_places['state_similarity'] + # Match with state relevance
+            df_places['religion_score']           # Adjust for religion
         )
-
         # Sort by combined score and select top 20
         recommendations = (
             df_places.sort_values(by='combined_score', ascending=False)
