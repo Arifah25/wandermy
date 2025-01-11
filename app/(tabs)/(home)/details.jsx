@@ -7,7 +7,6 @@ import { images, icons } from '../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, onValue, set, remove, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
-import FastImage from 'react-native-fast-image';
 
 const Details = () => {
   const router = useRouter();
