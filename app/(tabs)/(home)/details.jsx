@@ -7,6 +7,7 @@ import { images, icons } from '../../../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDatabase, ref, onValue, set, remove, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
+import FastImage from 'react-native-fast-image';
 
 const Details = () => {
   const router = useRouter();
@@ -433,10 +434,23 @@ useEffect(() => {
       <View className="m-5">
         {category === 'event' ? (
           <Image
-            source={{ uri: poster }}
-            className="w-full h-auto rounded-lg bg-secondary"
-            style={{ aspectRatio: 1 }}
-          />
+          source={{
+            uri: poster,
+            cache: 'force-cache', // Options: 'default', 'reload', 'force-cache', 'only-if-cached'
+          }}
+          style={{
+            width: '100%',
+            aspectRatio: 1,
+            borderRadius: 10,
+            backgroundColor: '#E5E5E5', // Optional fallback background
+          }}
+          resizeMode="contain"
+        />
+          // <Image
+          //   source={{ uri: poster }}
+          //   className="w-full h-auto rounded-lg bg-secondary"
+          //   style={{ aspectRatio: 1 }}
+          // />
         ) : (
           <Poster image={poster} />
         )}

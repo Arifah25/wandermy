@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView, TouchableOpacity, Modal, Linking } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, Modal, Linking, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { DetailTab, Poster, Button } from '../../../components';
 import { images, icons } from '../../../constants';
@@ -30,8 +30,25 @@ const HomeDetails = () => {
     setIsModalVisible(!isModalVisible);
   };
 
+
   const handleDelete = () => {
-    toggleModalVisibility();
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you sure you want to delete this place from the database?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Deletion canceled'),
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          onPress: () => deletePlace(placeID, category),
+          style: 'destructive', // Optional: gives a red color to the button on iOS
+        },
+      ],
+      { cancelable: true } // Allows the alert to be dismissed by tapping outside
+    );
   };
 
   const deletePlace = (placeID, category) => {
@@ -189,7 +206,17 @@ useEffect(() => {
   fetchReviewsAndProfiles();
 }, [placeID]);  // Dependency on placeID
 
-  
+useEffect(() => {
+  if (poster) {
+    Image.prefetch(poster);
+  }
+  if (placeData.price_or_menu && placeData.price_or_menu.length > 0) {
+    placeData.price_or_menu.forEach((imageUri) => {
+      Image.prefetch(imageUri);
+    });
+  }
+}, [poster, placeData.price_or_menu]);
+
   // Render details
   const renderDetails = () => (
     <View className="mx-2 ">
@@ -240,14 +267,28 @@ useEffect(() => {
                   {placeData.price_or_menu.map((imageUri, index) => (
                     <Image
                     key={index}
-                    source={{ uri: imageUri }}
+                    source={{
+                      uri: imageUri,
+                      cache: 'default', // Options: 'default', 'reload', 'force-cache', 'only-if-cached'
+                    }}
                     style={{
-                      width: '100%', // Make it occupy full width
-                      aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
-                      marginBottom: 10, // Add spacing between images
+                      width: '100%',
+                      aspectRatio: 1,
+                      borderRadius: 10,
+                      backgroundColor: '#E5E5E5', // Optional fallback background
                     }}
                     resizeMode="contain"
                   />
+                  // <Image
+                  //   key={index}
+                  //   source={{ uri: imageUri }}
+                  //   style={{
+                  //     width: '100%', // Make it occupy full width
+                  //     aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
+                  //     marginBottom: 10, // Add spacing between images
+                  //   }}
+                  //   resizeMode="contain"
+                  // />
                   ))}
                 </View>
               </View>
@@ -372,6 +413,21 @@ useEffect(() => {
           </View>
         ) : null}      
       </View>
+      {/* Add Buttons Below */}
+    <View className="flex-row items-center justify-evenly mt-5 mb-10">
+      <Button
+        title="Delete"
+        handlePress={handleDelete}
+        style="bg-primary w-2/5"
+        textColor="text-white"
+      />
+      <Button
+        title="Edit"
+        handlePress={() => handleEdit(placeID, category)}
+        style="bg-primary w-2/5"
+        textColor="text-white"
+      />
+    </View>
     </View>
   );
 
@@ -439,10 +495,23 @@ useEffect(() => {
         <View className="m-5">
         {category === 'event' ? (
           <Image
-            source={{ uri: poster }}
-            className="w-full h-auto rounded-lg bg-secondary"
-            style={{ aspectRatio: 1 }}
+            source={{
+              uri: poster,
+              cache: 'default', // Options: 'default', 'reload', 'force-cache', 'only-if-cached'
+            }}
+            style={{
+              width: '100%',
+              aspectRatio: 1,
+              borderRadius: 10,
+              backgroundColor: '#E5E5E5', // Optional fallback background
+            }}
+            resizeMode="contain"
           />
+          // <Image
+          //   source={{ uri: poster }}
+          //   className="w-full h-auto rounded-lg bg-secondary"
+          //   style={{ aspectRatio: 1 }}
+          // />
         ) : (
           <Poster image={poster} />
         )}
@@ -454,22 +523,7 @@ useEffect(() => {
 
           {/* dah masuk detail place */}
           <View>
-            {activeTab === 'details' ? renderDetails(
-                <View className="flex-row items-center justify-evenly mt-5 mb-10">
-                  <Button 
-                    title="Delete"
-                    handlePress={handleDelete}
-                    style="bg-primary w-2/5"
-                    textColor="text-white"
-                  />
-                  <Button 
-                    title="Edit"
-                    handlePress={() => handleEdit(placeID, category)}
-                    style="bg-primary w-2/5"
-                    textColor="text-white"
-                  />
-                </View>
-            ) : renderReview()}
+          {activeTab === 'details' ? renderDetails() : renderReview()}
           </View>
         </View>
       </ScrollView>

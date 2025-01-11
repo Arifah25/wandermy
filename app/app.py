@@ -53,7 +53,7 @@ def get_recommendations():
 
         # Batch fetch user data and places
         user_bookmarks_data = bookmark_ref.get() or {}
-        user_interactions_data = interaction_ref.order_by_child('timestamp').limit_to_last(30).get() or {}
+        user_interactions_data = interaction_ref.get() or {}
         places_data = places_ref.order_by_key().get() or {}
 
         # Extract placeIDs from bookmarks and interactions
