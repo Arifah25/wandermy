@@ -1,7 +1,6 @@
 import React from 'react'
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import { icons, images } from "../constants";
-import FastImage from 'react-native-fast-image';
 
 const PlaceCard = ({image, name, handlePress}) => {
   return (    
@@ -10,12 +9,8 @@ const PlaceCard = ({image, name, handlePress}) => {
     >
       <View className="w-40 rounded-lg bg-secondary border items-center justify-start">
         <View className="bg-white w-full items-center h-36 justify-center rounded-t-lg">
-          <FastImage 
-           source={{ 
-            uri: image,
-            priority: FastImage.priority.normal
-            }}
-            resizeMode={FastImage.resizeMode.cover}
+          <Image 
+           source={{ uri: image }}
             // source={images.logo}
             className="bg-white w-full items-center h-36 justify-center rounded-t-lg"
           />
