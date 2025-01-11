@@ -157,6 +157,16 @@ const Explore = () => {
     setIsSortModalVisible(false); // Close the modal after sorting
   };
 
+  useEffect(() => {
+    if (places.length > 0) {
+      FastImage.preload(
+        places.map((place) => ({
+          uri: place.poster ? place.poster[0] : '',
+        }))
+      );
+    }
+  }, [places]);
+
   // Handle pressing a place card to navigate to its details, passing all place data
   const handlePlacePress = (item) => {
     logUserInteraction(item.id);
