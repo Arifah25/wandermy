@@ -409,7 +409,7 @@ const PendingDetails = () => {
 
               <Button 
               title="Yes"
-              handlePress={() => deletePlace(placeID, category)}
+              handlePress={() => rejectPlace(placeID, category)}
               style="bg-primary w-2/5"
               textColor="text-white"/>
             </View>

@@ -153,8 +153,9 @@ const Profile = () => {
             Bookmark Places
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push("/(tabs)/(profile)/itinerary")} // Navigate to My Itineraries page
+        {/* <TouchableOpacity
+          onPress={() => router.push("/(tabs)/(itinerary)")} // Navigate to My Itineraries page
+          // onPress={() => router.push("/(tabs)/(profile)/itinerary")} // Navigate to My Itineraries page
           className="border-y-0.5"
         >
           <Text
@@ -162,7 +163,7 @@ const Profile = () => {
           >
             My Itineraries
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           onPress={handleDeleteAcc} // Navigate to Delete Account page
           className="border-y-0.5"

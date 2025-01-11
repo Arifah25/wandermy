@@ -5,6 +5,7 @@ import { getAuth } from 'firebase/auth'; // Ensure this is imported
 import { getDatabase, ref, onValue, get, push, set } from 'firebase/database';
 import { PlaceCard, Search, TabPlace } from '../../../components';
 import { icons } from '../../../constants';
+import FastImage from 'react-native-fast-image';
 
 const logUserInteraction = async (placeID) => {
   const db = getDatabase();
