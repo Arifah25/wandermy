@@ -5,7 +5,6 @@ import { getAuth } from 'firebase/auth'; // Ensure this is imported
 import { getDatabase, ref, onValue, get, push, set } from 'firebase/database';
 import { PlaceCard, Search, TabPlace } from '../../../components';
 import { icons } from '../../../constants';
-import FastImage from 'react-native-fast-image';
 
 const logUserInteraction = async (placeID) => {
   const db = getDatabase();
@@ -157,16 +156,6 @@ const Explore = () => {
     setFilteredPlaces(sorted);
     setIsSortModalVisible(false); // Close the modal after sorting
   };
-
-  useEffect(() => {
-    if (places.length > 0) {
-      FastImage.preload(
-        places.map((place) => ({
-          uri: place.poster ? place.poster[0] : '',
-        }))
-      );
-    }
-  }, [places]);
 
   // Handle pressing a place card to navigate to its details, passing all place data
   const handlePlacePress = (item) => {
