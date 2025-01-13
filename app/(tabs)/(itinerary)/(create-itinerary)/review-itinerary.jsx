@@ -166,9 +166,9 @@ const ReviewItinerary = () => {
   const navigateEdit = (docId) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/choose-places',
-      params: { docId, cartD: date.cart, info: date.info, startDate: date.startDate, endDate: date.endDate },
+      params: { docId, cartD: date.cart, destination: itineraryData.tripDetails.destination, lat: date.info.coordinates.lat, long: date.info.coordinates.lng, startDate: date.startDate, endDate: date.endDate, info: date },
     });
-    console.log(date.info);
+    // console.log(date.info);
   }
 
   if (loading) {

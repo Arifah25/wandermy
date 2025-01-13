@@ -25,8 +25,10 @@ const ChoosePlaces = () => {
   const { itineraryData, setItineraryData } = useContext(CreateItineraryContext);
   const { cart, addToCart, removeFromCart, clearCart, setCartData } = useContext(CartContext);
   const user = auth.currentUser;
+  const route = useRoute();
+  const { docId, cartD, destination, lat, long, startDate, endDate, info } = route.params; 
 
-  const isNearby = (placeLocation, placeCoordinates, targetLocation, targetCoordinates, radius = 10) => {
+  const isNearby = (placeLocation, placeCoordinates, targetLocation, targetCoordinates, radius = 30) => {
     if (!placeLocation || !targetLocation || !placeCoordinates || !targetCoordinates) return false;
 
     const isNameNearby =
@@ -106,10 +108,10 @@ const ChoosePlaces = () => {
               // Parse event start and end dates
               const eventStartDate = moment(item.eventDetails.startDate, "DD/MM/YYYY"); // Parse event date
               const eventEndDate = moment(item.eventDetails.endDate, "DD/MM/YYYY"); // Parse event date
-              console.log("Event Start Date:", eventStartDate.format());
-              console.log("Event End Date:", eventEndDate.format());
-              console.log("Trip Start Date:", tripStartDate.format(), startDate);
-              console.log("Trip End Date:", tripEndDate.format());
+              // console.log("Event Start Date:", eventStartDate.format());
+              // console.log("Event End Date:", eventEndDate.format());
+              // console.log("Trip Start Date:", tripStartDate.format(), startDate);
+              // console.log("Trip End Date:", tripEndDate.format());
   
               return (
                 eventEndDate.isSameOrAfter(tripStartDate) &&
@@ -121,9 +123,13 @@ const ChoosePlaces = () => {
         } else {
           // Additional filtering based on itinerary data and nearby places
           const targetCoordinates =
-            itineraryData?.locationInfo?.coordinates || info?.coordinates;
+          {lat: parseFloat(lat), lng: parseFloat(long)} || itineraryData?.locationInfo?.coordinates;
           const targetLocation =
-            itineraryData?.locationInfo?.name || info?.name;
+          destination || itineraryData?.locationInfo?.name;
+
+            console.log('Target Coordinates:', targetCoordinates);
+            console.log('Target Location:', targetLocation);
+            console.log(info);
   
           filteredPlaces = placesArray
             .filter(
@@ -188,7 +194,7 @@ const ChoosePlaces = () => {
   const handlePlacePress = (place, docId) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/place-details',
-      params: { ...place, docId, info },
+      params: { ...place, docId },
     });
   };
 
@@ -207,9 +213,6 @@ const ChoosePlaces = () => {
     removeFromCart(placeID);
   };
 
-  const route = useRoute();
-  const { docId, cartD, info, startDate, endDate } = route.params; 
-
   const handleGenerateItinerary = async () => {
     setModalVisible(false)
     if (loading) return; // Prevent multiple executions while loading
@@ -222,7 +225,7 @@ const ChoosePlaces = () => {
     try {
       const FINAL_PROMPT = AI_PROMPT
         .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{destination}', itineraryData?.locationIfo?.name || info?.name || '')
+        .replace('{destination}', destination || itineraryData?.locationIfo?.name || '')
         .replace('{origin}',  'Penang, Malaysia')
         .replace('{places}', formattedPlaces || '')
         .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
@@ -232,7 +235,7 @@ const ChoosePlaces = () => {
 
       console.log('AI Prompt:', FINAL_PROMPT);
 
-      const result = await chatSession.sendMessage(FINAL_PROMPT);
+      // const result = await chatSession.sendMessage(FINAL_PROMPT);
       const response = JSON.parse(result.response.text()); // Assuming JSON response
 
       console.log('AI Response:', response);

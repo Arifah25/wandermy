@@ -57,7 +57,7 @@ const DetailsPlaces = () => {
       try {
         const FINAL_PROMPT = AI_PROMPT
           .replace('{tripName}', itineraryData?.tripName || '')
-          .replace('{destination}', itineraryData?.locationIfo?.name || info?.name || '')
+          .replace('{destination}', itineraryData?.locationIfo?.name || destination || '')
           .replace('{origin}',  'Penang, Malaysia')
           .replace('{places}', formattedPlaces || '')
           .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
