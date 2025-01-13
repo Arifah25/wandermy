@@ -190,7 +190,7 @@ const Home = () => {
   );
 
   const renderRecentlyAdded = () => (
-    <View className="m-4 ml-5 mr-5">
+    <View className="mt-4 ml-5 mr-5">
       <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recently Added</Text>
       <FlatList
         data={recentlyAdded}
@@ -218,7 +218,7 @@ const Home = () => {
   );
   
   const renderRecommendations = () => (
-    <View className="m-4">
+    <View className="ml-4 mr-4 mt-3">
       <Text className="font-kregular text-xl mb-3 ml-4">Recommendations for you</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />

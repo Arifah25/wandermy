@@ -13,32 +13,25 @@ const FormField = ({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <View 
-    className="space-y-2 w-11/12 mb-7"
-    >
-      <Text 
-      className="font-ksemibold text-lg"
-      >
-      {title}
-      </Text>
-      <View 
-      className="bg-white rounded-md h-14 justify-start items-center flex-row border-2 border-secondary focus:border-black"
-      >
+    <View className="space-y-2 w-11/12 mb-7">
+      <Text className="font-ksemibold text-lg">{title}</Text>
+      <View className="bg-white rounded-md h-14 justify-start items-center flex-row border-2 border-secondary focus:border-black">
         <TextInput
-        className="flex-1 font-pregular text-base ml-3"
-        value={value}
-        placeholder={placeholder}
-        placeholderTextColor="#7E6C6C"
-        onChangeText={handleChangeText}
-        secureTextEntry={title === "Password" && !showPassword}
-        {...props}
+          className="flex-1 font-pregular text-base ml-3"
+          value={value}
+          placeholder={placeholder}
+          placeholderTextColor="#7E6C6C"
+          onChangeText={handleChangeText}
+          // Apply secureTextEntry to both "Password" and "Re-enter Password"
+          secureTextEntry={(title === "Password" || title === "Re-enter Password") && !showPassword}
+          {...props}
         />
 
-        {/* for password only */}
-        {title === "Password" && (
+        {/* Show/Hide Password Toggle */}
+        {(title === "Password" || title === "Re-enter Password") && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Image
-              source={!showPassword ? icons.eyeHide : icons.eye}
+              source={showPassword ? icons.eye : icons.eyeHide}
               className="w-6 h-6 mr-3"
               resizeMode="contain"
             />
@@ -46,7 +39,7 @@ const FormField = ({
         )}
       </View>
     </View>
-  )
-}
+  );
+};
 
-export default FormField
+export default FormField;

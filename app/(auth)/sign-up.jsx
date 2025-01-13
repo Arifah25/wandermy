@@ -18,25 +18,51 @@ const SignUp = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordFeedbackList, setPasswordFeedbackList] = useState([]);
   const [reenterPassword, setReenterPassword] = useState(""); // Re-enter password field
   const [username, setUsername] = useState("");
   const [userPreference, setUserPreference] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [religion, setReligion] = useState("Islam");
-
+  
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const validatePassword = (password) => {
-    return (
-      password.length >= 8 &&
-      /[A-Z]/.test(password) &&
-      /\d/.test(password) &&
-      /[@$!%*?&]/.test(password)
-    );
+  const passwordFeedback = (password) => {
+    const requirements = [
+      { regex: /.{8,}/, message: 'At least 8 characters' },
+      { regex: /[A-Z]/, message: 'At least 1 uppercase letter' },
+      { regex: /\d/, message: 'At least 1 number' },
+      { regex: /[@$!%*?&]/, message: 'At least 1 special character' },
+    ];
+
+    return requirements.map((req) => ({
+      message: req.message,
+      met: req.regex.test(password),
+    }));
   };
+
+  const handlePasswordChange = (value) => {
+    setPassword(value);
+    setPasswordFeedbackList(passwordFeedback(value)); // Update feedback
+  };
+  
+  // const validatePassword = (password) => {
+  //   // return (
+  //   //   password.length >= 8 &&
+  //   //   /[A-Z]/.test(password) &&
+  //   //   /\d/.test(password) &&
+  //   //   /[@$!%*?&]/.test(password)
+  //   // );
+  //   const strongPasswordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  //   if (!strongPasswordRegex.test(password)) {
+  //     return false; // Password does not meet the criteria
+  //   }
+  //   return true;
+  // };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -62,10 +88,14 @@ const SignUp = () => {
       return;
     }
 
-    if (!validatePassword(password)) {
-      Alert.alert(
-        'Error',
-        'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.');
+    // if (!validatePassword(password)) {
+    //   Alert.alert(
+    //     'Error',
+    //     'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.');
+    //   return;
+    // }
+    if (!passwordFeedbackList.every((req) => req.met)) {
+      Alert.alert('Error', 'Password does not meet all requirements.');
       return;
     }
 
@@ -185,8 +215,31 @@ const SignUp = () => {
 
           <FormField title="Username" handleChangeText={(value) => setUsername(value)} />
           <FormField title="Email" handleChangeText={(value) => setEmail(value)} keyboardType="email-address" />
-          <FormField title="Password" handleChangeText={(value) => setPassword(value)} secureTextEntry />
-          <FormField title="Re-enter Password" handleChangeText={(value) => setReenterPassword(value)} secureTextEntry/>
+          {/* <FormField title="Password" handleChangeText={(value) => setPassword(value)} secureTextEntry /> */}
+          <FormField
+            title="Password"
+            handleChangeText={handlePasswordChange}
+          />        
+          <View style={{ width: '100%', marginBottom: 20 }}>
+            {passwordFeedbackList.map((req, index) => (
+              <Text
+                key={index}
+                style={{
+                  color: req.met ? 'green' : 'red',
+                  fontSize: 12,
+                  marginBottom: 2,
+                  marginTop:2,
+                  marginLeft: 25,
+                }}
+              >
+                {req.message}
+              </Text>
+            ))}
+          </View>
+          <FormField
+            title="Re-enter Password"
+            handleChangeText={(value) => setReenterPassword(value)}
+          />          
           <FormField title="User Preference (eg: nature)" handleChangeText={(value) => setUserPreference(value)} />
 
           <View className="mb-5 ml-2">
