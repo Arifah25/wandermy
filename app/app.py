@@ -138,6 +138,12 @@ def get_recommendations():
         #     0.2 * df_places['state_similarity']
         # )
 
+        # Compute state similarity based on user interaction states
+        def state_similarity(row):
+            return 1 if row['clean_state'] in user_combined_features else 0
+
+        df_places['state_similarity'] = df_places.apply(state_similarity, axis=1)
+
         # Preference-Based Scoring
         def preference_score(row):
             score = 0

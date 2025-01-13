@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { View, Text, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from "../../../constants";
@@ -52,12 +52,37 @@ const logUserInteraction = async (placeID) => {
 const Home = () => {
   const [userData, setUserData] = useState({});
   const [recommendations, setRecommendations] = useState([]);
+  const [recentlyAdded, setRecentlyAdded] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const db = getDatabase();
   const auth = getAuth();
   const userId = auth.currentUser?.uid;
   const router = useRouter();
+
+  // Fetch recently added places
+  const fetchRecentlyAdded = async () => {
+    try {
+      const placesRef = ref(db, 'places');
+      const snapshot = await get(placesRef);
+
+      if (snapshot.exists()) {
+        const places = Object.entries(snapshot.val())
+          .map(([placeID, placeData]) => ({
+            placeID,
+            ...placeData,
+            dateApproved: new Date(placeData.dateApproved), // Convert to Date object
+          }))
+          .sort((a, b) => b.dateApproved - a.dateApproved) // Sort by latest dateApproved
+          .slice(0, 10); // Limit to the 10 most recent places
+
+        setRecentlyAdded(places);
+        console.log("Recently added places:", places);
+      }
+    } catch (error) {
+      console.error("Error fetching recently added places:", error);
+    }
+  };
 
   // Fetch user details
   const fetchUserDetails = async () => {
@@ -91,7 +116,7 @@ const Home = () => {
     try {
       console.log("Fetching recommendations...");
       const response = await axios.post(
-        'http://172.20.10.5:5000/recommendations', // Flask endpoint
+        'http://10.167.74.150:5000/recommendations', // Flask endpoint
         { userId }, // The payload
         {
           headers: {
@@ -134,6 +159,7 @@ const Home = () => {
     React.useCallback(() => {
       console.log("Home screen focused: Fetching data...");
       fetchUserDetails(); // Fetch user details
+      fetchRecentlyAdded(); // Fetch recently added places
       fetchRecommendations(); // Fetch recommendations
     }, [userId])
   );
@@ -147,47 +173,163 @@ const Home = () => {
     });
   };
 
-  return (
-    <SafeAreaView className="bg-white h-full flex-1 p-1">
-      <View className="flex-row justify-center items-center">
-        <View className="items-center justify-center ml-5 mr-7">
-          {/* Profile photo */}
-          <Image
-            source={{ uri: userData.profilePicture } || icons.profile}
-            className="rounded-full w-32 h-32 mb-3"
-          />
-        </View>
-        <View className="mx-5 justify-center">
-          <Text className="font-kregular text-2xl">Hello !</Text>
-          <Text className="mt-4 font-ksemibold text-2xl">{userData.username || "Guest"}</Text>
-        </View>
+  // Render each section
+  const renderHeader = () => (
+    <View className="flex-row justify-center items-center">
+      <View className="items-center justify-center ml-5 mr-7">
+        <Image
+          source={{ uri: userData.profilePicture } || icons.profile}
+          className="rounded-full w-32 h-32 mb-3"
+        />
       </View>
+      <View className="mx-5 justify-center">
+        <Text className="font-kregular text-2xl">Hello!</Text>
+        <Text className="mt-2 font-ksemibold text-2xl">{userData.username || 'Guest'}</Text>
+      </View>
+    </View>
+  );
 
-      {/* Recommendations Section */}
-      <View className="m-4 h-full mt-5" style={{ paddingBottom: 120 }}>
-        <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recommendations for you</Text>
-        {loading ? (
-          <ActivityIndicator size="large" color="#A91D1D" />
-        ) : recommendations.length > 0 ? (
-          <FlatList
-            data={recommendations}
-            renderItem={({ item }) => (
-              <PlaceCard
-                name={item.name || "Unnamed Place"}
-                image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
-                handlePress={() => handlePlacePress(item)}
-              />
-            )}
-            keyExtractor={(item, index) => item.placeID || index.toString()}
-            numColumns={2} // Display recommendations in a grid
-            columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 16, marginTop: 10 }}
-          />
-        ) : (
-          <Text className="text-center mt-5">No recommendations available</Text>
+  const renderRecentlyAdded = () => (
+    <View className="m-4 ml-5 mr-5">
+      <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recently Added</Text>
+      <FlatList
+        data={recentlyAdded}
+        renderItem={({ item }) => (
+          <View style={{ marginLeft: 12 }}> {/* Apply spacing between cards */}
+            <PlaceCard
+              name={item.name || 'Unnamed Place'} // Ensure a default name is provided
+              image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
+              handlePress={() => handlePlacePress(item)}
+            />
+          </View>
         )}
-      </View>
+        keyExtractor={(item) => item.placeID}
+        horizontal
+        showsHorizontalScrollIndicator={true}
+        // persistentScrollbar={true} // Make scrollbar persist
+        contentContainerStyle={{
+          paddingHorizontal: 5,
+          marginBottom: 10,
+        }}
+        style={{
+          maxHeight: 250, // Ensure the height is constrained for visibility
+        }}
+      />
+    </View>
+  );
+  
+
+  const renderRecommendations = () => (
+    <View className="m-4" >
+      <Text className="font-kregular text-xl mb-3 ml-4">Recommendations for you</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#A91D1D" />
+      ) : recommendations.length > 0 ? (
+        <FlatList
+          data={recommendations}
+          renderItem={({ item }) => (
+            <PlaceCard
+              name={item.name || 'Unnamed Place'}
+              image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
+              handlePress={() => handlePlacePress(item)}
+            />
+          )}
+          keyExtractor={(item) => item.placeID}
+          numColumns={2}
+          columnWrapperStyle={{
+            justifyContent: 'space-between',
+            marginHorizontal: 16,
+            marginBottom: 10,
+          }}
+        />
+      ) : (
+        <Text className="text-center mt-5">No recommendations available</Text>
+      )}
+    </View>
+  );
+
+//   return (
+//     <SafeAreaView className="bg-white h-full flex-1 p-1">
+//       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+//         <View className="flex-row justify-center items-center">
+//           <View className="items-center justify-center ml-5 mr-7">
+//             {/* Profile photo */}
+//             <Image
+//               source={{ uri: userData.profilePicture } || icons.profile}
+//               className="rounded-full w-32 h-32 mb-3"
+//             />
+//           </View>
+//           <View className="mx-5 justify-center">
+//             <Text className="font-kregular text-2xl">Hello !</Text>
+//             <Text className="mt-2 font-ksemibold text-2xl">{userData.username || "Guest"}</Text>
+//           </View>
+//         </View>
+
+//         {/* Recently Added Section */}
+//         <View className="m-4">
+//           <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recently Added</Text>
+//           <FlatList
+//             data={recentlyAdded}
+//             renderItem={({ item }) => (
+//               <PlaceCard
+//                 name={item.name || "Unnamed Place"}
+//                 image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
+//                 handlePress={() => handlePlacePress(item)}
+//               />
+//             )}
+//             keyExtractor={(item) => item.placeID}
+//             horizontal
+//             showsHorizontalScrollIndicator={false}
+//             contentContainerStyle={{ paddingHorizontal: 16 }}
+//           />
+//         </View>
+
+//         {/* Recommendations Section */}
+//         <View className="m-4">
+//           <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recommendations for you</Text>
+//           {loading ? (
+//             <ActivityIndicator size="large" color="#A91D1D" />
+//           ) : recommendations.length > 0 ? (
+//             <FlatList
+//               data={recommendations}
+//               renderItem={({ item }) => (
+//                 <PlaceCard
+//                   name={item.name || "Unnamed Place"}
+//                   image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
+//                   handlePress={() => handlePlacePress(item)}
+//                 />
+//               )}
+//               keyExtractor={(item, index) => item.placeID || index.toString()}
+//               numColumns={2} // Display recommendations in a grid
+//               columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 16, marginTop: 10 }}
+//             />
+//           ) : (
+//             <Text className="text-center mt-5">No recommendations available</Text>
+//           )}
+//         </View>
+//       </ScrollView>
+//     </SafeAreaView>
+//   );
+// };
+return (
+    <SafeAreaView className="bg-white h-full flex-1" >
+      <FlatList
+        data={[{ key: 'header' }, { key: 'recentlyAdded' }, { key: 'recommendations' }]}
+        renderItem={({ item }) => {
+          switch (item.key) {
+            case 'header':
+              return renderHeader();
+            case 'recentlyAdded':
+              return renderRecentlyAdded();
+            case 'recommendations':
+              return renderRecommendations();
+            default:
+              return null;
+          }
+        }}
+        keyExtractor={(item) => item.key}
+      />
     </SafeAreaView>
   );
 };
-
-export default Home;
+ export default Home;

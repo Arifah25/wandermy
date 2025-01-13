@@ -29,7 +29,7 @@ const HomeLayout = () => {
 
   
   return (
-    <Stack.Navigator>
+    <Stack.Navigator >
       <Stack.Screen
         name="index"
         component={Home}
