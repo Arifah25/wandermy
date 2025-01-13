@@ -178,7 +178,7 @@ const Home = () => {
     <View className="flex-row justify-center items-center">
       <View className="items-center justify-center ml-5 mr-7">
         <Image
-          source={{ uri: userData.profilePicture } || icons.profile}
+          source={{ uri: userData.profilePicture || icons.profile }} // Ensure valid URI
           className="rounded-full w-32 h-32 mb-3"
         />
       </View>
@@ -195,32 +195,30 @@ const Home = () => {
       <FlatList
         data={recentlyAdded}
         renderItem={({ item }) => (
-          <View style={{ marginLeft: 12 }}> {/* Apply spacing between cards */}
+          <View style={{ marginLeft: 12 }}>
             <PlaceCard
-              name={item.name || 'Unnamed Place'} // Ensure a default name is provided
-              image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
+              name={item.name || 'Unnamed Place'} // Provide fallback
+              image={item.poster ? item.poster[0] : null} // Ensure valid image
               handlePress={() => handlePlacePress(item)}
             />
           </View>
         )}
-        keyExtractor={(item) => item.placeID}
+        keyExtractor={(item) => item.placeID.toString()}
         horizontal
         showsHorizontalScrollIndicator={true}
-        // persistentScrollbar={true} // Make scrollbar persist
         contentContainerStyle={{
           paddingHorizontal: 5,
           marginBottom: 10,
         }}
         style={{
-          maxHeight: 250, // Ensure the height is constrained for visibility
+          maxHeight: 250,
         }}
       />
     </View>
   );
   
-
   const renderRecommendations = () => (
-    <View className="m-4" >
+    <View className="m-4">
       <Text className="font-kregular text-xl mb-3 ml-4">Recommendations for you</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />
@@ -229,12 +227,12 @@ const Home = () => {
           data={recommendations}
           renderItem={({ item }) => (
             <PlaceCard
-              name={item.name || 'Unnamed Place'}
-              image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
+              name={item.name || 'Unnamed Place'} // Provide fallback
+              image={item.poster ? item.poster[0] : null} // Ensure valid image
               handlePress={() => handlePlacePress(item)}
             />
           )}
-          keyExtractor={(item) => item.placeID}
+          keyExtractor={(item) => item.placeID.toString()}
           numColumns={2}
           columnWrapperStyle={{
             justifyContent: 'space-between',
@@ -247,6 +245,7 @@ const Home = () => {
       )}
     </View>
   );
+  
 
 //   return (
 //     <SafeAreaView className="bg-white h-full flex-1 p-1">
@@ -312,24 +311,25 @@ const Home = () => {
 //   );
 // };
 return (
-    <SafeAreaView className="bg-white h-full flex-1" >
-      <FlatList
-        data={[{ key: 'header' }, { key: 'recentlyAdded' }, { key: 'recommendations' }]}
-        renderItem={({ item }) => {
-          switch (item.key) {
-            case 'header':
-              return renderHeader();
-            case 'recentlyAdded':
-              return renderRecentlyAdded();
-            case 'recommendations':
-              return renderRecommendations();
-            default:
-              return null;
-          }
-        }}
-        keyExtractor={(item) => item.key}
-      />
-    </SafeAreaView>
-  );
+  <SafeAreaView className="bg-white h-full flex-1">
+    <FlatList
+      data={[{ key: 'header' }, { key: 'recentlyAdded' }, { key: 'recommendations' }]}
+      renderItem={({ item }) => {
+        switch (item.key) {
+          case 'header':
+            return renderHeader();
+          case 'recentlyAdded':
+            return renderRecentlyAdded();
+          case 'recommendations':
+            return renderRecommendations();
+          default:
+            return null;
+        }
+      }}
+      keyExtractor={(item) => item.key}
+    />
+  </SafeAreaView>
+);
 };
- export default Home;
+
+export default Home;
