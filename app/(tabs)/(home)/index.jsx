@@ -116,7 +116,7 @@ const Home = () => {
     try {
       console.log("Fetching recommendations...");
       const response = await axios.post(
-        'http://10.167.74.150:5000/recommendations', // Flask endpoint
+        'http://172.20.10.5:5000/recommendations', // Flask endpoint
         { userId }, // The payload
         {
           headers: {

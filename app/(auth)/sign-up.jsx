@@ -111,11 +111,22 @@ const SignUp = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Check if a profile image was selected
+      let profilePictureUrl = icons.profile; // Default profile icon if no picture is uploaded
+      if (profileImage) {
+        // Upload the selected profile image to Firebase Storage
+        const storageReference = storageRef(storage, `profilePictures/${user.uid}`);
+        const response = await fetch(profileImage);
+        const blob = await response.blob();
+        await uploadBytes(storageReference, blob);
+        profilePictureUrl = await getDownloadURL(storageReference);
+      }
+
       await set(databaseRef(database, `users/${user.uid}`), {
         email,
         username,
         userPreference,
-        profilePicture: profileImage || icons.profile,
+        profilePicture: profilePictureUrl,
         religion,
       });
 
@@ -145,35 +156,35 @@ const SignUp = () => {
     }
   };
 
-  // //Uploading profile picture
-  // const uploadDefaultProfileImage = async (userUid) => {
-  //   try {
-  //     // Load the asset (local image)
-  //     const asset = Asset.fromModule(icons.profile); // Load the local image asset
-  //     await asset.downloadAsync(); // Ensure the asset is downloaded
+  //Uploading profile picture
+  const uploadDefaultProfileImage = async (userUid) => {
+    try {
+      // Load the asset (local image)
+      const asset = asset.fromModule(icons.profile); // Load the local image asset
+      await asset.downloadAsync(); // Ensure the asset is downloaded
   
-  //     // Get the URI of the asset
-  //     const fileUri = asset.localUri || asset.uri; // This will give the local path to the asset
+      // Get the URI of the asset
+      const fileUri = asset.localUri || asset.uri; // This will give the local path to the asset
   
-  //     // Use fetch to convert the local image to a Blob
-  //     const response = await fetch(fileUri);
-  //     const blob = await response.blob(); // Convert the file into a blob
+      // Use fetch to convert the local image to a Blob
+      const response = await fetch(fileUri);
+      const blob = await response.blob(); // Convert the file into a blob
   
-  //     // Set up a reference to the Firebase Storage location
-  //     const storageReference = storageRef(getStorage(), `profilePictures/${userUid}`);
+      // Set up a reference to the Firebase Storage location
+      const storageReference = storageRef(getStorage(), `profilePictures/${userUid}`);
   
-  //     // Upload the blob to Firebase Storage
-  //     await uploadBytes(storageReference, blob);
+      // Upload the blob to Firebase Storage
+      await uploadBytes(storageReference, blob);
   
-  //     // Get the download URL of the uploaded image
-  //     const profilePictureURL = await getDownloadURL(storageReference);
+      // Get the download URL of the uploaded image
+      const profilePictureURL = await getDownloadURL(storageReference);
   
-  //     return profilePictureURL; // Return the URL of the uploaded image
-  //   } catch (error) {
-  //     console.error("Error uploading default profile picture:", error);
-  //     throw error; // Rethrow the error for further handling
-  //   }
-  // };
+      return profilePictureURL; // Return the URL of the uploaded image
+    } catch (error) {
+      console.error("Error uploading default profile picture:", error);
+      throw error; // Rethrow the error for further handling
+    }
+  };
 
   //     // Save the user data to Firebase Realtime Database
   //     await set(databaseRef(database, 'users/' + user.uid), {

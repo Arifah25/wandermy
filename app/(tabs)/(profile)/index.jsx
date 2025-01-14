@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../../constants';
 import { useRouter } from 'expo-router';
-import { getAuth } from 'firebase/auth';
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { getDatabase, ref, get, remove } from 'firebase/database';
 
 
@@ -59,10 +59,11 @@ const Profile = () => {
     );
   };
  
+
   const handleDeleteAcc = () => {
     Alert.alert(
       "Are you sure you want to delete your account?",
-      "",
+      "This action cannot be undone.",
       [
         {
           text: "No",
@@ -71,34 +72,65 @@ const Profile = () => {
         {
           text: "Yes",
           onPress: () => {
-            const user = auth.currentUser;
-            const userId = user.uid;
- 
-            // Delete user data from Realtime Database
-          const db = getDatabase();
-          const userRef = ref(db, `users/${userId}`);
-          remove(userRef)
-            .then(() => {
-              // Delete user account from Firebase Authentication
-              user.delete()
-                .then(() => {
-                  // Account deleted successfully, redirect to login page or show success message
-                  
-                  router.replace('(auth)/sign-in');
-                  alert('Account deleted successfully!');
-                })
-                .catch(error => {
-                  console.error('Error deleting user account:', error);
-                });
-            })
-            .catch(error => {
-              console.error('Error deleting user data:', error);
-            });
+            // Prompt the user for their password
+            Alert.prompt(
+              "Reauthenticate",
+              "Enter your password to confirm deletion.",
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+                {
+                  text: "Submit",
+                  onPress: async (enteredPassword) => {
+                    try {
+                      const user = auth.currentUser;
+
+                      if (user) {
+                        // Reauthenticate the user with their email and entered password
+                        const credential = EmailAuthProvider.credential(user.email, enteredPassword);
+                        await reauthenticateWithCredential(user, credential);
+
+                        // Delete user data from Realtime Database
+                        const userId = user.uid;
+                        const userRef = ref(db, `users/${userId}`);
+                        await remove(userRef);
+
+                        // Delete user account from Firebase Authentication
+                        await user.delete();
+
+                        Alert.alert("Success", "Account deleted successfully.");
+                        router.replace("(auth)/sign-in"); // Redirect to sign-in page
+                      } else {
+                        Alert.alert("Error", "No user is currently logged in.");
+                      }
+                    } catch (error) {
+                      console.error("Error deleting account:", error);
+
+                      if (error.code === "auth/wrong-password") {
+                        Alert.alert("Error", "Invalid password. Please try again.");
+                      } else if (error.code === "auth/requires-recent-login") {
+                        Alert.alert(
+                          "Session Expired",
+                          "For security reasons, please sign in again and try deleting your account."
+                        );
+                        auth.signOut();
+                        router.replace("(auth)/sign-in");
+                      } else {
+                        Alert.alert("Error", "Failed to delete account. Please try again.");
+                      }
+                    }
+                  },
+                },
+              ],
+              "secure-text" // Ensures the input field is secure for passwords
+            );
+          },
         },
-      },
-    ],
-  );
-};
+      ]
+    );
+  };
 
 
   return (
