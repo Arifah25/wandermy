@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import Home from '.';
 import Notification from './notification';
 import Details from './details';
+import AddReview from './addreview';
 
 const Stack = createNativeStackNavigator();
 
@@ -60,6 +61,18 @@ const HomeLayout = () => {
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen 
+        name="addreview"
+        component={AddReview}
+        options={{
+          headerTitle: 'Add Review',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
         }}
       />
     </Stack.Navigator>
