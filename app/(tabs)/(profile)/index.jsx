@@ -138,7 +138,7 @@ const Profile = () => {
       className="bg-white h-full flex-1 px-5 items-center justify-start"
     >
       <View
-        className="w-full justify-center items-center gap-4 px-5 mt-4"
+        className="w-full justify-center items-center px-5 m-8 mt-12"
       >
         {/* get profile photo from database */}
         <Image
@@ -146,25 +146,24 @@ const Profile = () => {
           className="w-40 h-40 rounded-full"
         />
         <Text
-          className="font-kregular text-2xl text-center lowercase"
+          className="font-kregular text-2xl text-center lowercase m-4"
         >
           @{userData.username}
         </Text>
         {/* tags */}
-        <View
-          className="items-start bg-secondary h-24 w-full p-[10px] rounded-md"
-        >
+        <Text className="font-kregular text-xl lowercase m-4">
+          My Preferences:
+        </Text>
+        <View className="items-start border h-20 w-full p-[10px] rounded-md">
           {/* get from database */}
           <Text
-            className="font-pregular"
+            className="font-pregular text-center"
           >
             {userData.userPreference}
           </Text>
         </View>
       </View>
-      <View
-        className="justify-evenly w-11/12 px-5 mt-11"
-      >
+      <View className="justify-evenly w-11/12 px-5 ">
         <TouchableOpacity
           onPress={() => router.push('/(tabs)/(profile)/edit')} // Navigate to Edit Profile page
           className="border-t-0.5"
@@ -187,7 +186,7 @@ const Profile = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleDeleteAcc} // Navigate to Delete Account page
-          className="border-y-0.5"
+          className="border-t-0.5"
         >
           <Text
             className="text-primary font-kregular text-xl my-4 text-center"

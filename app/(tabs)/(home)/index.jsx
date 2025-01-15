@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { View, Text, Image, FlatList, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from "../../../constants";
@@ -90,13 +90,20 @@ const Home = () => {
       console.error("User ID is not available.");
       return;
     }
-
+  
     try {
       const userRef = ref(db, `users/${userId}`);
       const snapshot = await get(userRef);
+  
       if (snapshot.exists()) {
-        console.log("Fetched user data:", snapshot.val());
-        setUserData(snapshot.val());
+        const userData = snapshot.val();
+        setUserData(userData);
+        console.log("Fetched user data:", userData);
+  
+        // Check and add badges based on user points
+        if (userData.points) {
+          checkAndAddBadges(userData.points);
+        }
       } else {
         console.log("No user data available.");
       }
@@ -104,6 +111,7 @@ const Home = () => {
       console.error("Error fetching user data:", error);
     }
   };
+  
 
   // Fetch recommendations
   const fetchRecommendations = async () => {
@@ -168,10 +176,47 @@ const Home = () => {
   const handlePlacePress = (item) => {
     logUserInteraction(item.placeID);
     router.push({
-      pathname: '(tabs)/(home)/details',
+      pathname: '/(tabs)/(home)/details',
       params: { ...item }, // Pass data to the details page
     });
   };
+
+  const checkAndAddBadges = async (points) => {
+    const db = getDatabase();
+    const auth = getAuth();
+    const userId = auth.currentUser?.uid;
+  
+    if (!userId) return;
+  
+    try {
+      const badgesRef = ref(db, `users/${userId}/badges`);
+      const snapshot = await get(badgesRef);
+      const existingBadges = snapshot.exists() ? snapshot.val() : [];
+  
+      // Define badges and their point thresholds
+      const badges = [
+        { points: 100, badge: 'Horizon Seeker' },
+        { points: 200, badge: 'Wanderer’s Crest' },
+        { points: 300, badge: 'Odyssey Voyager' },
+        { points: 400, badge: 'Pinnacle Explorer' },
+      ];
+  
+      // Determine badges to add
+      const earnedBadges = badges
+        .filter((badge) => points >= badge.points && !existingBadges.includes(badge.badge))
+        .map((badge) => badge.badge);
+  
+      if (earnedBadges.length > 0) {
+        // Update badges in Firebase
+        const updatedBadges = [...existingBadges, ...earnedBadges];
+        await set(badgesRef, updatedBadges);
+        console.log('Badges updated successfully:', updatedBadges);
+      }
+    } catch (error) {
+      console.error('Error updating badges:', error);
+    }
+  };
+  
 
   // Render each section
   const renderHeader = () => (
@@ -191,31 +236,49 @@ const Home = () => {
       </View>
     </View>
   );
+  
   const renderPointsContainer = () => {
-    const progress = (userData.points || 0) / 100; // Calculate progress as a percentage
+    const points = userData.points || 0;
+  
+    // Define milestones
+    const milestones = [100, 200, 300, 400];
+    const currentMilestone = milestones.find((milestone) => points < milestone) || milestones[milestones.length - 1];
+  
+    const progress = (points / currentMilestone) * 100; // Calculate progress percentage for the current milestone
   
     return (
-      <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">
-        <Text className="font-ksemibold text-xl mb-2">Your Progress</Text>
-        <Text className="font-kregular text-lg mb-4">
-          Points: <Text className="font-ksemibold">{userData.points || 0}</Text>/100
-        </Text>
+      <TouchableOpacity
+        onPress={() => {
+          console.log('Navigating to Points Page');
+          router.push('(tabs)/(home)/points');
+          params: { points: userData.points || 0 };
+        }}// Redirect to points.jsx
+        activeOpacity={0.8} // Set the opacity effect for better UX
+      >
+        <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">
+          <Text className="font-ksemibold text-xl mb-2">Your Progress</Text>
+          <Text className="font-kregular text-lg mb-4">
+            Points: <Text className="font-ksemibold">{points}</Text>/{currentMilestone}
+          </Text>
   
-        {/* Progress Bar */}
-        <View className="w-full h-4 bg-gray-300 rounded-full">
-          <View
-            className="h-full bg-primary rounded-full"
-            style={{ width: `${Math.min(progress * 100, 100)}%` }} // Cap at 100%
-          />
+          {/* Progress Bar */}
+          <View className="w-full h-4 bg-gray-300 rounded-full">
+            <View
+              className="h-full bg-primary rounded-full"
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            />
+          </View>
+  
+          {/* Badge Info */}
+          <Text className="font-kregular text-sm mt-4 text-gray-600">
+            {points < 400
+              ? `Earn ${currentMilestone - points} more points to unlock the next badge!`
+              : `You’ve reached the maximum badge milestone. Keep exploring for fun!`}
+          </Text>
         </View>
-  
-        {/* Badge Info */}
-        <Text className="font-kregular text-sm mt-4 text-gray-600">
-          Earn 100 points to receive the "Traveller Badge"!
-        </Text>
-      </View>
+      </TouchableOpacity>
     );
-  };
+  };  
   
   const renderRecentlyAdded = () => (
     <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">

@@ -116,7 +116,7 @@ const MyItinerary = () => {
       {loading && <ActivityIndicator size={'large'} color={'#000'} />}
       {itinerary?.length == 0 ? (
         <View>
-          <Text className="text-black font-kregular text-2xl text-center">
+          <Text className="text-black font-kregular text-2xl text-center mt-20">
             Let's Create {"\n"}Your First Itinerary
           </Text>
         </View>
