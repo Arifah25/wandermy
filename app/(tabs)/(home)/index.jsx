@@ -116,7 +116,7 @@ const Home = () => {
     try {
       console.log("Fetching recommendations...");
       const response = await axios.post(
-        'http://172.20.10.5:5000/recommendations', // Flask endpoint
+        'http://10.164.36.243:5000/recommendations', // Flask endpoint
         { userId }, // The payload
         {
           headers: {
@@ -185,12 +185,40 @@ const Home = () => {
       <View className="mx-5 justify-center">
         <Text className="font-kregular text-2xl">Hello!</Text>
         <Text className="mt-2 font-ksemibold text-2xl">{userData.username || 'Guest'}</Text>
+        {/* <Text className="font-kregular text-lg mt-2">
+          Points: <Text className="font-ksemibold">{userData.points || 0}</Text>
+        </Text> */}
       </View>
     </View>
   );
-
+  const renderPointsContainer = () => {
+    const progress = (userData.points || 0) / 100; // Calculate progress as a percentage
+  
+    return (
+      <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">
+        <Text className="font-ksemibold text-xl mb-2">Your Progress</Text>
+        <Text className="font-kregular text-lg mb-4">
+          Points: <Text className="font-ksemibold">{userData.points || 0}</Text>/100
+        </Text>
+  
+        {/* Progress Bar */}
+        <View className="w-full h-4 bg-gray-300 rounded-full">
+          <View
+            className="h-full bg-primary rounded-full"
+            style={{ width: `${Math.min(progress * 100, 100)}%` }} // Cap at 100%
+          />
+        </View>
+  
+        {/* Badge Info */}
+        <Text className="font-kregular text-sm mt-4 text-gray-600">
+          Earn 100 points to receive the "Traveller Badge"!
+        </Text>
+      </View>
+    );
+  };
+  
   const renderRecentlyAdded = () => (
-    <View className="mt-4 ml-5 mr-5">
+    <View className="mt-1 ml-5 mr-5">
       <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recently Added</Text>
       <FlatList
         data={recentlyAdded}
@@ -218,7 +246,7 @@ const Home = () => {
   );
   
   const renderRecommendations = () => (
-    <View className="ml-4 mr-4 mt-3">
+    <View className="ml-4 mr-4 mt-2">
       <Text className="font-kregular text-xl mb-3 ml-4">Recommendations for you</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />
@@ -246,90 +274,33 @@ const Home = () => {
     </View>
   );
   
-
-//   return (
-//     <SafeAreaView className="bg-white h-full flex-1 p-1">
-//       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-//         <View className="flex-row justify-center items-center">
-//           <View className="items-center justify-center ml-5 mr-7">
-//             {/* Profile photo */}
-//             <Image
-//               source={{ uri: userData.profilePicture } || icons.profile}
-//               className="rounded-full w-32 h-32 mb-3"
-//             />
-//           </View>
-//           <View className="mx-5 justify-center">
-//             <Text className="font-kregular text-2xl">Hello !</Text>
-//             <Text className="mt-2 font-ksemibold text-2xl">{userData.username || "Guest"}</Text>
-//           </View>
-//         </View>
-
-//         {/* Recently Added Section */}
-//         <View className="m-4">
-//           <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recently Added</Text>
-//           <FlatList
-//             data={recentlyAdded}
-//             renderItem={({ item }) => (
-//               <PlaceCard
-//                 name={item.name || "Unnamed Place"}
-//                 image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
-//                 handlePress={() => handlePlacePress(item)}
-//               />
-//             )}
-//             keyExtractor={(item) => item.placeID}
-//             horizontal
-//             showsHorizontalScrollIndicator={false}
-//             contentContainerStyle={{ paddingHorizontal: 16 }}
-//           />
-//         </View>
-
-//         {/* Recommendations Section */}
-//         <View className="m-4">
-//           <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recommendations for you</Text>
-//           {loading ? (
-//             <ActivityIndicator size="large" color="#A91D1D" />
-//           ) : recommendations.length > 0 ? (
-//             <FlatList
-//               data={recommendations}
-//               renderItem={({ item }) => (
-//                 <PlaceCard
-//                   name={item.name || "Unnamed Place"}
-//                   image={item.poster && item.poster.length > 0 ? item.poster[0] : null}
-//                   handlePress={() => handlePlacePress(item)}
-//                 />
-//               )}
-//               keyExtractor={(item, index) => item.placeID || index.toString()}
-//               numColumns={2} // Display recommendations in a grid
-//               columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 16, marginTop: 10 }}
-//             />
-//           ) : (
-//             <Text className="text-center mt-5">No recommendations available</Text>
-//           )}
-//         </View>
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// };
-return (
-  <SafeAreaView className="bg-white h-full flex-1">
-    <FlatList
-      data={[{ key: 'header' }, { key: 'recentlyAdded' }, { key: 'recommendations' }]}
-      renderItem={({ item }) => {
-        switch (item.key) {
-          case 'header':
-            return renderHeader();
-          case 'recentlyAdded':
-            return renderRecentlyAdded();
-          case 'recommendations':
-            return renderRecommendations();
-          default:
-            return null;
-        }
-      }}
-      keyExtractor={(item) => item.key}
-    />
-  </SafeAreaView>
-);
+  return (
+    <SafeAreaView className="bg-white h-full flex-1">
+      <FlatList
+        data={[
+          { key: 'header' },
+          { key: 'pointsContainer' }, // Add the new container here
+          { key: 'recentlyAdded' },
+          { key: 'recommendations' },
+        ]}
+        renderItem={({ item }) => {
+          switch (item.key) {
+            case 'header':
+              return renderHeader();
+            case 'pointsContainer': // Render the points container
+              return renderPointsContainer();
+            case 'recentlyAdded':
+              return renderRecentlyAdded();
+            case 'recommendations':
+              return renderRecommendations();
+            default:
+              return null;
+          }
+        }}
+        keyExtractor={(item) => item.key}
+      />
+    </SafeAreaView>
+  );  
 };
 
 export default Home;

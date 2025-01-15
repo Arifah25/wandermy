@@ -32,7 +32,7 @@ const SignIn = () => {
           const user = userCredential.user;
 
           // Check if email is verified
-          if (user.emailVerified) {
+          // if (user.emailVerified) {
             // Display a toast message for 3 seconds
             //check if the user is admin
             if(email === 'admin@gmail.com' && password === 'admin123'){
@@ -48,41 +48,19 @@ const SignIn = () => {
                 router.push("(tabs)/(home)/");
               }, 1500);
             } 
-          }else{
-            auth.signOut();
-            Alert.alert(
-              'Email Not Verified',
-              'Please verify your email before signing in. A verification link has been sent to your email.',
-              [
-                {
-                  text: 'Resend Verification Email',
-                  onPress: async () => {
-                    try {
-                      // Regenerate and send the verification email
-                      await sendEmailVerification(user);
-                      Alert.alert('Success', 'Verification email resent. Check your inbox.');
-                    } catch (error) {
-                      console.error('Failed to resend verification email:', error);
-                      Alert.alert('Error', 'Failed to resend verification email. Please try again.');
-                    }
-                  },
-                },
-                { text: 'OK', style: 'cancel' },
-              ]
-            );
-          }
+          // }else{
+          //   ToastAndroid.show('Please verify your email before signing in.', ToastAndroid.BOTTOM);
+          //   return;
+          // }
         })
         .catch((error) => {
+          // If there's an error, get the error code and message
           const errorCode = error.code;
-          switch (errorCode) {
-            case 'auth/user-not-found':
-              Alert.alert('Error', 'User not found. Please check your email.');
-              break;
-            case 'auth/wrong-password':
-              Alert.alert('Error', 'Invalid password. Please try again.');
-              break;
-            default:
-              Alert.alert('Error', 'An error occurred. Please try again.');
+          const errorMessage = error.message;
+          // Log the error message and code to the console for debugging
+          console.log(errorMessage, errorCode);
+          if (errorCode=='auth/invalid-credential') {
+            Alert.alert('Error','Invalid Email or Password');            
           }
         });
     }

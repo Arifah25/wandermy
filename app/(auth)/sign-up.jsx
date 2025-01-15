@@ -128,6 +128,8 @@ const SignUp = () => {
         userPreference,
         profilePicture: profilePictureUrl,
         religion,
+        points: 0,
+        badges: [],
       });
 
       await sendEmailVerification(user);
