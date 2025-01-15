@@ -18,11 +18,19 @@ const Visit = ({
                         onPress={() => handlePress(choice)}
                         activeOpacity={0.7}
                         className={`rounded-md w-[31%] h-10 justify-center items-center
-                            ${isLoading ? "opacity-50" : ""}
-                            ${selectedChoice === choice ? "bg-secondary" : "bg-gray-200"}`}
+                            ${isLoading ? "opacity-50" : ""}`}
+                        style={{
+                            backgroundColor: selectedChoice === choice ? '#A91D1D' : '#E0E0E0', // Red for selected, custom gray for unselected
+                        }}
                         disabled={isLoading}
                     >
-                        <Text className={`text-black font-kregular justify-center items-center text-sm`}>
+                        <Text
+                            style={{
+                                color: selectedChoice === choice ? '#FFF' : '#000',
+                                fontFamily: 'KRegular',
+                                fontSize: 14,
+                            }}
+                        >
                             {choice}
                         </Text>
                     </TouchableOpacity>

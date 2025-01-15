@@ -48,6 +48,38 @@ const Details = () => {
     }
   }, [placeID]);
 
+  // Render facilities
+  const renderFacilities = () => {
+    const { facilities, halalStatus } = placeData;
+
+    if ((!facilities || facilities.length === 0) && !(category === 'dining' && halalStatus === 'halal')) {
+      return null; // Skip rendering if there are no facilities or halalStatus
+    }
+
+    return (
+      <View className="flex-row justify-start mb-3">
+        {/* <Text className="text-lg font-ksemibold mr-2">Facilities:</Text> */}
+        {/* Halal Icon for Dining Category */}
+        {category === 'dining' && halalStatus === 'Halal' && (
+          <Image source={icons.halal} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('Surau') && (
+          <Image source={icons.surau} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('WiFi') && (
+          <Image source={icons.wifi} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('Toilet') && (
+          <Image source={icons.toilet} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+        {facilities.includes('Parking') && (
+          <Image source={icons.parking} style={{ width: 40, height: 40, marginRight: 20 }} />
+        )}
+      </View>
+    );
+  };
+
+
   // Fetch operating hours
   useEffect(() => {
     const hourRef = ref(db, `operatingHours/${placeID}`);
@@ -196,9 +228,10 @@ useEffect(() => {
         </View>
       )}
       
-      <View className="items-center mx-7 justify-center">
+      <View className="items-center mx-6 justify-center">
         {category === 'event'? (
           <View className="w-full items-start mt-3">
+            {renderFacilities()}
             <View >
               <Text className="text-lg font-ksemibold">Description :</Text>
               <Text className="font-kregular">{description}</Text>
@@ -251,7 +284,7 @@ useEffect(() => {
                  
         ):category === 'attraction' ? (
           <View className="w-full items-start mt-3">
-
+            {renderFacilities()}
             <View className="w-full items-start">
               <Text className="text-lg font-ksemibold">Address :</Text>
               <Text className="font-kregular">{address}</Text>
@@ -309,7 +342,7 @@ useEffect(() => {
 
         ) : category === 'dining' ? (
           <View className="w-full items-start mt-3">
-
+            {renderFacilities()}
             <View className="w-full items-start">
               <Text className="text-lg font-ksemibold">Address :</Text>
               <Text className="font-kregular">{address}</Text>
@@ -401,7 +434,7 @@ useEffect(() => {
                   <Image key={index} source={{ uri: photo }} className="w-32 h-36 " resizeMode='contain' />
                 ))}
               </View>
-              <View className="mt-5">
+              <View className="mt-5 w-5/6">
                 <Text className="font-kregular text-sm">
                   {review.comment}
                 </Text>
@@ -433,9 +466,17 @@ useEffect(() => {
         <View className="m-5">
           {category === 'event' ? (
             <Image
-              source={{ uri: poster }}
-              className="w-full h-auto rounded-lg bg-secondary"
-              style={{ aspectRatio: 1 }}
+              source={{
+                uri: poster,
+                cache: 'force-cache', // Options: 'default', 'reload', 'force-cache', 'only-if-cached'
+              }}
+              style={{
+                width: '100%',
+                aspectRatio: 1,
+                borderRadius: 10,
+                backgroundColor: '#E5E5E5', // Optional fallback background
+              }}
+              resizeMode="contain"
             />
           ) : (
             <Poster image={poster} />

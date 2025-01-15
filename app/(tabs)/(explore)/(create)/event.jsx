@@ -188,11 +188,29 @@ const CreateEvent = () => {
         });
 
       setIsSubmitting(false);
-      console.log('uploaded');
-      router.back();
+      console.log('Uploaded successfully');
+            
+      // Show success popup
+      Alert.alert(
+        "Request Submitted",
+        "Your attraction has been successfully submitted and is now pending approval.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.back(), // Navigate back after acknowledgment
+          },
+        ]
+      );
       } catch (error) {
         console.error(error);
         setIsSubmitting(false);
+
+      // Show error popup
+      Alert.alert(
+        "Submission Failed",
+        "Something went wrong while submitting your request. Please try again.",
+        [{ text: "OK" }]
+      );
     }
   };
 

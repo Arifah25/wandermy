@@ -76,34 +76,61 @@ const EditProfile = () => {
 
   const updateProfile = async () => {
     if (!userId) return;
-
+  
+    // Function to check if the username is already taken
+    const isUsernameTaken = async (username) => {
+      try {
+        const usersRef = ref(db, `users`);
+        const snapshot = await get(usersRef);
+        if (snapshot.exists()) {
+          const usersData = snapshot.val();
+          for (const uid in usersData) {
+            if (usersData[uid].username === username && uid !== userId) {
+              return true;
+            }
+          }
+        }
+        return false;
+      } catch (error) {
+        console.error("Error checking username availability:", error);
+        return false;
+      }
+    };
+  
+    if (username !== userData?.username) {
+      const usernameTaken = await isUsernameTaken(username);
+      if (usernameTaken) {
+        console.log("Username is already taken.");
+        alert("This username is already taken. Please choose another.");
+        return;
+      }
+    }
+  
     let profilePictureURL = userData?.profilePicture;
-
+  
     // Upload new profile picture if the user selected one
     if (profilePicture && profilePicture !== userData?.profilePicture) {
       profilePictureURL = await uploadProfileImage(userId, profilePicture);
     }
-
+  
     // Update Firebase Realtime Database with new data
     const updates = {
       username: username || userData.username,
-      email: email || userData.email,
       userPreference: tags || userData.userPreference,
       profilePicture: profilePictureURL, // update the profile picture if it's changed
     };
-
+  
     try {
       const userRef = ref(db, `users/${userId}`);
       await update(userRef, updates);
-
-      // Show a success message or navigate the user
+  
       console.log("Profile updated successfully.");
-      router.back(); // Assuming you have a profile page
+      router.back(); // Navigate back to the profile page
     } catch (error) {
       console.error("Error updating profile:", error);
     }
   };
-
+  
   return (
     <View className="bg-white h-full flex-1 p-5 justify-start">
       <TouchableOpacity onPress={handleChangeProfilePicture} className="items-center">
@@ -128,15 +155,9 @@ const EditProfile = () => {
 
       <View className="w-full mt-7 px-5 flex-row items-center justify-center">
         <Text className="font-kregular text-base w-24">Email</Text>
-        <View className="w-56 bg-white rounded-md h-10 justify-center border-2 border-secondary">
-          <TextInput
-            className="font-pregular p-2"
-            value={email} // Controlled input
-            placeholder="Enter new email"
-            placeholderTextColor="#7E6C6C"
-            onChangeText={(value) => setEmail(value)}
-          />
-        </View>
+        <Text className="font-pregular p-2 text-gray-800">
+          {email || "Not Available"}
+        </Text>
       </View>
 
       <View className="my-10 px-5">
