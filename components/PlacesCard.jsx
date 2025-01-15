@@ -2,29 +2,37 @@ import React from 'react'
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import { icons, images } from "../constants";
 
-const PlaceCard = ({image, name, handlePress}) => {
-  return (    
-    <TouchableOpacity onPress={handlePress} 
-    style={{ width: '48%', marginBottom: 10 }}
-    >
-      <View className="w-40 rounded-lg bg-secondary border items-center justify-start">
-        <View className="bg-white w-full items-center h-36 justify-center rounded-t-lg">
-          <Image 
-           source={{ uri: image }}
-            // source={images.logo}
-            className="bg-white w-full items-center h-36 justify-center rounded-t-lg"
-          />
-        </View>
-        <View className="h-[62px] items-center justify-center" style={{
-            paddingHorizontal: 8, // Add padding to create gap from the sides
+const PlaceCard = ({ image, name, handlePress }) => {
+  return (
+    <TouchableOpacity onPress={handlePress} style={{ width: '48%', marginBottom: 10 }}>
+      <View
+        style={{
+          width: '100%',
+          backgroundColor: '#F2F2F2',
+          borderRadius: 10,
+          overflow: 'hidden',
+        }}
+      >
+        <Image
+          source={{ uri: image }}
+          style={{
+            width: '100%',
+            height: 150, // Fixed height for consistent card display
+          }}
+          resizeMode="cover"
+        />
+        <View style={{ 
+          padding: 10, 
+          alignItems: 'center',
+          height: 60, // Fixed height for the text container
+          justifyContent: 'center'
           }}>
           <Text
-            className="text-center text-base font-kregular"
             style={{
-              marginTop: 5,
-              textAlign: 'center',
               fontSize: 15,
               color: '#333',
+              textAlign: 'center',
+              lineHeight: 20,
             }}
             numberOfLines={2}
             ellipsizeMode="tail"
@@ -34,8 +42,8 @@ const PlaceCard = ({image, name, handlePress}) => {
         </View>
       </View>
     </TouchableOpacity>
-    
-  )
-}
+  );
+};
+
 
 export default PlaceCard
