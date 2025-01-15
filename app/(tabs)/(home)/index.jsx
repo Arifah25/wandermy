@@ -231,8 +231,8 @@ const Home = () => {
           <View
             key={index}
             style={{
-              width: 170, // Fixed width for all PlaceCards
-              marginRight: 10, // Space between cards
+              width: 160, // Fixed width for all PlaceCards
+              marginRight: 12, // Space between cards
             }}
           >
             <PlaceCardHome
@@ -249,7 +249,7 @@ const Home = () => {
   
   const renderRecommendations = () => (
     <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">
-      <Text className="font-kregular text-xl mb-3 ml-4">Recommendations for you</Text>
+      <Text className="font-ksemibold text-xl mb-2">Recommendations for you</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />
       ) : recommendations.length > 0 ? (
@@ -266,7 +266,7 @@ const Home = () => {
           numColumns={2}
           columnWrapperStyle={{
             justifyContent: 'space-between',
-            marginHorizontal: 16,
+            marginHorizontal: 10,
             marginBottom: 10,
           }}
         />

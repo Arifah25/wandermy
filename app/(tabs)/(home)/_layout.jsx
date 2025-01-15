@@ -57,7 +57,7 @@ const HomeLayout = () => {
         name="notification"
         component={Notification}
         options={{ 
-          headerTitle: 'Notication',
+          headerTitle: 'Notification',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },

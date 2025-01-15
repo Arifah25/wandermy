@@ -71,15 +71,15 @@ const AddReview = () => {
         });
 
         // Check for badge eligibility
-        if (updatedPoints >= 100 && !userData.badges?.includes('Traveller Badge')) {
+        if (updatedPoints >= 100 && !userData.badges?.includes('Horizon Seeker Badge')) {
           const badges = userData.badges || [];
-          badges.push('Traveller Badge');
+          badges.push('Horizon Seeker Badge');
           await set(userRef, {
             ...userData,
             points: updatedPoints,
             badges,
           });
-          console.log('Traveller Badge awarded!');
+          console.log('Horizon Seeker Badge awarded!');
         }
       } else {
         console.error('User not found in database.');
@@ -114,7 +114,7 @@ const AddReview = () => {
       await set(newReviewRef, reviewData);
 
       // Award 5 points for posting a review
-      await updateUserPoints(userId, 10);
+      await updateUserPoints(userId, 5);
 
       setIsSubmitting(false);
       console.log('Review uploaded, points awarded.');
