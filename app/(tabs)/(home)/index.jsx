@@ -178,7 +178,7 @@ const Home = () => {
     <View className="flex-row justify-center items-center">
       <View className="items-center justify-center ml-5 mr-7">
         <Image
-          source={{ uri: userData.profilePicture || icons.profile }} // Ensure valid URI
+          source={{ uri: userData.profilePicture} || icons.profile } // Ensure valid URI
           className="rounded-full w-32 h-32 mb-3"
         />
       </View>
