@@ -17,6 +17,7 @@ import SearchPlace from "./SearchPlace";
 import OptionCard from "./OptionCard";
 import HeaderWithCart from "./HeaderWithCart";
 import Header from "./Header";
+import PlaceCardHome from "./PlacesCardHome";
 
 export{
     FormField,
@@ -29,6 +30,7 @@ export{
     ItineraryCard,
     DateField,
     PlaceCard,
+    PlaceCardHome,
     Poster,
     Map,
     DetailTab,

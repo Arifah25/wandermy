@@ -6,7 +6,7 @@ import { icons } from "../../../constants";
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, get, push, set } from 'firebase/database';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
-import { PlaceCard } from '../../../components';
+import { PlaceCard, PlaceCardHome } from '../../../components';
 
 const logUserInteraction = async (placeID) => {
   const db = getDatabase();
@@ -218,36 +218,37 @@ const Home = () => {
   };
   
   const renderRecentlyAdded = () => (
-    <View className="ml-4 mr-4 mt-2">
-      <Text className="font-kregular text-xl mb-3 ml-4">Recently Added</Text>
-      {loading ? (
-        <ActivityIndicator size="large" color="#A91D1D" />
-      ) : recentlyAdded.length > 0 ? (
-        <FlatList
-          data={recentlyAdded}
-          renderItem={({ item }) => (
-            <PlaceCard
-              name={item.name || 'Unnamed Place'} // Provide fallback
-              image={item.poster ? item.poster[0] : null} // Ensure valid image
+    <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">
+      <Text className="font-ksemibold text-xl mb-2">Recently Added</Text>
+      <ScrollView
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 8,
+        }}
+      >
+        {recentlyAdded.map((item, index) => (
+          <View
+            key={index}
+            style={{
+              width: 170, // Fixed width for all PlaceCards
+              marginRight: 10, // Space between cards
+            }}
+          >
+            <PlaceCardHome
+              name={item.name || 'Unnamed Place'} // Fallback for name
+              image={item.poster ? item.poster[0] : null} // Fallback for image
               handlePress={() => handlePlacePress(item)}
             />
-          )}
-          keyExtractor={(item) => item.placeID.toString()}
-          numColumns={2}
-          columnWrapperStyle={{
-            justifyContent: 'space-between',
-            marginHorizontal: 16,
-            marginBottom: 10,
-          }}
-        />
-      ) : (
-        <Text className="text-center mt-5">No recently added places available</Text>
-      )}
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
   
+  
   const renderRecommendations = () => (
-    <View className="ml-4 mr-4 mt-2">
+    <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">
       <Text className="font-kregular text-xl mb-3 ml-4">Recommendations for you</Text>
       {loading ? (
         <ActivityIndicator size="large" color="#A91D1D" />
