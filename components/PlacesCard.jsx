@@ -28,11 +28,13 @@ const PlaceCard = ({ image, name, handlePress }) => {
           justifyContent: 'center'
           }}>
           <Text
+            className='text-center text-base font-kregular'
             style={{
               fontSize: 15,
               color: '#333',
               textAlign: 'center',
               lineHeight: 20,
+              fontWeight: 'bold',
             }}
             numberOfLines={2}
             ellipsizeMode="tail"

@@ -175,7 +175,7 @@ const Home = () => {
 
   // Render each section
   const renderHeader = () => (
-    <View className="flex-row justify-center items-center">
+    <View className="flex-row justify-center items-center mt-8">
       <View className="items-center justify-center ml-5 mr-7">
         <Image
           source={{ uri: userData.profilePicture} || icons.profile } // Ensure valid URI
@@ -218,30 +218,31 @@ const Home = () => {
   };
   
   const renderRecentlyAdded = () => (
-    <View className="mt-1 ml-5 mr-5">
-      <Text className="font-kregular text-xl mt-3 mb-3 ml-3">Recently Added</Text>
-      <FlatList
-        data={recentlyAdded}
-        renderItem={({ item }) => (
-          <View style={{ marginLeft: 12 }}>
+    <View className="ml-4 mr-4 mt-2">
+      <Text className="font-kregular text-xl mb-3 ml-4">Recently Added</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#A91D1D" />
+      ) : recentlyAdded.length > 0 ? (
+        <FlatList
+          data={recentlyAdded}
+          renderItem={({ item }) => (
             <PlaceCard
               name={item.name || 'Unnamed Place'} // Provide fallback
               image={item.poster ? item.poster[0] : null} // Ensure valid image
               handlePress={() => handlePlacePress(item)}
             />
-          </View>
-        )}
-        keyExtractor={(item) => item.placeID.toString()}
-        horizontal
-        showsHorizontalScrollIndicator={true}
-        contentContainerStyle={{
-          paddingHorizontal: 5,
-          marginBottom: 10,
-        }}
-        style={{
-          maxHeight: 250,
-        }}
-      />
+          )}
+          keyExtractor={(item) => item.placeID.toString()}
+          numColumns={2}
+          columnWrapperStyle={{
+            justifyContent: 'space-between',
+            marginHorizontal: 16,
+            marginBottom: 10,
+          }}
+        />
+      ) : (
+        <Text className="text-center mt-5">No recently added places available</Text>
+      )}
     </View>
   );
   
@@ -275,7 +276,7 @@ const Home = () => {
   );
   
   return (
-    <SafeAreaView className="bg-white h-full flex-1">
+    <View className="bg-white h-full flex-1">
       <FlatList
         data={[
           { key: 'header' },
@@ -299,7 +300,7 @@ const Home = () => {
         }}
         keyExtractor={(item) => item.key}
       />
-    </SafeAreaView>
+    </View>
   );  
 };
 
