@@ -122,14 +122,20 @@ const ChoosePlaces = () => {
           });
         } else {
           // Additional filtering based on itinerary data and nearby places
-          const targetCoordinates =
-          {lat: parseFloat(lat), lng: parseFloat(long)} || itineraryData?.locationInfo?.coordinates;
+          let targetCoordinates;
+           if(lat && long){
+            targetCoordinates = {lat: parseFloat(lat), lng: parseFloat(long)};
+           }
+           else{
+            targetCoordinates =
+           itineraryData?.locationInfo?.coordinates;
+           }
           const targetLocation =
           destination || itineraryData?.locationInfo?.name;
 
             console.log('Target Coordinates:', targetCoordinates);
             console.log('Target Location:', targetLocation);
-            console.log(info);
+            // console.log(info);
   
           filteredPlaces = placesArray
             .filter(
@@ -218,60 +224,66 @@ const ChoosePlaces = () => {
     if (loading) return; // Prevent multiple executions while loading
     setLoading(true);
 
-    const formattedPlaces = JSON.stringify(cart);
+    if (cart.length === 0) {
+      setLoading(false);
+      Alert.alert('No places added', 'Please add some places to generate itinerary');  
+    }
+    else{
+      const formattedPlaces = JSON.stringify(cart);
 
-    console.log('Formatted Places:', formattedPlaces);
+      console.log('Formatted Places:', formattedPlaces);
 
-    try {
-      const FINAL_PROMPT = AI_PROMPT
-        .replace('{tripName}', itineraryData?.tripName || '')
-        .replace('{destination}', destination || itineraryData?.locationIfo?.name || '')
-        .replace('{origin}',  'Penang, Malaysia')
-        .replace('{places}', formattedPlaces || '')
-        .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
-        .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-        .replace('{traveler}', itineraryData?.traveler || info?.traveler || '')
-        .replace('{budget}', itineraryData?.budget || info?.budget || '');
+      try {
+        const FINAL_PROMPT = AI_PROMPT
+          .replace('{tripName}', itineraryData?.tripName || '')
+          .replace('{destination}', destination || itineraryData?.locationIfo?.name || '')
+          .replace('{origin}',  'Penang, Malaysia')
+          .replace('{places}', formattedPlaces || '')
+          .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
+          .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
+          .replace('{traveler}', itineraryData?.traveler || info?.traveler || '')
+          .replace('{budget}', itineraryData?.budget || info?.budget || '');
 
-      console.log('AI Prompt:', FINAL_PROMPT);
+        console.log('AI Prompt:', FINAL_PROMPT);
 
-      // const result = await chatSession.sendMessage(FINAL_PROMPT);
-      const response = JSON.parse(result.response.text()); // Assuming JSON response
+        // const result = await chatSession.sendMessage(FINAL_PROMPT);
+        const response = JSON.parse(result.response.text()); // Assuming JSON response
 
-      console.log('AI Response:', response);
+        console.log('AI Response:', response);
 
-      if (docId) {
-        const docRef = doc(firestore, 'userItinerary', docId); // Use existing docId
-        await updateDoc(docRef, {
-          itineraryData: response,
-          cart: formattedPlaces,
+        if (docId) {
+          const docRef = doc(firestore, 'userItinerary', docId); // Use existing docId
+          await updateDoc(docRef, {
+            itineraryData: response,
+            cart: formattedPlaces,
+          });
+          router.push({
+            pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
+            params: { docId },
+          });
+        } else{
+          const docId = Date.now().toString();
+          await setDoc(doc(firestore, 'userItinerary', docId), {
+            docId: docId,
+            userEmail: user?.email,
+            cart: formattedPlaces,
+            info: itineraryData?.locationInfo,
+            itineraryData: response,
+            startDate: moment(itineraryData?.startDate).format('DD MMM YYYY'),
+            endDate: moment(itineraryData?.endDate).format('DD MMM YYYY')
         });
         router.push({
           pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
           params: { docId },
         });
-      } else{
-        const docId = Date.now().toString();
-        await setDoc(doc(firestore, 'userItinerary', docId), {
-          docId: docId,
-          userEmail: user?.email,
-          cart: formattedPlaces,
-          info: itineraryData?.locationInfo,
-          itineraryData: response,
-          startDate: moment(itineraryData?.startDate).format('DD MMM YYYY'),
-          endDate: moment(itineraryData?.endDate).format('DD MMM YYYY')
-      });
-      router.push({
-        pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
-        params: { docId },
-      });
-      }
-      clearCart();
+        }
+        clearCart();
 
-    } catch (error) {
-      console.error('Error generating itinerary:', error);
-    } finally {
-      setLoading(false);
+      } catch (error) {
+        console.error('Error generating itinerary:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
