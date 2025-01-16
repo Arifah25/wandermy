@@ -56,10 +56,10 @@ const ChoosePlaces = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if(cartD){
+      if (cartD) {
         setCartData(JSON.parse(cartD));
       }
-      setLoading(true);      
+      setLoading(true);
       const db = getDatabase();
       const placesRef = ref(db, "places");
       const eventRef = ref(db, "event");
@@ -86,15 +86,15 @@ const ChoosePlaces = () => {
         }));
   
         let filteredPlaces;
-
+  
         let tripStartDate = moment(itineraryData?.startDate);
         let tripEndDate = moment(itineraryData?.endDate);
-
-        if(startDate && endDate){
-           tripStartDate = moment(startDate, 'DD MMM YYYY')
-           tripEndDate = moment(endDate, 'DD MMM YYYY');
+  
+        if (startDate && endDate) {
+          tripStartDate = moment(startDate, 'DD MMM YYYY');
+          tripEndDate = moment(endDate, 'DD MMM YYYY');
         }
-
+  
         if (activeTab === "event") {
           // Filter events data
           filteredPlaces = combinedData.filter((item) => {
@@ -103,15 +103,11 @@ const ChoosePlaces = () => {
               item.status === "approved" &&
               item.eventDetails &&
               item.eventDetails.startDate &&
-              item.eventDetails.endDate 
+              item.eventDetails.endDate
             ) {
               // Parse event start and end dates
               const eventStartDate = moment(item.eventDetails.startDate, "DD/MM/YYYY"); // Parse event date
               const eventEndDate = moment(item.eventDetails.endDate, "DD/MM/YYYY"); // Parse event date
-              // console.log("Event Start Date:", eventStartDate.format());
-              // console.log("Event End Date:", eventEndDate.format());
-              // console.log("Trip Start Date:", tripStartDate.format(), startDate);
-              // console.log("Trip End Date:", tripEndDate.format());
   
               return (
                 eventEndDate.isSameOrAfter(tripStartDate) &&
@@ -123,23 +119,33 @@ const ChoosePlaces = () => {
         } else {
           // Additional filtering based on itinerary data and nearby places
           let targetCoordinates;
-           if(lat && long){
-            targetCoordinates = {lat: parseFloat(lat), lng: parseFloat(long)};
-           }
-           else{
-            targetCoordinates =
-           itineraryData?.locationInfo?.coordinates;
-           }
-          const targetLocation =
-          destination || itineraryData?.locationInfo?.name;
-
-            console.log('Target Coordinates:', targetCoordinates);
-            console.log('Target Location:', targetLocation);
-            // console.log(info);
+          if (lat && long) {
+            targetCoordinates = { lat: parseFloat(lat), lng: parseFloat(long) };
+          } else {
+            targetCoordinates = itineraryData?.locationInfo?.coordinates;
+          }
+          const targetLocation = destination || itineraryData?.locationInfo?.name;
   
-          filteredPlaces = placesArray
-            .filter(
-              (place) =>
+          console.log('Target Coordinates:', targetCoordinates);
+          console.log('Target Location:', targetLocation);
+  
+          // Fetch operating hours for each place
+          const fetchOperatingHours = async (placeID) => {
+            const hourRef = ref(db, `operatingHours/${placeID}`);
+            const snapshot = await get(hourRef);
+            return snapshot.val();
+          };
+  
+          const placesWithOperatingHours = await Promise.all(
+            placesArray.map(async (place) => {
+              const operatingHours = await fetchOperatingHours(place.id);
+              return { ...place, operatingHours };
+            })
+          );
+  
+          filteredPlaces = placesWithOperatingHours
+            .filter((place) => {
+              if (
                 place.category === activeTab &&
                 place.status === "approved" &&
                 isNearby(
@@ -148,7 +154,24 @@ const ChoosePlaces = () => {
                   targetLocation,
                   targetCoordinates
                 )
-            )
+              ) {
+                // Check if the place is open during the trip dates
+                const isOpenDuringTrip = Object.keys(place.operatingHours || {}).some((day) => {
+                  const hours = place.operatingHours[day];
+                  if (hours && hours.isOpen) {
+                    const openingTime = moment(hours.openingTime, "HH:mm");
+                    const closingTime = moment(hours.closingTime, "HH:mm");
+                    return (
+                      tripStartDate.isSameOrBefore(closingTime) &&
+                      tripEndDate.isSameOrAfter(openingTime)
+                    );
+                  }
+                  return false;
+                });
+                return isOpenDuringTrip;
+              }
+              return false;
+            })
             .sort((a, b) => a.name.localeCompare(b.name));
         }
   
@@ -217,6 +240,11 @@ const ChoosePlaces = () => {
 
   const handleRemoveFromCart = (placeID) => {
     removeFromCart(placeID);
+    alert('Place removed from cart successfully.');
+  };
+
+  const handleMakeItinerary = () => {
+
   };
 
   const handleGenerateItinerary = async () => {
