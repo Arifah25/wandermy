@@ -31,18 +31,27 @@ const DetailsPlaces = () => {
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   const handleAddToCart = () => {
-    addToCart({ 
-      placeID, 
-      name, 
-      category,
-      address,
-      latitude,
-      longitude,
-    });
+    // Check if the place is already in the cart
+    const isPlaceInCart = cart.some(item => item.placeID === placeID);
+    
+    if (isPlaceInCart) {
+      alert('This place is already in the cart.');
+    } else {
+      addToCart({ 
+        placeID, 
+        name, 
+        category,
+        address,
+        latitude,
+        longitude,
+      });
+      alert('Place added to cart successfully.');
+    }
   };
-
+  
   const handleRemoveFromCart = (placeID) => {
     removeFromCart(placeID);
+    alert('Place removed from cart successfully.');
   };
   
   const handleGenerateItinerary = async () => {
