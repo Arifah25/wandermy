@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView, TextInput, Switch, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, ActivityIndicator , Image, ScrollView, TextInput, Switch, TouchableOpacity, Modal, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { AddPhoto, CreateForm, Button, Map, TimeField, } from '../../../../components';
 import { icons } from '../../../../constants';
@@ -278,24 +278,23 @@ const EditAttraction = () => {
   };
   
   const updateDetail = async () => {
-    if (!validateForm()) {
-      Alert.alert('Incomplete Form', 'Please fill in all required fields before updating.', [{ text: 'OK' }]);
-      return;
-    }
-
-    setIsSubmitting(true);
+    setIsSubmitting(true); // Show loading indicator
 
     try {
+      // Upload poster images
       let posterURL = await Promise.all(
         poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
       );
-  
-      // Handle uploading all price/menu images
-      let priceOrMenuURL = await Promise.all(
-        price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
-      );
 
-      // Update Firebase Realtime Database with new data
+      // Upload price/menu images if admission is paid
+      let priceOrMenuURL = [];
+      if (admissionType === 'paid') {
+        priceOrMenuURL = await Promise.all(
+          price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
+        );
+      }
+
+      // Construct updates object
       const updates = {
         name: name || placeData.name,
         websiteLink: websiteLink || placeData.websiteLink || "",
@@ -305,34 +304,37 @@ const EditAttraction = () => {
         longitude: longitude || placeData.longitude || "",
         latitude: latitude || placeData.latitude || "",
         tags: tags || placeData.tags || "",
-        facilities: placeData.facilities || [],
+        facilities: facilities || placeData.facilities || [],
         poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
-        price_or_menu: admissionType === 'free' ? null : priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],      admissionType: admissionType || placeData.admissionType,
+        price_or_menu: priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],
       };
 
+      // Update Firebase
       const userRef = ref(db, `places/${placeID}`);
       await update(userRef, updates);
 
-      // Save opening hours
+      // Save operating hours
       form.operatingHours.forEach(async (day) => {
         const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
         await set(operatingHoursRef, {
-          // dayOfWeek: day.dayOfWeek,
           isOpen: day.isOpen,
-          openingTime: day.isOpen ? day.openingTime : 'null',
+          openingTime: day.isOpen ? day.openingTime : null,
           closingTime: day.isOpen ? day.closingTime : null,
         });
       });
 
       Alert.alert('Success', 'Details updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
+
+      console.log("Attraction updated successfully:", updates);
     } catch (error) {
-      console.error('Error updating detail:', error);
-      Alert.alert('Error', 'An error occurred while updating. Please try again.', [{ text: 'OK' }]);
+      console.error("Error updating attraction:", error);
+      Alert.alert("Error", "An error occurred while updating the attraction. Please try again.", [
+        { text: "OK" },
+      ]);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Hide loading indicator
     }
-  };
-      
+  };      
   
   const handleLocationSelected = (locationData) => {
     console.log('Selected Location:', locationData);
@@ -352,6 +354,22 @@ const EditAttraction = () => {
   return (
     // <SafeAreaView>
       <ScrollView className="flex-1 h-full px-8 bg-white">
+
+      {isSubmitting && (
+        <Modal visible={true} transparent={true} animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        </Modal>
+      )}
+        
         <Modal
         visible={isModalVisible}
         transparent={true}

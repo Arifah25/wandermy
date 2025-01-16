@@ -104,7 +104,6 @@ const HomeAdmin = () => {
     });
     console.log('Navigating to:', place); // Log the place details
 
-
   };
 
 

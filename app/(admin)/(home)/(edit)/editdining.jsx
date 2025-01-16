@@ -267,24 +267,20 @@ const EditDining = () => {
   };
 
   const updateDetail = async () => {
-    if (!validateForm()) {
-      Alert.alert('Incomplete Form', 'Please fill in all required fields before updating.', [{ text: 'OK' }]);
-      return;
-    }
-
     setIsSubmitting(true);
-
+  
     try {
+      // Upload poster images
       let posterURL = await Promise.all(
         poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
       );
-    
-      // Handle uploading all price/menu images
+  
+      // Upload price/menu images
       let priceOrMenuURL = await Promise.all(
         price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
       );
-
-      // Update Firebase Realtime Database with new data
+  
+      // Construct updates object
       const updates = {
         name: name || placeData.name,
         websiteLink: websiteLink || placeData.websiteLink || "",
@@ -293,26 +289,26 @@ const EditDining = () => {
         longitude: longitude || placeData.longitude || "",
         latitude: latitude || placeData.latitude || "",
         tags: tags || placeData.tags || "",
-        halalStatus: placeData.halalStatus,
-        facilities: placeData.facilities || [],
+        halalStatus: halalStatus || placeData.halalStatus,
+        facilities: facilities || placeData.facilities || [],
         poster: posterURL.length > 0 ? posterURL : placeData.poster || [],
         price_or_menu: priceOrMenuURL.length > 0 ? priceOrMenuURL : placeData.price_or_menu || [],
       };
-    
+  
+      // Update Firebase
       const userRef = ref(db, `places/${placeID}`);
       await update(userRef, updates);
-
-      // Save opening hours
+  
+      // Save operating hours
       form.operatingHours.forEach(async (day) => {
         const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
         await set(operatingHoursRef, {
-          // dayOfWeek: day.dayOfWeek,
           isOpen: day.isOpen,
-          openingTime: day.isOpen ? day.openingTime : 'null',
+          openingTime: day.isOpen ? day.openingTime : null,
           closingTime: day.isOpen ? day.closingTime : null,
         });
       });
-
+  
       Alert.alert('Success', 'Details updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
     } catch (error) {
       console.error('Error updating detail:', error);
@@ -320,7 +316,7 @@ const EditDining = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  };  
 
   const renderError = (field) => {
     return errors[field] ? <Text style={{ color: 'red', fontSize: 12 }}>{errors[field]}</Text> : null;
@@ -348,6 +344,20 @@ const EditDining = () => {
       enableOnAndroid={true}
       keyboardShouldPersistTaps="handled"
     >
+      {isSubmitting && (
+      <Modal visible={true} transparent={true} animationType="fade">
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      </Modal>
+    )}
       <Modal
       visible={isModalVisible}
       transparent={true}
