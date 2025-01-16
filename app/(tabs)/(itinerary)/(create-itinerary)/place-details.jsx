@@ -48,7 +48,14 @@ const DetailsPlaces = () => {
         latitude,
         longitude,
       });
-      Alert.alert('Place added to cart successfully.');
+      Alert.alert('Place added to cart successfully.',
+        [
+          {
+            text: "OK",
+            onPress: () => router.back(), // Navigate back after acknowledgment
+          },
+        ]
+      );
     }
   };
   

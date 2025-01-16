@@ -169,9 +169,7 @@ const ItineraryDetails = () => {
 
   const redirectToMaps = (latitude, longitude, destinationName) => {
     const latLong = `${latitude},${longitude}`;
-  
-   
-  
+    
     // Decide which app to open
     if (Platform.OS === 'ios') {
       // Check for Google Maps or Waze on iOS
@@ -203,37 +201,58 @@ const ItineraryDetails = () => {
   };
 
   const navigateToLocation = (latitude, longitude, destinationName) => {
-    const latLong = `${latitude},${longitude}`;
-
-     // Google Maps URL
-     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationName)}&destination_place_id=${latLong}&travelmode=driving`;
+    console.log("Latitude:", latitude);
+    console.log("Longitude:", longitude);
+    console.log("Destination Name:", destinationName); // Check if it's undefined
   
-     // Apple Maps URL (iOS only)
-     const appleMapsUrl = `http://maps.apple.com/?daddr=${latLong}&q=${encodeURIComponent(destinationName)}&dirflg=d`;
-   
-     // Waze URL
-     const wazeUrl = `https://waze.com/ul?ll=${latLong}&navigate=yes&q=${encodeURIComponent(destinationName)}`;
+    if (!latitude || !longitude) {
+      Alert.alert("Error", "Invalid location coordinates.");
+      return;
+    }
+  
+    if (!destinationName) {
+      destinationName = "Destination"; // Fallback name if undefined
+    }
+  
+    const latLong = `${latitude},${longitude}`;
+  
+    // Corrected Google Maps URL
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationName)}&destination_place_id=${latLong}&travelmode=driving`;
+  
+    // Apple Maps URL
+    const appleMapsUrl = `http://maps.apple.com/?daddr=${latLong}&q=${encodeURIComponent(destinationName)}&dirflg=d`;
+  
+    // Waze URL
+    const wazeUrl = latitude && longitude
+    ? `https://waze.com/ul?ll=${latLong}&navigate=yes`
+    : `https://waze.com/ul?q=${encodeURIComponent(destinationName)}&navigate=yes`;
+  
     // Present options for preferred maps
     Alert.alert(
-      'Choose Navigation App',
-      'Select your preferred maps application:',
+      "Choose Navigation App",
+      "Select your preferred maps application:",
       [
         {
-          text: 'Google Maps',
-          onPress: () => Linking.openURL(googleMapsUrl),
+          text: "Google Maps",
+          onPress: () => {
+            console.log("Opening Google Maps:", googleMapsUrl);
+            Linking.openURL(googleMapsUrl);
+          },
         },
         {
-          text: 'Apple Maps',
+          text: "Apple Maps",
           onPress: () => Linking.openURL(appleMapsUrl),
         },
         {
-          text: 'Waze',
+          text: "Waze",
           onPress: () => Linking.openURL(wazeUrl),
         },
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
       ]
     );
-  }; 
+  };
+  
+
 
 const findNearestMosque = async (latitude, longitude) => {
   
@@ -355,13 +374,13 @@ const findNearestMosque = async (latitude, longitude) => {
                   
                   <View className="flex-row justify-between w-full mt-2 p-1">
                     <TouchableOpacity className="flex-row bg-blue-500 p-2 rounded-full items-center mr-2"
-                      onPress={() => findNearestMosque(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude, item.place)}
+                      onPress={() => findNearestMosque(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude)}
                       >
                       <FontAwesome6 name="mosque" size={18} color="white" />
                       <Text className="mx-2 font-kregular text-white text-sm">Nearest Mosque</Text>
                     </TouchableOpacity>
                     <TouchableOpacity className="flex-row bg-blue-500 px-3 rounded-full items-center"
-                      onPress={() => navigateToLocation(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude)}
+                      onPress={() => navigateToLocation(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude, item.place )}
                     >
                       <FontAwesome name="map-marker" size={24} color="white" />
                       <Text className="mx-2 font-kregular text-white text-sm">Get Directions</Text>
