@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert, Modal, Switch } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Modal, Switch } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, Map, TimeField, } from '../../../../components'
@@ -154,7 +154,6 @@ const CreateDining = () => {
   };
 
   const handlePost = async () => {
-    // Validate required fields
     if (!validateForm()) {
       Alert.alert(
         "Incomplete Form",
@@ -166,7 +165,6 @@ const CreateDining = () => {
 
     setIsSubmitting(true);
     try {
-      // Upload images and get the URLs
       const posterUrls = await uploadImages(posterImages, 'poster');
       const priceUrls = await uploadImages(priceImages, 'menu');
 
@@ -178,7 +176,7 @@ const CreateDining = () => {
         address: form.address,
         websiteLink: form.websiteLink,
         contactNum: form.contactNum,
-        poster: posterUrls, // Use uploaded URLs
+        poster: posterUrls,
         price_or_menu: priceUrls,
         tags: form.tags,
         category: 'dining',
@@ -187,13 +185,12 @@ const CreateDining = () => {
         user: userId,
         facilities: form.facilities,
       };
+
       await set(newPlaceRef, placeData);
 
-      // Save opening hours
       form.operatingHours.forEach(async (day) => {
         const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
         await set(operatingHoursRef, {
-          // dayOfWeek: day.dayOfWeek,
           isOpen: day.isOpen,
           openingTime: day.isOpen ? day.openingTime : 'null',
           closingTime: day.isOpen ? day.closingTime : null,
@@ -201,24 +198,19 @@ const CreateDining = () => {
       });
 
       setIsSubmitting(false);
-      console.log('uploaded');
-      
-      // Show success popup
       Alert.alert(
         "Request Submitted",
-        "Your attraction has been successfully submitted and is now pending approval.",
+        "Your dining place has been successfully submitted and is now pending approval.",
         [
           {
             text: "OK",
-            onPress: () => router.back(), // Navigate back after acknowledgment
+            onPress: () => router.back(),
           },
         ]
       );
     } catch (error) {
       console.error(error);
       setIsSubmitting(false);
-
-      // Show error popup
       Alert.alert(
         "Submission Failed",
         "Something went wrong while submitting your request. Please try again.",
@@ -226,6 +218,7 @@ const CreateDining = () => {
       );
     }
   };
+
   const toggleModalVisibility = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -270,6 +263,21 @@ const CreateDining = () => {
           enableOnAndroid={true}
           keyboardShouldPersistTaps="handled"
         >
+          {/* ActivityIndicator Modal */}
+          {isSubmitting && (
+            <Modal visible={true} transparent={true} animationType="fade">
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                <ActivityIndicator size="large" color="#fff" />
+              </View>
+            </Modal>
+          )}
         <Modal
         visible={isModalVisible}
         transparent={true}

@@ -151,10 +151,23 @@ const EditProfile = () => {
       )}
 
       <TouchableOpacity onPress={handleChangeProfilePicture} className="items-center">
-        <Image
-          source={{ uri: profilePicture } || icons.profile}
-          className="w-40 h-40 rounded-full"
-        />
+        
+        <View
+          style={{
+            width: 170, // Adjust size for larger container
+            height: 170, // Adjust size for larger container
+            borderRadius: 85, // Should match half of the width/height for a perfect circle
+            borderWidth: 1, // Thickness of the border
+            borderColor: 'black', // Border color
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Image
+            source={{ uri: profilePicture } || icons.profile}
+            className="w-40 h-40 rounded-full"
+          />
+        </View>
       </TouchableOpacity>
 
       <View className="w-full mt-7 px-5 flex-row items-center justify-center">

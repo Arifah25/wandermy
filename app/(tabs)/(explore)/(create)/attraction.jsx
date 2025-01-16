@@ -1,4 +1,4 @@
-import { View, Text, Modal, Switch, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { View, Text, Modal, Switch, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { AddPhoto, Button, CreateForm, Map, TimeField } from '../../../../components';
@@ -7,9 +7,10 @@ import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
+
 const CreateAttraction = () => {
   const router = useRouter();
-  const { latitude, longitude, address } = useLocalSearchParams();
+  const { latitude, longitude } = useLocalSearchParams();
 
   const db = getDatabase();
   const auth = getAuth();
@@ -133,11 +134,7 @@ const CreateAttraction = () => {
 
   const handlePost = async () => {
     if (!validateForm()) {
-      Alert.alert(
-        "Incomplete Form",
-        "Please fill in all required fields before submitting.",
-        [{ text: "OK" }]
-      );
+      Alert.alert("Incomplete Form", "Please fill in all required fields before submitting.");
       return;
     }
 
@@ -169,35 +166,19 @@ const CreateAttraction = () => {
         const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
         await set(operatingHoursRef, {
           isOpen: day.isOpen,
-          openingTime: day.isOpen ? day.openingTime : 'null',
+          openingTime: day.isOpen ? day.openingTime : null,
           closingTime: day.isOpen ? day.closingTime : null,
         });
       });
 
       setIsSubmitting(false);
-      console.log('Uploaded successfully');
-      
-      // Show success popup
-      Alert.alert(
-        "Request Submitted",
-        "Your attraction has been successfully submitted and is now pending approval.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.back(), // Navigate back after acknowledgment
-          },
-        ]
-      );
+      Alert.alert("Request Submitted", "Your attraction has been successfully submitted and is now pending approval.", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
     } catch (error) {
       console.error("Error while submitting the attraction:", error);
       setIsSubmitting(false);
-
-      // Show error popup
-      Alert.alert(
-        "Submission Failed",
-        "Something went wrong while submitting your request. Please try again.",
-        [{ text: "OK" }]
-      );
+      Alert.alert("Submission Failed", "Something went wrong. Please try again.");
     }
   };
 
@@ -212,6 +193,20 @@ const CreateAttraction = () => {
       enableOnAndroid={true}
       keyboardShouldPersistTaps="handled"
     >
+      {isSubmitting && (
+        <Modal visible={true} transparent={true} animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        </Modal>
+      )}
       <Modal visible={isModalVisible} transparent={true} animationType="fade">
         <Map
           onLocationSelected={(locationData) => {
