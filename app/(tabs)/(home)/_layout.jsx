@@ -7,6 +7,7 @@ import Home from '.';
 import Notification from './notification';
 import Details from './details';
 import AddReview from './addreview';
+import Points from './points';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,7 +58,7 @@ const HomeLayout = () => {
         name="notification"
         component={Notification}
         options={{ 
-          headerTitle: 'Notication',
+          headerTitle: 'Notification',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },
@@ -69,6 +70,17 @@ const HomeLayout = () => {
         component={AddReview}
         options={{
           headerTitle: 'Add Review',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen 
+        name="points"
+        component={Points}
+        options={{
+          headerTitle: 'Badge Seeker',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },

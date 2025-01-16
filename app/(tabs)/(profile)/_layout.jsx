@@ -8,6 +8,7 @@ import BookmarkPlaces from './bookmark';
 import EditProfile from "./edit";
 import { useRouter } from 'expo-router';
 import Details from "./details";
+import MyBagdes from "./myBadges";
 
 const Stack = createNativeStackNavigator();
 
@@ -63,6 +64,17 @@ const ProfileLayout = () => {
         component={BookmarkPlaces}
         options={{ 
           headerTitle: 'Bookmarks',
+          headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: '#A91D1D' },
+          headerLeft: () => <HeaderIcon icon={icons.left} onPress={handleBack} />,
+        }}
+      />
+      <Stack.Screen
+        name="myBadges"
+        component={MyBagdes}
+        options={{ 
+          headerTitle: 'My Badges',
           headerTitleStyle: { color: '#fff', fontFamily: 'Kanit-Regular', fontSize: 20 },
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: '#A91D1D' },

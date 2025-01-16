@@ -23,6 +23,10 @@ import wifi from "../assets/icons/wifi.png";
 import toilet from "../assets/icons/toilet.png";
 import surau from "../assets/icons/surau.png";
 import halal from "../assets/icons/halal.png";
+import wanderersCrest from "../assets/icons/wanderersCrest.png";
+import pinnacleExplorer from "../assets/icons/pinnacleExplorer.png";
+import odysseyVoyager from "../assets/icons/odysseyVoyager.png";
+import horizonSeeker from "../assets/icons/horizonSeeker.png";
 
 export default {
     home,
@@ -49,5 +53,9 @@ export default {
     parking,
     wifi,
     halal,
-    toilet
+    toilet,
+    wanderersCrest,
+    pinnacleExplorer,
+    odysseyVoyager,
+    horizonSeeker
 };

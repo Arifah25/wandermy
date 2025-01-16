@@ -188,6 +188,38 @@ useEffect(() => {
     setBookmark(!bookmark);
   };
 
+  const renderPoster = () => {
+    if (!placeData?.poster || placeData.poster.length === 0) {
+      return (
+        <View
+          style={{
+            width: '100%',
+            height: 300,
+            backgroundColor: '#f2f2f2',
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text style={{ color: '#888', fontSize: 16 }}>No Image Available</Text>
+        </View>
+      );
+    }
+  
+    return (
+      <Image
+        source={{ uri: placeData.poster[0] }}
+        style={{
+          width: '100%',
+          height: 300, // Fixed height for consistent display
+          borderRadius: 10,
+          backgroundColor: '#f2f2f2', // Fallback background color
+        }}
+        resizeMode="cover" // Ensure the image fills the container and maintains its aspect ratio
+      />
+    );
+  };
+  
   // Navigation header for bookmark
   useEffect(() => {
     navigation.setOptions({

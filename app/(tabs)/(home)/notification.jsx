@@ -9,55 +9,60 @@ import {
   RefreshControl,
 } from "react-native";
 import { getAuth } from "firebase/auth";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, get } from "firebase/database";
 import { useRouter } from "expo-router";
 import { icons } from "../../../constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
   const [allNotifications, setAllNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(7); // Number of visible notifications
-  const [isLoadingMore, setIsLoadingMore] = useState(false); // Flag for loading more notifications
+  const [visibleCount, setVisibleCount] = useState(7);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [viewedNotifications, setViewedNotifications] = useState([]); // Track viewed notifications
   const auth = getAuth();
   const db = getDatabase();
-  const userId = auth.currentUser?.uid; // Get current user ID
+  const userId = auth.currentUser?.uid;
   const router = useRouter();
 
   useEffect(() => {
+    // Fetch notifications from the database
     if (userId) {
       const placesRef = ref(db, "places");
-      const unsubscribe = onValue(placesRef, (snapshot) => {
+      const unsubscribe = onValue(placesRef, async (snapshot) => {
         const data = snapshot.val();
         const userNotifications = [];
 
-        // Filter places for the logged-in user
         if (data) {
-          Object.keys(data).forEach((placeID) => {
-            const place = data[placeID];
-            if (place.user === userId) {
-              if (place.status === "approved") {
-                userNotifications.push({
-                  id: placeID,
-                  message: `Congratulations! ${place.name} has been approved!`,
-                  placeID,
-                  poster: place.poster,
-                  timestamp: new Date(place.dateApproved || Date.now()), // Assuming dateApproved is stored
-                });
-              } else if (place.status === "rejected") {
-                userNotifications.push({
-                  id: placeID,
-                  message: `We're sorry to inform you but ${place.name} has been rejected.`,
-                  placeID,
-                  poster: place.poster,
-                  timestamp: new Date(place.dateApproved || Date.now()), // Assuming dateApproved is stored
-                });
-              }
-            }
-          });
+          await Promise.all(
+            Object.keys(data).map(async (placeID) => {
+              const place = data[placeID];
+              if (place.user === userId) {
+                const placeDetailsRef = ref(db, `places/${placeID}`);
+                const placeDetailsSnapshot = await get(placeDetailsRef);
+                const placeDetails = placeDetailsSnapshot.val() || {};
 
-          // Sort notifications by timestamp (latest first)
+                if (place.status === "approved") {
+                  userNotifications.push({
+                    id: placeID,
+                    message: `Congratulations! ${placeDetails.name} has been approved!`,
+                    ...placeDetails,
+                    timestamp: new Date(place.dateApproved || Date.now()),
+                  });
+                } else if (place.status === "rejected") {
+                  userNotifications.push({
+                    id: placeID,
+                    message: `We're sorry to inform you but ${placeDetails.name} has been rejected.`,
+                    ...placeDetails,
+                    timestamp: new Date(place.dateRejected || Date.now()),
+                  });
+                }
+              }
+            })
+          );
+
           userNotifications.sort((a, b) => b.timestamp - a.timestamp);
         }
 
@@ -66,73 +71,97 @@ const Notification = () => {
         setIsLoading(false);
       });
 
+      // Load viewed notifications from AsyncStorage
+      const loadViewedNotifications = async () => {
+        const storedViewed = await AsyncStorage.getItem("viewedNotifications");
+        if (storedViewed) {
+          setViewedNotifications(JSON.parse(storedViewed));
+        }
+      };
+
+      loadViewedNotifications();
+
       return () => unsubscribe(); // Cleanup listener
     }
   }, [userId, visibleCount]);
 
   const loadMoreNotifications = () => {
     if (notifications.length < allNotifications.length && !isLoadingMore) {
-      setIsLoadingMore(true); // Start loading indicator for more notifications
+      setIsLoadingMore(true);
       const newCount = Math.min(visibleCount + 5, allNotifications.length);
       setTimeout(() => {
         setVisibleCount(newCount);
         setNotifications(allNotifications.slice(0, newCount));
-        setIsLoadingMore(false); // Stop loading indicator
-      }, 1000); // Simulate network delay
+        setIsLoadingMore(false);
+      }, 1000);
     }
   };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
-      setVisibleCount(20); // Reset to initial 20 notifications
+      setVisibleCount(20);
       setNotifications(allNotifications.slice(0, 20));
       setIsRefreshing(false);
-    }, 1000); // Simulate a delay for refreshing
+    }, 1000);
   };
 
-  const handleNotificationClick = (placeID) => {
+  const handleNotificationClick = async (item) => {
+    if (!viewedNotifications.includes(item.id)) {
+      const updatedViewed = [...viewedNotifications, item.id];
+      setViewedNotifications(updatedViewed);
+      await AsyncStorage.setItem(
+        "viewedNotifications",
+        JSON.stringify(updatedViewed)
+      );
+    }
+
     router.push({
-      pathname: "(tabs)/(explore)/details",
-      params: { placeID }, // Pass the placeID as a route parameter
+      pathname: "(tabs)/(home)/details",
+      params: { ...item },
     });
   };
 
-  const renderNotification = ({ item }) => (
-    <TouchableOpacity
-      className="p-3 mb-4 bg-gray-200 rounded"
-      onPress={() => handleNotificationClick(item.placeID)}
-      style={{ flexDirection: "row", alignItems: "center" }} // Align text and image horizontally
-    >
-      {/* Poster image */}
-      <Image
-        source={
-          item.poster && item.poster.length > 0
-            ? { uri: item.poster[0] }
-            : icons.placeholder // Fallback to a placeholder if poster is missing
-        }
-        style={{
-          width: 65, // Set width and height to make it square
-          height: 65,
-          borderRadius: 4, // Optional: round corners of the poster
-          marginRight: 14, // Space between image and text
-          backgroundColor: "#f0f0f0",
-        }}
-        resizeMode="cover" // Ensures the image covers the square area without distorting
-      />
+  const renderNotification = ({ item }) => {
+    const isViewed = viewedNotifications.includes(item.id);
 
-      {/* Notification text */}
-      <Text
-        className="text-black text-[15px]"
+    return (
+      <TouchableOpacity
+        className="p-3 mb-4 rounded"
+        onPress={() => handleNotificationClick(item)}
         style={{
-          flex: 1, // Allow text to take up available space
-          overflow: "hidden", // Hide overflowed text
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: isViewed ? "#F5F5F5" : "#E0E0E0", // Lighter background for viewed notifications
         }}
       >
-        {item.message}
-      </Text>
-    </TouchableOpacity>
-  );
+        <Image
+          source={
+            item.poster && item.poster.length > 0
+              ? { uri: item.poster[0] }
+              : icons.placeholder
+          }
+          style={{
+            width: 65,
+            height: 65,
+            borderRadius: 4,
+            marginRight: 14,
+            backgroundColor: "#f0f0f0",
+          }}
+          resizeMode="cover"
+        />
+        <Text
+          className="text-black text-[15px]"
+          style={{
+            flex: 1,
+            overflow: "hidden",
+          }}
+        >
+          {item.message}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View className="flex-1 p-5 bg-white">
@@ -143,13 +172,13 @@ const Notification = () => {
           data={notifications}
           keyExtractor={(item) => item.id}
           renderItem={renderNotification}
-          onEndReachedThreshold={0.5} // Trigger loading more notifications as the user scrolls down
-          onEndReached={loadMoreNotifications} // Call to load more notifications
+          onEndReachedThreshold={0.5}
+          onEndReached={loadMoreNotifications}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
-              onRefresh={handleRefresh} // Force load more on swipe down
-              colors={["#A91D1D"]} // Customize refresh control color
+              onRefresh={handleRefresh}
+              colors={["#A91D1D"]}
             />
           }
           ListFooterComponent={

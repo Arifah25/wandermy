@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, SafeAreaView, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Button, PlaceCard } from "../../../components";
@@ -103,18 +103,27 @@ const BookmarkPlaces = () => {
             handlePress={() => handlePress(item)} 
           />
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         numColumns={2}
-        // columnWrapperStyle={{ justifyContent: 'space-around' }}
         columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: 16, marginTop: 10 }}
         ListEmptyComponent={() => (
           <View className="justify-center items-center mt-7">
             <Text className="font-kbold text-xl">No Bookmark Found</Text>
-            <Text className="font-kregular text-md">No Bookmark available at the moment</Text>
-            <Button
-              title="Explore"
-              handlePress={() => console.log('Places:', places, 'Bookmark IDs:', bookmarkIds)}
-            />
+            <Text className="font-kregular text-md">
+              No Bookmark available at the moment
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/(explore)')} // Navigate to the explore page
+              style={{
+                marginTop: 15,
+                backgroundColor: '#A91D1D',
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 8,
+              }}
+            >
+              <Text className="font-ksemibold text-white text-lg">Explore</Text>
+            </TouchableOpacity>
           </View>
         )}
         refreshControl={
