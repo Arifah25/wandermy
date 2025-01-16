@@ -181,14 +181,14 @@ const SignUp = () => {
           </Modal>
         )}
         <View className="flex w-full items-center">
-          <TouchableOpacity onPress={pickImage}>
+        <TouchableOpacity onPress={pickImage}>
           <View
             style={{
-              width: 130, // Adjust size for larger container
-              height: 130, // Adjust size for larger container
-              borderRadius: 65, // Should match half of the width/height for a perfect circle
-              borderWidth: 1, // Thickness of the border
-              borderColor: 'black', // Border color
+              width: 170, // Container width
+              height: 170, // Container height
+              borderRadius: 85, // Circular shape
+              borderWidth: 1,
+              borderColor: 'black',
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: 10,
@@ -197,12 +197,15 @@ const SignUp = () => {
             <Image
               source={profileImage ? { uri: profileImage } : icons.addPhoto}
               style={{
-                width: 100,
-                height: 100,
+                width: 150, // Image width (matches icons.addPhoto size)
+                height: 150, // Image height (matches icons.addPhoto size)
+                borderRadius: profileImage ? 70 : 0, // Add borderRadius only for uploaded images
               }}
+              resizeMode="cover" // Ensures the image is properly scaled
             />
           </View>
-          </TouchableOpacity>
+        </TouchableOpacity>
+
           <Text className="font-kregular text-lg mb-5">Add Profile Picture</Text>
 
           <FormField title="Username" handleChangeText={(value) => setUsername(value)} />

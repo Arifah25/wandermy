@@ -25,15 +25,15 @@ const SignIn = () => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        if (email === 'admin@gmail.com' && password === 'admin123') {
+        if (email === 'u2001083@siswa.um.edu.my' && password === 'Admin123!') {
           Alert.alert('Success', 'Sign In Admin Successful');
           setTimeout(() => {
-            router.push("(admin)/");
+            router.push("(admin)/"); // Redirect to admin home
           }, 1500);
         } else {
           Alert.alert('Success', 'Sign In Successful');
           setTimeout(() => {
-            router.push("(tabs)/(home)/");
+            router.push("(tabs)/(home)/index"); // Redirect to regular user home
           }, 1500);
         }
       } catch (error) {
