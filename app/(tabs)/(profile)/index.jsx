@@ -140,11 +140,23 @@ const Profile = () => {
       <View
         className="w-full justify-center items-center px-5 m-8 mt-12"
       >
-        {/* get profile photo from database */}
-        <Image
-          source={{uri:userData.profilePicture} || icons.profile}
-          className="w-40 h-40 rounded-full"
-        />
+        <View
+          style={{
+            width: 170, // Adjust size for larger container
+            height: 170, // Adjust size for larger container
+            borderRadius: 85, // Should match half of the width/height for a perfect circle
+            borderWidth: 1, // Thickness of the border
+            borderColor: 'black', // Border color
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          {/* get profile photo from database */}
+          <Image
+            source={{uri:userData.profilePicture} || icons.profile}
+            className="w-40 h-40 rounded-full"
+          />
+          </View>
         <Text
           className="font-kregular text-2xl text-center lowercase m-4"
         >

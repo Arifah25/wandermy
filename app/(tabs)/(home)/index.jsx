@@ -222,10 +222,22 @@ const Home = () => {
   const renderHeader = () => (
     <View className="flex-row justify-center items-center mt-8">
       <View className="items-center justify-center ml-5 mr-7">
-        <Image
-          source={{ uri: userData.profilePicture} || icons.profile } // Ensure valid URI
-          className="rounded-full w-32 h-32 mb-3"
-        />
+        <View
+          style={{
+            width: 140, // Adjust size for larger container
+            height: 140, // Adjust size for larger container
+            borderRadius: 85, // Should match half of the width/height for a perfect circle
+            borderWidth: 1, // Thickness of the border
+            borderColor: 'black', // Border color
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Image
+            source={{ uri: userData.profilePicture} || icons.profile } // Ensure valid URI
+            className="rounded-full w-32 h-32"
+          />
+        </View>
       </View>
       <View className="mx-5 justify-center">
         <Text className="font-kregular text-2xl">Hello!</Text>
@@ -255,7 +267,7 @@ const Home = () => {
         }}// Redirect to points.jsx
         activeOpacity={0.8} // Set the opacity effect for better UX
       >
-        <View className="bg-white rounded-lg p-4 mt-4 ml-5 mr-5 mb-2 shadow-md">
+        <View className="bg-white rounded-lg p-4 mt-7 ml-5 mr-5 mb-2 shadow-md">
           <Text className="font-ksemibold text-xl mb-2">Your Progress</Text>
           <Text className="font-kregular text-lg mb-4">
             Points: <Text className="font-ksemibold">{points}</Text>/{currentMilestone}

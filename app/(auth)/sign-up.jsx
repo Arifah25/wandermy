@@ -25,12 +25,31 @@ const SignUp = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [religion, setReligion] = useState("Islam");
   const [isSubmitting, setIsSubmitting] = useState(false); // State for loading indicator
-
+  const [errors, setErrors] = useState({}); // Add an errors state
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+  
+    if (!email.trim()) newErrors.email = 'Email is required.';
+    if (!username.trim()) newErrors.username = 'Username is required.';
+    if (!password.trim()) newErrors.password = 'Password is required.';
+    if (!reenterPassword.trim()) newErrors.reenterPassword = 'Re-enter password is required.';
+    if (!userPreference.trim()) newErrors.userPreference = 'Interest field is required.';
+    if (!religion.trim()) newErrors.religion = 'Religion is required.';
+    if (!profileImage) newErrors.profileImage = 'Profile picture is required.'; // Validate profile picture
+  
+    if (password !== reenterPassword) {
+      newErrors.reenterPassword = 'Passwords do not match.';
+    }
+  
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
   const passwordFeedback = (password) => {
     const requirements = [
       { regex: /.{8,}/, message: 'At least 8 characters' },
@@ -64,8 +83,8 @@ const SignUp = () => {
   };
 
   const OnCreateAccount = async () => {
-    if (!email || !password || !reenterPassword || !username || !userPreference || !religion) {
-      Alert.alert('Error', 'Please fill in all fields to continue.');
+    if (!email || !password || !reenterPassword || !username || !userPreference || !religion || !profileImage) {
+      Alert.alert('Error', 'Please fill in ALL fields to continue.');
       return;
     }
 

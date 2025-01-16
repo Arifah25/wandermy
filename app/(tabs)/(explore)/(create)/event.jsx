@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Modal, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, ScrollView, ActivityIndicator, Modal, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'; // Correct hook for search params
 import { AddPhoto, Button, CreateForm, DateField, Map, TimeField, } from '../../../../components'
@@ -143,17 +143,12 @@ const CreateEvent = () => {
 
   const handlePost = async () => {
     if (!validateForm()) {
-      Alert.alert(
-        "Incomplete Form",
-        "Please fill in all required fields before submitting.",
-        [{ text: "OK" }]
-      );
+      Alert.alert("Incomplete Form", "Please fill in all required fields before submitting.");
       return;
     }
-      
+
     setIsSubmitting(true);
     try {
-      // Upload images and get the URLs
       const posterUrls = await uploadImages(posterImages, 'poster');
       const priceUrls = await uploadImages(priceImages, 'price');
 
@@ -164,7 +159,7 @@ const CreateEvent = () => {
         longitude: form.longitude,
         address: form.address,
         contactNum: form.contactNum,
-        poster: posterUrls, // Use uploaded URLs
+        poster: posterUrls,
         price_or_menu: priceUrls,
         tags: form.tags,
         description: form.description,
@@ -177,40 +172,22 @@ const CreateEvent = () => {
       };
       await set(newPlaceRef, placeData);
 
-      // Save event date and time
       const eventRef = ref(db, `event/${placeID}`);
-      
-        await set(eventRef, {
-          startDate: form.startDate,
-          endDate: form.endDate,
-          startTime: form.startTime,
-          endTime: form.endTime,
-        });
+      await set(eventRef, {
+        startDate: form.startDate,
+        endDate: form.endDate,
+        startTime: form.startTime,
+        endTime: form.endTime,
+      });
 
       setIsSubmitting(false);
-      console.log('Uploaded successfully');
-            
-      // Show success popup
-      Alert.alert(
-        "Request Submitted",
-        "Your attraction has been successfully submitted and is now pending approval.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.back(), // Navigate back after acknowledgment
-          },
-        ]
-      );
-      } catch (error) {
-        console.error(error);
-        setIsSubmitting(false);
-
-      // Show error popup
-      Alert.alert(
-        "Submission Failed",
-        "Something went wrong while submitting your request. Please try again.",
-        [{ text: "OK" }]
-      );
+      Alert.alert("Request Submitted", "Your event has been successfully submitted and is now pending approval.", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    } catch (error) {
+      console.error("Error while submitting the event:", error);
+      setIsSubmitting(false);
+      Alert.alert("Submission Failed", "Something went wrong. Please try again.");
     }
   };
 
@@ -241,15 +218,15 @@ const CreateEvent = () => {
     toggleModalVisibility();
   };
 
-  const handlePosterImagePicked = (imageURL) => {
-    // Update the form state with the new poster image URL
-    setForm({ ...form, poster: [...form.poster, imageURL] });
-  };
+  // const handlePosterImagePicked = (imageURL) => {
+  //   // Update the form state with the new poster image URL
+  //   setForm({ ...form, poster: [...form.poster, imageURL] });
+  // };
   
-  const handlePriceImagesPicked = (imageURLs) => {
-    // Update the form state with the new price image URLs
-    setForm({ ...form, price: [...form.price, ...imageURLs] }); // Append multiple image URLs
-  };
+  // const handlePriceImagesPicked = (imageURLs) => {
+  //   // Update the form state with the new price image URLs
+  //   setForm({ ...form, price: [...form.price, ...imageURLs] }); // Append multiple image URLs
+  // };
   
   return (
       <KeyboardAwareScrollView
@@ -258,6 +235,20 @@ const CreateEvent = () => {
         enableOnAndroid={true}
         keyboardShouldPersistTaps="handled"
       >
+         {isSubmitting && (
+          <Modal visible={true} transparent={true} animationType="fade">
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              }}
+            >
+              <ActivityIndicator size="large" color="#fff" />
+            </View>
+          </Modal>
+        )}
         <Modal
         visible={isModalVisible}
         transparent={true}
