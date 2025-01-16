@@ -275,7 +275,7 @@ const ChoosePlaces = () => {
 
         console.log('AI Prompt:', FINAL_PROMPT);
 
-        // const result = await chatSession.sendMessage(FINAL_PROMPT);
+        const result = await chatSession.sendMessage(FINAL_PROMPT);
         const response = JSON.parse(result.response.text()); // Assuming JSON response
 
         console.log('AI Response:', response);

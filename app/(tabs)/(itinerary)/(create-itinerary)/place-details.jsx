@@ -432,7 +432,7 @@ const DetailsPlaces = () => {
           )}
             <Text className="mt-4 ml-3 font-kbold text-3xl">{name}</Text>
 
-          <View>
+          <View className="mb-10">
             {renderDetails()}
         </View>
 
