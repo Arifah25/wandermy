@@ -25,26 +25,32 @@ const ItineraryDetails = () => {
   const [role, setRole] = useState('viewer');
 
   useEffect(() => {
-    const fetchItinerary = async () => {
-      setLoading(true);
-      try {
-        const docRef = doc(collection(firestore, 'userItinerary'), docId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setItineraryData(docSnap.data().itineraryData);
-          setDate(docSnap.data());
-        } else {
-          console.log('No such document!');
+      const fetchItinerary = async () => {
+        setLoading(true);
+        try {
+          // Reference the Firestore document by its ID
+          const docRef = doc(firestore, 'userItinerary', docId);
+          const docSnap = await getDoc(docRef);
+    
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setItineraryData(data.itineraryData || []); // Default to empty array if data is missing
+            setDate(data);
+            console.log('Document Data:', data);
+          } else {
+            console.log(`Document with ID ${docId} does not exist.`);
+          }
+        } catch (error) {
+          console.error('Error fetching itinerary:', error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching itinerary:', error);
-      } finally {
-        setLoading(false);
+      };
+    
+      if (docId) {
+        fetchItinerary();
       }
-    };
-
-    fetchItinerary();
-  }, [docId]);
+    }, [docId, firestore]);
 
   // const ManageCollaborators = ({ itineraryDocId, owner, collaborators, userEmail }) => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -146,26 +152,31 @@ const ItineraryDetails = () => {
     
 
   useEffect(() => {
-    const fetchPlaceDetails = async () => {
-      const db = getDatabase();
-      const newPlaceDetails = {};
-
-      if (itineraryData) {
-        Object.keys(itineraryData.itinerary).forEach((day) => {
-          itineraryData.itinerary[day].forEach((item) => {
-            const placeRef = ref(db, `places/${item.placeID}`);
-            onValue(placeRef, (snapshot) => {
-              const details = snapshot.val();
-              newPlaceDetails[item.placeID] = details;
-              setPlaceDetails((prevDetails) => ({ ...prevDetails, [item.placeID]: details }));
+      const fetchPlaceDetails = async () => {
+        const db = getDatabase();
+        console.log("Fetching Itinerary Data:", itineraryData);
+        
+        if (itineraryData?.days) {
+          const newPlaceDetails = {};
+          
+          itineraryData.days.forEach((day) => {
+            day.places.forEach((item) => {
+              const placeRef = ref(db, `places/${item.placeID}`);
+              onValue(placeRef, (snapshot) => {
+                const details = snapshot.val();
+                if (details) {
+                  newPlaceDetails[item.placeID] = details;
+                  setPlaceDetails((prevDetails) => ({ ...prevDetails, [item.placeID]: details }));
+                }
+              });
             });
           });
-        });
-      }
-    };
-
-    fetchPlaceDetails();
-  }, [itineraryData]);
+          console.log("Updated Place Details:", newPlaceDetails);
+        }
+      };
+      
+      fetchPlaceDetails();
+    }, [itineraryData]);
 
   const redirectToMaps = (latitude, longitude, destinationName) => {
     const latLong = `${latitude},${longitude}`;
@@ -201,9 +212,9 @@ const ItineraryDetails = () => {
   };
 
   const navigateToLocation = (latitude, longitude, destinationName) => {
-    console.log("Latitude:", latitude);
-    console.log("Longitude:", longitude);
-    console.log("Destination Name:", destinationName); // Check if it's undefined
+    // console.log("Latitude:", latitude);
+    // console.log("Longitude:", longitude);
+    // console.log("Destination Name:", destinationName); // Check if it's undefined
   
     if (!latitude || !longitude) {
       Alert.alert("Error", "Invalid location coordinates.");
@@ -288,69 +299,37 @@ const findNearestMosque = async (latitude, longitude) => {
 
 
   const renderTransportRecommendation = useMemo(() => {
-    if (!itineraryData) return null;
-    return (
-      <View>
-        <Text className="text-lg font-kregular mt-3">🚌 Transport Recommendation:</Text>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {itineraryData.publicTransport.map((item, index) => (
-            <View key={index} className="border border-secondary p-2 mx-2 rounded-lg mt-2" style={{ width: 200 }}>
-              <Text className="font-ksemibold">{item.mode}</Text>
-              <Text className="font-kregular">{item.route}</Text>
-              <Text className="font-kregular">Operator: {item.operator}</Text>
-              <Text className="font-kregular">Price: {item.estimatedPrice.min} - {item.estimatedPrice.max}</Text>
-              {/* <View className="absolute right-2 bottom-2">
-                <TouchableOpacity>
-                  <Text className="font-kregular text-blue-500">Book Now</Text>
-                </TouchableOpacity>
-              </View> */}
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    );
+    // Since we don't have transport data in new structure, return null or placeholder
+    return null;
+    // Or show placeholder:
+    // return (
+    //   <View>
+    //     <Text className="text-lg font-kregular mt-3">🚌 Transport options will be added soon</Text>
+    //   </View>
+    // );
   }, [itineraryData]);
 
   const renderHotelRecommendation = useMemo(() => {
-    if (!itineraryData) return null;
-    return (
-      <View>
-        <Text className="text-lg font-kregular mt-3">🏨 Hotel Recommendation:</Text>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {itineraryData.accommodation.map((item, index) => (
-            <View key={index} className="mx-3 border border-secondary rounded-lg mt-2" style={{ width: 200 }}>
-              {/* <View className="items-center bg-secondary rounded-lg">
-                <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
-              </View> */}
-              <View className="rounded-lg px-2 mt-2">
-                <Text className="font-ksemibold">{item.name}</Text>
-                <Text className="font-kregular">{item.location}</Text>
-                <Text className="font-kregular">{item.priceRange.min} - {item.priceRange.max}</Text>
-                <Text className="font-kregular text-right">⭐ {item.rating}</Text>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    );
+    // Since we don't have transport data in new structure, return null or placeholder
+    return null;
+    // Or show placeholder:
+    // return (
+    //   <View>
+    //     <Text className="text-lg font-kregular mt-3">🚌 Transport options will be added soon</Text>
+    //   </View>
+    // );
   }, [itineraryData]);
 
   const renderItinerary = useMemo(() => {
-    if (!itineraryData) return null;
-
-    const sortedDays = Object.keys(itineraryData.itinerary).sort((a, b) => {
-      const dayA = parseInt(a.replace('day', ''), 10);
-      const dayB = parseInt(b.replace('day', ''), 10);
-      return dayA - dayB;
-    });
+    if (!itineraryData?.days) return null;
 
     return (
       <View>
         <Text className="text-lg font-kregular mt-3">📑 Itinerary</Text>
-        {sortedDays.map((day, index) => (
+        {itineraryData.days.map((day, index) => (
           <View key={index}>
             <Text className="text-lg font-kregular mb-2">Day {index + 1}:</Text>
-            {itineraryData.itinerary[day].map((item, itemIndex) => (
+            {day.places.map((item, itemIndex) => (
               <TouchableOpacity key={itemIndex} className="rounded-lg border mb-5 p-2 items-center"
                 onPress={() => handlePlacePress(placeDetails[item.placeID])}>
                 <View className="items-start flex-row w-full">
@@ -365,9 +344,10 @@ const findNearestMosque = async (latitude, longitude) => {
                     )}
                   </View>
                   <View className="w-[45%] items-start ml-2 ">
-                    <Text className="font-kregular text-lg">{item.place}</Text>
-                    <Text className="font-kregular text-sm">⏱️ {item.time}</Text>
-                    <Text className="font-kregular text-sm">💸 {item.budget}</Text>
+                    <Text className="font-kregular text-lg">{item.name}</Text>
+                      <Text className="font-kregular text-sm">⏱️ {item.visitTime || 'Flexible'}</Text>
+                      <Text className="font-kregular text-sm">⏳ {item.duration ? `${item.duration} mins` : 'Flexible'}</Text>
+                      <Text className="font-kregular text-sm">📍 {item.category}</Text>
                   </View>
                 </View>                
                 <View className="ml-2 w-full items-start">
@@ -426,12 +406,12 @@ const findNearestMosque = async (latitude, longitude) => {
       </View>
       <View className="px-5 w-full">
         <View className="gap-x-4 p-2">
-          <Text className="text-2xl font-ksemibold">{itineraryData.tripDetails.tripName}</Text>
-          <Text className="text-base font-kregular">📍 {itineraryData.tripDetails.destination}</Text>
-          <Text className="text-base font-kregular">📅 {date.startDate} - {date.endDate} ({itineraryData.tripDetails.totalDays} days {itineraryData.tripDetails.totalNights} nights)</Text>
+          <Text className="text-2xl font-ksemibold">{date.tripDetails.tripName}</Text>
+          <Text className="text-base font-kregular">📍 {date.tripDetails.destination}</Text>
+          <Text className="text-base font-kregular">📅 {date.startDate} - {date.endDate} ({date.tripDetails.totalDays} days {date.tripDetails.totalNights} nights)</Text>
           <View className="flex-row justify-between">
-            <Text className="text-base font-kregular">💵 {itineraryData.tripDetails.budget} </Text>
-            <Text className="text-base font-kregular">🧍🏽‍♂️ {itineraryData.tripDetails.traveler} </Text>
+            <Text className="text-base font-kregular">💵 {date.tripDetails.budget} </Text>
+            <Text className="text-base font-kregular">🧍🏽‍♂️ {date.tripDetails.traveler} </Text>
           </View>
         </View>
         <ScrollView className="mb-7 flex h-4/5">
@@ -487,7 +467,7 @@ const findNearestMosque = async (latitude, longitude) => {
                   onValueChange={(itemValue) => setRole(itemValue)}
                   style={{ marginVertical: -24 }}
                 >
-                  <Picker.Item label="Viewer" value="viewer"/>
+                  <Picker.Item label="Viewerr" value="viewer"/>
                   <Picker.Item label="Editor" value="editor" />
                 </Picker>
                 ) : (

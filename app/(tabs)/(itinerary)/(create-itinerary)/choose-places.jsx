@@ -351,9 +351,6 @@ const ChoosePlaces = () => {
     Alert.alert('Place removed from cart successfully.');
   };
 
-  const handleMakeItinerary = () => {
-
-  };
 
   // Add meal type detection helper function
   const getMealType = (place) => {
