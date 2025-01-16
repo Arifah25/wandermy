@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView, TextInput, Switch, TouchableOpacity, Modal } from 'react-native';
+import { View, ActivityIndicator, Text, Image, ScrollView, TextInput, Switch, TouchableOpacity, Modal, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { AddPhoto, CreateForm, Button, Map, TimeField, DateField } from '../../../../components';
 import { icons } from '../../../../constants';
@@ -241,35 +241,32 @@ const EditEvent = () => {
     if (!form.endTime.trim()) newErrors.endTime = 'End time is required.';
     if (!form.admissionType) newErrors.admissionType = 'Admission type is required.';
 
-    form.operatingHours.forEach((day) => {
-      if (day.isOpen && (!day.openingTime || !day.closingTime)) {
-        newErrors.operatingHours = 'Operating hours must be set for open days.';
-      }
-    });
+    // form.operatingHours.forEach((day) => {
+    //   if (day.isOpen && (!day.openingTime || !day.closingTime)) {
+    //     newErrors.operatingHours = 'Operating hours must be set for open days.';
+    //   }
+    // });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const updateDetail = async () => {
-    if (!validateForm()) {
-      Alert.alert('Incomplete Form', 'Please fill in all required fields before updating.', [{ text: 'OK' }]);
-      return;
-    }
-
-    setIsSubmitting(true);
-
     try {
+      console.log("Entered updateDetail");
+  
+      console.log("Starting poster upload...");
+  
       let posterURL = await Promise.all(
         poster.map(async (imgUri) => await uploadPoster(placeID, imgUri))
       );
-    
-      // Handle uploading all price/menu images
+      console.log("Poster URLs:", posterURL);
+  
       let priceOrMenuURL = await Promise.all(
         price_or_menu.map(async (imgUri) => await uploadPrice_Or_Menu(placeID, imgUri))
       );
-
-      // Update Firebase Realtime Database with new data
+      console.log("Price/Menu URLs:", priceOrMenuURL);
+  
       const updates = {
         name: name || placeData.name,
         contactNum: contactNum || placeData.contactNum,
@@ -287,29 +284,81 @@ const EditEvent = () => {
         admissionType: admissionType || placeData.admissionType,
         feeAmount: admissionType === 'paid' ? feeAmount : null,
       };
-    
+  
+      console.log("Updates object:", updates);
+  
       const userRef = ref(db, `places/${placeID}`);
       await update(userRef, updates);
-
-      // Save opening hours
-      form.operatingHours.forEach(async (day) => {
-        const operatingHoursRef = ref(db, `operatingHours/${placeID}/${day.dayOfWeek}`);
-        await set(operatingHoursRef, {
-          // dayOfWeek: day.dayOfWeek,
-          isOpen: day.isOpen,
-          openingTime: day.isOpen ? day.openingTime : 'null',
-          closingTime: day.isOpen ? day.closingTime : null,
-        });
-      });
-
+      console.log("Firebase update successful");
       Alert.alert('Success', 'Details updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
     } catch (error) {
-      console.error('Error updating detail:', error);
-      Alert.alert('Error', 'An error occurred while updating. Please try again.', [{ text: 'OK' }]);
+      console.error("Error in updateDetail:", error);
+      Alert.alert('Error', 'An error occurred during the update.', [{ text: 'OK' }]);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Hide loading indicator
     }
   };
+  
+  
+  // const updateDetail = async () => {
+  //   if (!validateForm()) {
+  //     Alert.alert('Incomplete Form', 'Please fill in all required fields before updating.', [{ text: 'OK' }]);
+  //     return;
+  //   }
+  
+  //   setIsSubmitting(true);
+  //   console.log("Updating details for placeID:", placeID);
+  
+  //   try {
+  //     // Upload poster and price/menu images
+  //     let posterURL = await Promise.all(
+  //       poster.map(async (imgUri) => {
+  //         const url = await uploadPoster(placeID, imgUri);
+  //         console.log("Uploaded Poster URL:", url);
+  //         return url;
+  //       })
+  //     );
+  
+  //     let priceOrMenuURL = await Promise.all(
+  //       price_or_menu.map(async (imgUri) => {
+  //         const url = await uploadPrice_Or_Menu(placeID, imgUri);
+  //         console.log("Uploaded Price/Menu URL:", url);
+  //         return url;
+  //       })
+  //     );
+  
+  //     // Construct update object
+  //     const updates = {
+  //       name: name || placeData.name,
+  //       contactNum: contactNum || placeData.contactNum,
+  //       address: address || placeData.address,
+  //       longitude: longitude || placeData.longitude,
+  //       latitude: latitude || placeData.latitude,
+  //       tags: tags || placeData.tags,
+  //       poster: posterURL || placeData.poster,
+  //       price_or_menu: priceOrMenuURL || placeData.price_or_menu,
+  //       description: description || placeData.description,
+  //       startDate: startDate || placeData.startDate,
+  //       endDate: endDate || placeData.endDate,
+  //       startTime: startTime || placeData.startTime,
+  //       endTime: endTime || placeData.endTime,
+  //       admissionType: admissionType || placeData.admissionType,
+  //       feeAmount: admissionType === 'paid' ? feeAmount : null,
+  //     };
+  //     console.log("Update data:", updates);
+  
+  //     const userRef = ref(db, `places/${placeID}`);
+  //     await update(userRef, updates);
+  
+  //     Alert.alert('Success', 'Details updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
+  //   } catch (error) {
+  //     console.error('Error updating detail:', error);
+  //     Alert.alert('Error', 'An error occurred while updating. Please try again.', [{ text: 'OK' }]);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+  
 
   const renderError = (field) => {
     return errors[field] ? <Text style={{ color: 'red', fontSize: 12 }}>{errors[field]}</Text> : null;
@@ -339,6 +388,20 @@ const EditEvent = () => {
       enableOnAndroid={true}
       keyboardShouldPersistTaps="handled"
     >      
+    {isSubmitting && (
+            <Modal visible={true} transparent={true} animationType="fade">
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                <ActivityIndicator size="large" color="#fff" />
+              </View>
+            </Modal>
+          )}
     <Modal
       visible={isModalVisible}
       transparent={true}
@@ -627,7 +690,10 @@ const EditEvent = () => {
         />
         <Button 
         title="Update"
-        handlePress={updateDetail}
+        handlePress={() => {
+          console.log("Update button pressed");
+          updateDetail();
+        }}
         style="bg-primary w-2/5"
         textColor="text-white"/>
       </View>

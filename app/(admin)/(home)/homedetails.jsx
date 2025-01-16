@@ -239,6 +239,10 @@ useEffect(() => {
               <Text className="text-lg font-ksemibold">Description :</Text>
               <Text className="font-kregular">{description}</Text>
             </View>
+            <View >
+              <Text className="text-lg font-ksemibold">Address :</Text>
+              <Text className="font-kregular">{address}</Text>
+            </View>
 
             <View className="w-full items-start mt-3">
               <Text className="text-lg font-ksemibold">Event date & time :</Text>
@@ -275,20 +279,11 @@ useEffect(() => {
                       width: '100%',
                       aspectRatio: 1,
                       borderRadius: 10,
-                      backgroundColor: '#E5E5E5', // Optional fallback background
+                      marginBottom: 10,
+                      //backgroundColor: '#E5E5E5', // Optional fallback background
                     }}
                     resizeMode="contain"
                   />
-                  // <Image
-                  //   key={index}
-                  //   source={{ uri: imageUri }}
-                  //   style={{
-                  //     width: '100%', // Make it occupy full width
-                  //     aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
-                  //     marginBottom: 10, // Add spacing between images
-                  //   }}
-                  //   resizeMode="contain"
-                  // />
                   ))}
                 </View>
               </View>
@@ -503,7 +498,8 @@ useEffect(() => {
               width: '100%',
               aspectRatio: 1,
               borderRadius: 10,
-              backgroundColor: '#E5E5E5', // Optional fallback background
+              marginBottom: 10,
+              //backgroundColor: '#E5E5E5', // Optional fallback background
             }}
             resizeMode="contain"
           />

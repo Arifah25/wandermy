@@ -204,6 +204,11 @@ useEffect(() => {
               <Text className="font-kregular">{description}</Text>
             </View>
 
+            <View >
+              <Text className="text-lg font-ksemibold">Address :</Text>
+              <Text className="font-kregular">{address}</Text>
+            </View>
+
             <View className="w-full items-start mt-3">
               <Text className="text-lg font-ksemibold">Event date & time :</Text>
               <Text className="font-kregular">
