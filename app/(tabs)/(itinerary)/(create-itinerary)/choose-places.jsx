@@ -26,7 +26,7 @@ const ChoosePlaces = () => {
   const { cart, addToCart, removeFromCart, clearCart, setCartData } = useContext(CartContext);
   const user = auth.currentUser;
   const route = useRoute();
-  const { docId, cartD, destination, lat, long, startDate, endDate, info } = route.params; 
+  const { docId, cartD, destination, lat, long, startDate, endDate, days } = route.params; 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Earth's radius in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -387,7 +387,7 @@ const ChoosePlaces = () => {
     }
 
     try {
-      const totalDays = itineraryData?.totalNoOfDays || 1;
+      const totalDays = itineraryData?.totalNoOfDays || days;
       console.log('📅 Total days to plan:', totalDays);
       
       const generatedItinerary = { days: [] };
@@ -619,6 +619,10 @@ const ChoosePlaces = () => {
         await updateDoc(docRef, {
           itineraryData: generatedItinerary,
           cart: JSON.stringify(cart),
+        });
+        router.push({
+          pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
+          params: { docId: docId },
         });
       } else {
         const newDocId = Date.now().toString();

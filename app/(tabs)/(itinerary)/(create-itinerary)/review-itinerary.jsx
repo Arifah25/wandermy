@@ -51,22 +51,27 @@ const ReviewItinerary = () => {
   useEffect(() => {
     const fetchPlaceDetails = async () => {
       const db = getDatabase();
-      const newPlaceDetails = {};
-
-      if (itineraryData) {
-        Object.keys(itineraryData.itinerary).forEach((day) => {
-          itineraryData.itinerary[day].forEach((item) => {
+      console.log("Fetching Itinerary Data:", itineraryData);
+      
+      if (itineraryData?.days) {
+        const newPlaceDetails = {};
+        
+        itineraryData.days.forEach((day) => {
+          day.places.forEach((item) => {
             const placeRef = ref(db, `places/${item.placeID}`);
             onValue(placeRef, (snapshot) => {
               const details = snapshot.val();
-              newPlaceDetails[item.placeID] = details;
-              setPlaceDetails((prevDetails) => ({ ...prevDetails, [item.placeID]: details }));
+              if (details) {
+                newPlaceDetails[item.placeID] = details;
+                setPlaceDetails((prevDetails) => ({ ...prevDetails, [item.placeID]: details }));
+              }
             });
           });
         });
+        console.log("Updated Place Details:", newPlaceDetails);
       }
     };
-
+    
     fetchPlaceDetails();
   }, [itineraryData]);
 
@@ -130,7 +135,6 @@ const ReviewItinerary = () => {
   }, [itineraryData, placeDetails]);
 
   const navigateDetails = (docId) => {
-    
     router.replace({
       pathname: '(tabs)/(itinerary)/detailsiti',
       params: { docId },
@@ -140,7 +144,7 @@ const ReviewItinerary = () => {
   const navigateEdit = (docId) => {
     router.push({
       pathname: '(tabs)/(itinerary)/(create-itinerary)/choose-places',
-      params: { docId, cartD: date.cart, destination: itineraryData.tripDetails.destination, lat: date.info.coordinates.lat, long: date.info.coordinates.lng, startDate: date.startDate, endDate: date.endDate, info: date },
+      params: { docId, cartD: date.cart, destination: date.tripDetails.destination, lat: date.info.coordinates.lat, long: date.info.coordinates.lng, startDate: date.startDate, endDate: date.endDate, info: date, days: date.tripDetails.totalDays },
     });
     // console.log(date.info);
   }
@@ -164,19 +168,13 @@ const ReviewItinerary = () => {
         </TouchableOpacity>
       </View>
       <View className='px-5 justify-start h-full'>
-      <View className="gap-x-4 p-2 ">
-        <Text className="text-2xl font-ksemibold">Your Itinerary</Text>
-        <Text className="text-base font-kregular">📍 {date.info.name}</Text>
-        <Text className="text-base font-kregular">
-          📅 {date.startDate} - {date.endDate}
-        </Text>
+      <View className="gap-x-4 p-2">
+        <Text className="text-2xl font-ksemibold">{date.tripDetails.tripName}</Text>
+        <Text className="text-base font-kregular">📍 {date.tripDetails.destination}</Text>
+        <Text className="text-base font-kregular">📅 {date.startDate} - {date.endDate} ({date.tripDetails.totalDays} days {date.tripDetails.totalNights} nights)</Text>
         <View className="flex-row justify-between">
-          <Text className="text-base font-kregular">
-            🗓️ {itineraryData?.days?.length || 0} days
-          </Text>
-          <Text className="text-base font-kregular">
-            📍 {itineraryData?.days?.reduce((total, day) => total + day.places.length, 0) || 0} places
-          </Text>
+          <Text className="text-base font-kregular">💵 {date.tripDetails.budget} </Text>
+          <Text className="text-base font-kregular">🧍🏽‍♂️ {date.tripDetails.traveler} </Text>
         </View>
       </View>
       
