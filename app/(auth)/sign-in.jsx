@@ -33,7 +33,7 @@ const SignIn = () => {
         } else {
           Alert.alert('Success', 'Sign In Successful');
           setTimeout(() => {
-            router.push("(tabs)/(home)/index"); // Redirect to regular user home
+            router.push("(tabs)/(home)"); // Redirect to regular user home
           }, 1500);
         }
       } catch (error) {
