@@ -360,7 +360,7 @@ const findNearestMosque = async (latitude, longitude) => {
                       <Text className="mx-2 font-kregular text-white text-sm">Nearest Mosque</Text>
                     </TouchableOpacity>
                     <TouchableOpacity className="flex-row bg-blue-500 px-3 rounded-full items-center"
-                      onPress={() => navigateToLocation(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude, item.place )}
+                      onPress={() => navigateToLocation(placeDetails[item.placeID].latitude, placeDetails[item.placeID].longitude, item.name )}
                     >
                       <FontAwesome name="map-marker" size={24} color="white" />
                       <Text className="mx-2 font-kregular text-white text-sm">Get Directions</Text>
