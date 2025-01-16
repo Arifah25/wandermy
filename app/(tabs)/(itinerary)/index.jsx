@@ -136,7 +136,7 @@ const MyItinerary = () => {
                 docId={item.id}
                 rolePromise = {getUserRole(item.id, user.email)}
                 itinerary={item}
-                name={item.itineraryData.tripDetails?.tripName}
+                name={item.tripDetails?.tripName}
                 handlePress={() => navigateDetails(item.id, item.startDate, item.endDate)}
                 handleDelete={() => handleDelete(item.id)}
               />
