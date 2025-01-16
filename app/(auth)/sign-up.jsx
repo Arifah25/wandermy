@@ -1,5 +1,5 @@
-import { View, Text, ToastAndroid, TouchableOpacity, Image, Alert } from 'react-native';
 import React, { useState } from 'react';
+import { View, Text, ToastAndroid, TouchableOpacity, Image, Alert, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FormField, Button } from "../../components";
 import { Link, useRouter } from 'expo-router';
@@ -24,7 +24,8 @@ const SignUp = () => {
   const [userPreference, setUserPreference] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [religion, setReligion] = useState("Islam");
-  
+  const [isSubmitting, setIsSubmitting] = useState(false); // State for loading indicator
+
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -48,21 +49,6 @@ const SignUp = () => {
     setPassword(value);
     setPasswordFeedbackList(passwordFeedback(value)); // Update feedback
   };
-  
-  // const validatePassword = (password) => {
-  //   // return (
-  //   //   password.length >= 8 &&
-  //   //   /[A-Z]/.test(password) &&
-  //   //   /\d/.test(password) &&
-  //   //   /[@$!%*?&]/.test(password)
-  //   // );
-  //   const strongPasswordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-  //   if (!strongPasswordRegex.test(password)) {
-  //     return false; // Password does not meet the criteria
-  //   }
-  //   return true;
-  // };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -88,12 +74,6 @@ const SignUp = () => {
       return;
     }
 
-    // if (!validatePassword(password)) {
-    //   Alert.alert(
-    //     'Error',
-    //     'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.');
-    //   return;
-    // }
     if (!passwordFeedbackList.every((req) => req.met)) {
       Alert.alert('Error', 'Password does not meet all requirements.');
       return;
@@ -107,14 +87,14 @@ const SignUp = () => {
       return;
     }
 
+    setIsSubmitting(true); // Show loading indicator
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Check if a profile image was selected
-      let profilePictureUrl = icons.profile; // Default profile icon if no picture is uploaded
+      let profilePictureUrl = icons.addPhoto; // Default profile icon if no picture is uploaded
       if (profileImage) {
-        // Upload the selected profile image to Firebase Storage
         const storageReference = storageRef(storage, `profilePictures/${user.uid}`);
         const response = await fetch(profileImage);
         const blob = await response.blob();
@@ -135,7 +115,7 @@ const SignUp = () => {
       await sendEmailVerification(user);
       ToastAndroid.show('Check your email to verify your account.', ToastAndroid.BOTTOM);
 
-      Alert.alert('Success', 'Account created successfully.');
+      Alert.alert('Success', 'Account created successfully. Check your email to verify your account.');
       router.push({
         pathname: "(auth)/sign-in",
         params: { email, username, userPreference, religion },
@@ -144,95 +124,71 @@ const SignUp = () => {
       const errorCode = error.code;
       switch (errorCode) {
         case 'auth/email-already-in-use':
-          Alert.alert('Error',' This email is already registered.');
+          Alert.alert('Error', 'This email is already registered.');
           break;
         case 'auth/weak-password':
-          Alert.alert('Error','The password is too weak.');
+          Alert.alert('Error', 'The password is too weak.');
           break;
         case 'auth/invalid-email':
-          Alert.alert('Error','Invalid email address.');
+          Alert.alert('Error', 'Invalid email address.');
           break;
         default:
-          Alert.alert('Error','An error occurred. Please try again.');
+          Alert.alert('Error', 'An error occurred. Please try again.');
       }
+    } finally {
+      setIsSubmitting(false); // Hide loading indicator
     }
   };
 
-  //Uploading profile picture
-  const uploadDefaultProfileImage = async (userUid) => {
-    try {
-      // Load the asset (local image)
-      const asset = asset.fromModule(icons.profile); // Load the local image asset
-      await asset.downloadAsync(); // Ensure the asset is downloaded
-  
-      // Get the URI of the asset
-      const fileUri = asset.localUri || asset.uri; // This will give the local path to the asset
-  
-      // Use fetch to convert the local image to a Blob
-      const response = await fetch(fileUri);
-      const blob = await response.blob(); // Convert the file into a blob
-  
-      // Set up a reference to the Firebase Storage location
-      const storageReference = storageRef(getStorage(), `profilePictures/${userUid}`);
-  
-      // Upload the blob to Firebase Storage
-      await uploadBytes(storageReference, blob);
-  
-      // Get the download URL of the uploaded image
-      const profilePictureURL = await getDownloadURL(storageReference);
-  
-      return profilePictureURL; // Return the URL of the uploaded image
-    } catch (error) {
-      console.error("Error uploading default profile picture:", error);
-      throw error; // Rethrow the error for further handling
-    }
-  };
-
-  //     // Save the user data to Firebase Realtime Database
-  //     await set(databaseRef(database, 'users/' + user.uid), {
-  //       email: email,
-  //       username: username,
-  //       userPreference: '',
-  //       profilePicture: defaultProfileImage, // Store the default profile picture URL
-  //     });
-
-  //     // Navigate to the sign-in page
-  //     router.push("(auth)/sign-in");
-  //   } catch (error) {
-  //     const errorCode = error.code;
-  //     const errorMessage = error.message;
-  //     console.error(errorMessage, errorCode);
-  //   }
-  // };
-
-  
   return (
-    <SafeAreaView className="bg-white h-full flex-1">
+    // <SafeAreaView className="bg-white h-full flex-1">
       <KeyboardAwareScrollView
-        contentContainerStyle={{ padding: 20, alignItems: 'center' }}
+      className="bg-white"
+        contentContainerStyle={{ padding: 40, alignItems: 'center' }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="font-kregular text-2xl">Create Account</Text>
+        {isSubmitting && (
+          <Modal visible={true} transparent={true} animationType="fade">
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              }}
+            >
+              <ActivityIndicator size="large" color="#fff" />
+            </View>
+          </Modal>
+        )}
         <View className="flex w-full items-center">
           <TouchableOpacity onPress={pickImage}>
+          <View
+            style={{
+              width: 130, // Adjust size for larger container
+              height: 130, // Adjust size for larger container
+              borderRadius: 65, // Should match half of the width/height for a perfect circle
+              borderWidth: 1, // Thickness of the border
+              borderColor: 'black', // Border color
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}
+          >
             <Image
-              source={profileImage ? { uri: profileImage } : icons.profile}
+              source={profileImage ? { uri: profileImage } : icons.addPhoto}
               style={{
                 width: 100,
                 height: 100,
-                borderRadius: 50,
-                marginBottom: 20,
               }}
             />
+          </View>
           </TouchableOpacity>
+          <Text className="font-kregular text-lg mb-5">Add Profile Picture</Text>
 
           <FormField title="Username" handleChangeText={(value) => setUsername(value)} />
           <FormField title="Email" handleChangeText={(value) => setEmail(value)} keyboardType="email-address" />
-          {/* <FormField title="Password" handleChangeText={(value) => setPassword(value)} secureTextEntry /> */}
-          <FormField
-            title="Password"
-            handleChangeText={handlePasswordChange}
-          />        
+          <FormField title="Password" handleChangeText={handlePasswordChange} />
           <View style={{ width: '100%', marginBottom: 20 }}>
             {passwordFeedbackList.map((req, index) => (
               <Text
@@ -252,64 +208,66 @@ const SignUp = () => {
           <FormField
             title="Re-enter Password"
             handleChangeText={(value) => setReenterPassword(value)}
-          />          
-          <FormField title="User Preference (eg: nature)" handleChangeText={(value) => setUserPreference(value)} />
+          />
+          <FormField title="What are you interested in? (eg: nature)" handleChangeText={(value) => setUserPreference(value)} />
+        </View>
 
-          <View className="mb-5 ml-2">
-            <Text className="font-kregular text-xl">Religion :</Text>
-            <View className="flex-row items-center mt-2">
-              {['Islam', 'Hindu', 'Buddha', 'Others'].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  onPress={() => setReligion(option)}
+        <View className="mb-5 ml-4">
+          <Text className="font-kregular text-xl">Religion :</Text>
+          <View className="flex-row items-center mt-2">
+            {['Islam', 'Hindu', 'Buddha', 'Others'].map((option) => (
+              <TouchableOpacity
+                key={option}
+                onPress={() => setReligion(option)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginRight: 15,
+                }}
+              >
+                <View
                   style={{
-                    flexDirection: 'row',
+                    height: 20,
+                    width: 20,
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    borderColor: religion === option ? '#A91D1D' : '#ccc',
+                    justifyContent: 'center',
                     alignItems: 'center',
-                    marginRight: 20,
+                    marginRight: 4,
                   }}
                 >
-                  <View
-                    style={{
-                      height: 20,
-                      width: 20,
-                      borderRadius: 10,
-                      borderWidth: 2,
-                      borderColor: religion === option ? '#A91D1D' : '#ccc',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: 8,
-                    }}
-                  >
-                    {religion === option && (
-                      <View
-                        style={{
-                          height: 10,
-                          width: 10,
-                          borderRadius: 5,
-                          backgroundColor: '#A91D1D',
-                        }}
-                      />
-                    )}
-                  </View>
-                  <Text>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  {religion === option && (
+                    <View
+                      style={{
+                        height: 10,
+                        width: 10,
+                        borderRadius: 5,
+                        backgroundColor: '#A91D1D',
+                      }}
+                    />
+                  )}
+                </View>
+                <Text>{option}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
         <Button
           title="Sign Up"
           handlePress={OnCreateAccount}
-          style="bg-primary w-11/12 mt-10"
+          style="bg-primary w-11/12 mt-4"
           textColor="text-white"
         />
 
-        <Link href="sign-in" className="text-base font-kregular">
+        <Link href="sign-in" className="text-base font-kregular mt-2">
           I'm already a member
         </Link>
       </KeyboardAwareScrollView>
-    </SafeAreaView>
+
+      
+    // </SafeAreaView>
   );
 };
 

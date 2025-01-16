@@ -27,11 +27,13 @@ import wanderersCrest from "../assets/icons/wanderersCrest.png";
 import pinnacleExplorer from "../assets/icons/pinnacleExplorer.png";
 import odysseyVoyager from "../assets/icons/odysseyVoyager.png";
 import horizonSeeker from "../assets/icons/horizonSeeker.png";
+import addPhoto from "../assets/icons/add-photo.png";
 
 export default {
     home,
     view,
     explore, 
+    addPhoto,
     itinerary,
     profile,
     plus,

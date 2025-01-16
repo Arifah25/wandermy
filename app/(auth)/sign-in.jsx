@@ -1,80 +1,59 @@
-import { View, Text, Image, ToastAndroid, Modal, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, Modal, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from "../../constants";
 import { FormField, Button } from "../../components";
 import { Link, useRouter } from 'expo-router';
-import { auth } from "../../configs/firebaseConfig"; // Import auth from firebaseConfig
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"; // Import signInWithEmailAndPassword from firebase/auth
+import { auth } from "../../configs/firebaseConfig";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
 const SignIn = () => {
-  // Use the useRouter hook to get the router object for navigation
   const router = useRouter();
-
-  // Initialize state variables for email and password
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // State for login process
+  const [loading, setLoading] = useState(false); // State for forgot password process
 
-  // Define the OnSignIn function to handle the sign-in process
-  const OnSignIn = () => {
-    // Check if all fields are filled in
+  const OnSignIn = async () => {
     if (!email && !password) {
-      // If not, display a toast message to the user
-      Alert.alert('Error','Please enter all details');
+      Alert.alert('Error', 'Please enter all details');
     } else {
-      // Sign in with email and password
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed in 
-          const user = userCredential.user;
+      setIsSubmitting(true); // Show loading indicator
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-          // Check if email is verified
-          // if (user.emailVerified) {
-            // Display a toast message for 3 seconds
-            //check if the user is admin
-            if(email === 'admin@gmail.com' && password === 'admin123'){
-              console.log('Sign In Admin Successful');
-              // Navigate to the home index under tabs after 3 seconds
-              setTimeout(() => {
-                router.push("(admin)/");
-              }, 1500);
-            }else{
-              Alert.alert('Success','Sign In Successful');
-              // Navigate to the home index under tabs after 3 seconds
-              setTimeout(() => {
-                router.push("(tabs)/(home)/");
-              }, 1500);
-            } 
-          // }else{
-          //   ToastAndroid.show('Please verify your email before signing in.', ToastAndroid.BOTTOM);
-          //   return;
-          // }
-        })
-        .catch((error) => {
-          // If there's an error, get the error code and message
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          // Log the error message and code to the console for debugging
-          console.log(errorMessage, errorCode);
-          if (errorCode=='auth/invalid-credential') {
-            Alert.alert('Error','Invalid Email or Password');            
-          }
-        });
+        if (email === 'admin@gmail.com' && password === 'admin123') {
+          Alert.alert('Success', 'Sign In Admin Successful');
+          setTimeout(() => {
+            router.push("(admin)/");
+          }, 1500);
+        } else {
+          Alert.alert('Success', 'Sign In Successful');
+          setTimeout(() => {
+            router.push("(tabs)/(home)/");
+          }, 1500);
+        }
+      } catch (error) {
+        console.error(error.message, error.code);
+        Alert.alert('Error', 'Invalid Email or Password');
+      } finally {
+        setIsSubmitting(false); // Hide loading indicator
+      }
     }
-  }
+  };
 
- const handleForgotPassword = async () => {
+  const handleForgotPassword = async () => {
     if (forgotPasswordEmail) {
       setLoading(true);
       try {
         await sendPasswordResetEmail(auth, forgotPasswordEmail);
         Alert.alert('Password reset link sent to your email!');
-        setShowModal(false); // Close the modal
+        setShowModal(false); // Close modal
       } catch (error) {
-        Alert.alert('Error','Error sending reset email. Try again!');
+        Alert.alert('Error', 'Error sending reset email. Try again!');
       } finally {
         setLoading(false);
       }
@@ -85,22 +64,21 @@ const SignIn = () => {
 
   return (
     <SafeAreaView className="bg-white h-full flex-1 px-5 items-center justify-start">
-      
       <Image 
         source={icons.wandermy}
-        resizeMode='contain'
+        resizeMode="contain"
         className="w-56 h-56 items-center"
       />
 
       <FormField 
         title="Email"
-        handleChangeText={(value) => setEmail(value)} // Update the email state variable
+        handleChangeText={(value) => setEmail(value)} 
         keyboardType="email-address"
       />
 
       <FormField
         title="Password"
-        handleChangeText={(value) => setPassword(value)} // Update the password state variable
+        handleChangeText={(value) => setPassword(value)} 
         keyboardType="default"
       />
 
@@ -112,7 +90,7 @@ const SignIn = () => {
 
       <Button 
         title="Log In"
-        handlePress={OnSignIn} // Call the OnSignIn function when the button is pressed
+        handlePress={OnSignIn} 
         style="bg-primary w-11/12 mt-20"
         textColor="text-white"
       />
@@ -128,11 +106,26 @@ const SignIn = () => {
         textColor="text-primary"
       />
 
-        {/* Modal for Forgot Password */}
-        <Modal visible={showModal} transparent >
-          <View className="flex-1 justify-center items-center bg-black/50">
-            <View className="w-5/6 bg-white p-6 rounded-lg center">
-              {/* Close Button */}
+      {/* Loading Indicator for Login */}
+      {isSubmitting && (
+        <Modal visible={true} transparent={true} animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        </Modal>
+      )}
+
+      {/* Modal for Forgot Password */}
+      <Modal visible={showModal} transparent>
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className="w-5/6 bg-white p-6 rounded-lg center">
             <TouchableOpacity 
               onPress={() => setShowModal(false)} 
               style={{ position: 'absolute', top: 10, right: 10 }}
@@ -140,26 +133,24 @@ const SignIn = () => {
               <Image source={icons.close} style={{ width: 24, height: 24 }} />
             </TouchableOpacity>
             <FormField
-                title="Enter your registered email:"
-                placeholder="Email"
-                handleChangeText={setForgotPasswordEmail}
-                value={forgotPasswordEmail}
-                keyboardType="email-address"
-                style={{ width: '100%', height: 50 }}
-              />
-              <TouchableOpacity onPress={handleForgotPassword} disabled={loading} className="bg-primary p-3 rounded-lg">
-                <Text className="text-center text-white">{loading ? 'Sending...' : 'Send Reset Link'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowModal(false)} className="mt-4 border-2 border-primary p-3 rounded-lg">
-                <Text className="text-center text-primary">Cancel</Text>
-              </TouchableOpacity>
-            </View>
+              title="Enter your registered email:"
+              placeholder="Email"
+              handleChangeText={setForgotPasswordEmail}
+              value={forgotPasswordEmail}
+              keyboardType="email-address"
+              style={{ width: '100%', height: 50 }}
+            />
+            <TouchableOpacity onPress={handleForgotPassword} disabled={loading} className="bg-primary p-3 rounded-lg">
+              <Text className="text-center text-white">{loading ? 'Sending...' : 'Send Reset Link'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowModal(false)} className="mt-4 border-2 border-primary p-3 rounded-lg">
+              <Text className="text-center text-primary">Cancel</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
-
-
+        </View>
+      </Modal>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 export default SignIn;

@@ -1,12 +1,11 @@
-import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, Modal, ActivityIndicator, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { icons } from '../../../constants';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Button } from '../../../components';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, get, update } from 'firebase/database';
-import * as ImagePicker from 'expo-image-picker'; // to pick images
+import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const EditProfile = () => {
@@ -16,7 +15,8 @@ const EditProfile = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [tags, setTags] = useState("");
-  const [userData, setUserData] = useState(null); // store the fetched user data
+  const [userData, setUserData] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // State for loading indicator
 
   const auth = getAuth();
   const db = getDatabase();
@@ -70,14 +70,15 @@ const EditProfile = () => {
     });
 
     if (!result.canceled) {
-      setProfilePicture(result.assets[0].uri); // Save the URI of the selected image
+      setProfilePicture(result.assets[0].uri);
     }
   };
 
   const updateProfile = async () => {
     if (!userId) return;
-  
-    // Function to check if the username is already taken
+
+    setIsSubmitting(true); // Show loading indicator
+
     const isUsernameTaken = async (username) => {
       try {
         const usersRef = ref(db, `users`);
@@ -96,43 +97,59 @@ const EditProfile = () => {
         return false;
       }
     };
-  
+
     if (username !== userData?.username) {
       const usernameTaken = await isUsernameTaken(username);
       if (usernameTaken) {
-        console.log("Username is already taken.");
-        alert("This username is already taken. Please choose another.");
+        Alert.alert("Error", "This username is already taken. Please choose another.");
+        setIsSubmitting(false);
         return;
       }
     }
-  
+
     let profilePictureURL = userData?.profilePicture;
-  
-    // Upload new profile picture if the user selected one
+
     if (profilePicture && profilePicture !== userData?.profilePicture) {
       profilePictureURL = await uploadProfileImage(userId, profilePicture);
     }
-  
-    // Update Firebase Realtime Database with new data
+
     const updates = {
       username: username || userData.username,
       userPreference: tags || userData.userPreference,
-      profilePicture: profilePictureURL, // update the profile picture if it's changed
+      profilePicture: profilePictureURL,
     };
-  
+
     try {
       const userRef = ref(db, `users/${userId}`);
       await update(userRef, updates);
-  
-      console.log("Profile updated successfully.");
-      router.back(); // Navigate back to the profile page
+
+      Alert.alert("Success", "Profile updated successfully.");
+      router.back();
     } catch (error) {
       console.error("Error updating profile:", error);
+      Alert.alert("Error", "An error occurred while updating your profile.");
+    } finally {
+      setIsSubmitting(false); // Hide loading indicator
     }
   };
-  
+
   return (
     <View className="bg-white h-full flex-1 p-5 justify-start">
+      {isSubmitting && (
+        <Modal visible={true} transparent={true} animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        </Modal>
+      )}
+
       <TouchableOpacity onPress={handleChangeProfilePicture} className="items-center">
         <Image
           source={{ uri: profilePicture } || icons.profile}
@@ -141,11 +158,18 @@ const EditProfile = () => {
       </TouchableOpacity>
 
       <View className="w-full mt-7 px-5 flex-row items-center justify-center">
+        <Text className="font-kregular text-base w-24">Email:</Text>
+        <Text className="font-pregular p-2 text-gray-800">
+          {email || "Not Available"}
+        </Text>
+      </View>
+      
+      <View className="w-full mt-7 px-5 flex-row items-center justify-center">
         <Text className="font-kregular text-base w-24">Username</Text>
         <View className="w-56 bg-white rounded-md h-10 justify-center border-2 border-secondary">
           <TextInput
             className="font-pregular p-2"
-            value={username} // Controlled input
+            value={username}
             placeholder="Enter new username"
             placeholderTextColor="#7E6C6C"
             onChangeText={(value) => setUsername(value)}
@@ -153,19 +177,12 @@ const EditProfile = () => {
         </View>
       </View>
 
-      <View className="w-full mt-7 px-5 flex-row items-center justify-center">
-        <Text className="font-kregular text-base w-24">Email</Text>
-        <Text className="font-pregular p-2 text-gray-800">
-          {email || "Not Available"}
-        </Text>
-      </View>
-
       <View className="my-10 px-5">
-        <Text className="font-kregular text-base">User preferences (optional)</Text>
+        <Text className="font-kregular text-base">My Interests:</Text>
         <View className="mt-3 w-full bg-white rounded-md h-40 justify-start border-2 border-secondary">
           <TextInput
             className="font-pregular p-3"
-            value={tags} // Controlled input
+            value={tags}
             placeholder="Add preferences"
             placeholderTextColor="#7E6C6C"
             onChangeText={(value) => setTags(value)}
