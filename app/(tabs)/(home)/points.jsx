@@ -16,25 +16,25 @@ const Points = () => {
   const badges = [
     { 
       points: 100, 
-      badge: 'Horizon Seeker Badge', 
+      name: 'Horizon Seeker', 
       description: 'Embark on your first journey to explore new horizons.', 
       icon: icons.horizonSeeker 
     },
     { 
       points: 200, 
-      badge: 'Wanderer’s Crest Badge', 
+      name: 'Wanderer’s Crest', 
       description: 'Show your spirit of adventure by visiting more destinations.', 
       icon: icons.wanderersCrest 
     },
     { 
       points: 300, 
-      badge: 'Odyssey Voyager Badge', 
+      name: 'Odyssey Voyager', 
       description: 'Demonstrate your passion for travel by reaching faraway lands.', 
       icon: icons.odysseyVoyager 
     },
     { 
       points: 400, 
-      badge: 'Pinnacle Explorer Badge', 
+      name: 'Pinnacle Explorer', 
       description: 'Achieve legendary status by conquering the ultimate milestone.', 
       icon: icons.pinnacleExplorer 
     },
@@ -80,9 +80,7 @@ const Points = () => {
   }
 
   // Filter badges to show only the ones the user has achieved
-  const achievedBadges = Array.isArray(userBadges)
-    ? badges.filter((badge) => userBadges.includes(badge.badge))
-    : [];
+  const achievedBadges = badges.filter((badge) => userBadges.includes(badge.name));
 
   return (
     <View className="flex-1 bg-white p-5">
@@ -136,9 +134,7 @@ const Points = () => {
                       marginBottom: 10,
                     }}
                   />
-                  <Text className="font-ksemibold text-center">
-                    {badge.badge.replace(' Badge', '')} {/* Remove the word "Badge" */}
-                </Text>
+                  <Text className="font-ksemibold text-center">{badge.name}</Text>
                 </View>
               ))
             ) : (
@@ -179,11 +175,11 @@ const Points = () => {
                 }}
               />
               <View className="mr-3">
-                <Text className="font-ksemibold text-lg">{badge.badge}</Text>
+                <Text className="font-ksemibold text-lg">{badge.name}</Text>
                 <Text className="font-kregular text-gray-600 text-sm">
                   {badge.points} Points
                 </Text>
-                <Text className="font-k text-gray-500 text-sm italic mt-1 mr-9">
+                <Text className=" font-k text-gray-500 text-sm italic mt-1 mr-9">
                   {badge.description}
                 </Text>
               </View>
@@ -194,4 +190,5 @@ const Points = () => {
     </View>
   );
 };
+
 export default Points;

@@ -297,7 +297,7 @@ const Explore = () => {
 
 
         {/* Sort Modal */}
-        <Modal visible={isSortModalVisible} transparent animationType="slide">
+        <Modal visible={isSortModalVisible} transparent>
           <View className="flex-1 justify-center items-center bg-black/50">
             <View className="w-3/4 bg-white p-6 rounded-lg">
               <Text className="text-lg font-bold mb-4">Sort By</Text>

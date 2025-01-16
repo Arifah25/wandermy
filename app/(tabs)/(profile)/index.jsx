@@ -168,10 +168,16 @@ const Profile = () => {
           onPress={() => router.push('/(tabs)/(profile)/edit')} // Navigate to Edit Profile page
           className="border-t-0.5"
         >
-          <Text
-            className="font-kregular text-xl my-4 text-center"
-          >
+          <Text className="font-kregular text-xl my-4 text-center">
             Edit Profile
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/(profile)/myBadges')} // Navigate to Edit Profile page
+          className="border-t-0.5"
+        >
+          <Text className="font-kregular text-xl my-4 text-center">
+            My Badges
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
