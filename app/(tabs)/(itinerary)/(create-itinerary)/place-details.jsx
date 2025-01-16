@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Modal } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Modal, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { Poster, HeaderWithCart, Button } from '../../../../components';
+import { Poster, HeaderWithCart, Button, DetailTab } from '../../../../components';
 import { getDatabase, ref, onValue, get } from 'firebase/database';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { CartContext } from "../../../../context/CartContext";
@@ -19,6 +19,9 @@ const DetailsPlaces = () => {
   const [event, setEvent] = useState({});
   const [hour, setOperatingHours] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [placeData, setPlaceData] = useState({
+      price_or_menu: [],
+    });
 
   const router = useRouter();
   const route = useRoute();
@@ -26,7 +29,7 @@ const DetailsPlaces = () => {
   const { cart, addToCart, removeFromCart, clearCart } = useContext(CartContext);
   const user = auth.currentUser;
 
-  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, price_or_menu, description, latitude, longitude, docId, info } = route.params;
+  const { placeID, name, address, websiteLink, category, poster, contactNum, tags, description, feeAmount, admissionType, status, latitude, longitude, docId, info } = route.params;
   const db = getDatabase();
   const orderedDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
@@ -35,7 +38,7 @@ const DetailsPlaces = () => {
     const isPlaceInCart = cart.some(item => item.placeID === placeID);
     
     if (isPlaceInCart) {
-      alert('This place is already in the cart.');
+      Alert.alert('This place is already in the cart.');
     } else {
       addToCart({ 
         placeID, 
@@ -45,13 +48,13 @@ const DetailsPlaces = () => {
         latitude,
         longitude,
       });
-      alert('Place added to cart successfully.');
+      Alert.alert('Place added to cart successfully.');
     }
   };
   
   const handleRemoveFromCart = (placeID) => {
     removeFromCart(placeID);
-    alert('Place removed from cart successfully.');
+    Alert.alert('Place removed from cart successfully.');
   };
   
   const handleGenerateItinerary = async () => {
@@ -116,6 +119,25 @@ const DetailsPlaces = () => {
       }
     };
 
+    //fetch data from db
+      useEffect(() => {
+        if (placeID) {
+          const userRef = ref(db, `places/${placeID}`);
+          get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.val();
+              console.log("Fetched data:", data); 
+              setPlaceData(data);
+              // console.log("Poster Images:", data.poster); // Log poster images          // console.log("Price Images:", data.price_or_menu); // Log price images
+            } else {
+              console.log("No data available");
+            }
+          }).catch((error) => {
+            console.error(error);
+          });
+        }
+      }, [placeID]);
+
   // Fetch operating hours
   useEffect(() => {
     const hourRef = ref(db, `operatingHours/${placeID}`);
@@ -161,101 +183,221 @@ const DetailsPlaces = () => {
     if (category === 'event') fetchEvent();
   }, [placeID, category]);
 
-  // Render details
-  const renderDetails = () => (
-    <View className="mt-1 mx-5 mb-10">
-      {category !== 'event' && (
-        <View className="mb-3 rounded-md bg-secondary">
-          <TouchableOpacity
-            onPress={() => Linking.openURL(websiteLink)}
-            className="h-9 items-center justify-center"
-          >
-            <Text className="text-base font-kregular">Website</Text>
-          </TouchableOpacity>
+  // Render facilities
+    const renderFacilities = () => {
+      const { facilities, halalStatus } = placeData;
+  
+      if ((!facilities || facilities.length === 0) && !(category === 'dining' && halalStatus === 'halal')) {
+        return null; // Skip rendering if there are no facilities or halalStatus
+      }
+  
+      return (
+        <View className="flex-row justify-start mb-3">
+          {/* <Text className="text-lg font-ksemibold mr-2">Facilities:</Text> */}
+          {/* Halal Icon for Dining Category */}
+          {category === 'dining' && halalStatus === 'Halal' && (
+            <Image source={icons.halal} style={{ width: 40, height: 40, marginRight: 20 }} />
+          )}
+          {facilities.includes('Surau') && (
+            <Image source={icons.surau} style={{ width: 40, height: 40, marginRight: 20 }} />
+          )}
+          {facilities.includes('WiFi') && (
+            <Image source={icons.wifi} style={{ width: 40, height: 40, marginRight: 20 }} />
+          )}
+          {facilities.includes('Toilet') && (
+            <Image source={icons.toilet} style={{ width: 40, height: 40, marginRight: 20 }} />
+          )}
+          {facilities.includes('Parking') && (
+            <Image source={icons.parking} style={{ width: 40, height: 40, marginRight: 20 }} />
+          )}
         </View>
-      )}
-      
-      <View className="items-center mx-10 justify-center">
-        <View className="w-full items-start">
-          <Text className="text-lg font-ksemibold">Address:</Text>
-          <Text className="font-kregular">{address}</Text>
-        </View>
+      );
+    };
 
-        {category === 'event' ? (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Event date & time:</Text>
-            <Text className="font-kregular">
-              {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
-            </Text>
+  // Render details
+    const renderDetails = () => (
+      <View className="mx-2 ">
+        {category !== 'event' && (
+          <View className="mb-3 rounded-md bg-secondary">
+            <TouchableOpacity
+              onPress={() => Linking.openURL(websiteLink)}
+              className="h-9 items-center justify-center"
+            >
+              <Text className="text-base font-kregular">Website</Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          <View className="w-full items-start mt-3">
-            <Text className="text-lg font-ksemibold">Operating Hours:</Text>
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-              <View key={index} className="flex-row">
-                <Text className="w-1/3 font-kregular">{day}</Text>
-                {hour[index]?.isOpen ? (
-                  <Text className="w-2/3 font-kregular text-right">
-                    {hour[index].openingTime} - {hour[index].closingTime}
-                  </Text>
+        )}
+        
+        <View className="items-center mx-6 justify-center">
+          {category === 'event'? (
+            <View className="w-full items-start mt-3">
+              {renderFacilities()}
+              <View >
+                <Text className="text-lg font-ksemibold">Description :</Text>
+                <Text className="font-kregular">{description}</Text>
+              </View>
+  
+              <View className="w-full items-start mt-3">
+                <Text className="text-lg font-ksemibold">Event date & time :</Text>
+                <Text className="font-kregular">
+                  {event.startDate} - {event.endDate}{"\n"}{event.startTime} - {event.endTime}
+                </Text>
+              </View>
+  
+              <View className="w-full items-start">
+                <Text className="text-lg font-ksemibold">Contact Number :</Text>
+                <Text className="font-kregular">{contactNum}</Text>
+              </View>
+  
+              <View className="w-full items-start mt-3">
+                <Text className="text-lg font-ksemibold">Admission Fee:</Text>
+                {admissionType === 'free' ? (
+                  <Text className="font-kregular mt-2">Free Entry</Text>
                 ) : (
-                  <Text className="text-right w-[30%] font-kregular">Closed</Text>
+                  <Text className="font-kregular mt-2">{feeAmount}</Text>
                 )}
               </View>
-            ))}
-          </View>
-        )}         
-
-        <View className="w-full items-start mt-3">
-          <Text className="text-lg font-ksemibold">Contact Number:</Text>
-          <Text className="font-kregular">{contactNum}</Text>
-        </View>
-
-        {category === 'event'? (
-          <View>
-            <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Ticket Fee:</Text>
-              <View classname="w-full">
-                <Image 
-                source={{uri:price_or_menu}}
-                className="w-64 h-52"
-                resizeMode='contain'
-                />
+              {placeData.price_or_menu && placeData.price_or_menu.length > 0 ? (
+                <View className="w-full items-start mt-3">
+                  <Text className="text-lg font-ksemibold mb-3">More Details :</Text>
+                  <View className="w-full">
+                    {placeData.price_or_menu.map((imageUri, index) => (
+                      <Image
+                      key={index}
+                      source={{ uri: imageUri }}
+                      style={{
+                        width: '100%', // Make it occupy full width
+                        aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
+                        marginBottom: 10, // Add spacing between images
+                      }}
+                      resizeMode="contain"
+                    />
+                    ))}
+                  </View>
                 </View>
-            </View>
+              ) : null}
+              <View className="w-full items-start my-3">
+                <Text className="text-lg font-ksemibold">Tags :</Text>
+                <Text className=" font-kregular">{tags}</Text>
+              </View>
+            </View>   
+                   
+          ):category === 'attraction' ? (
             <View className="w-full items-start mt-3">
-              <Text className="text-lg font-ksemibold">Description:</Text>
-              <Text className="font-kregular">{description}</Text>
+              {renderFacilities()}
+              <View className="w-full items-start">
+                <Text className="text-lg font-ksemibold">Address :</Text>
+                <Text className="font-kregular">{address}</Text>
+              </View>
+  
+              <View className="w-full items-start mt-3">
+                <Text className="text-lg font-ksemibold">Operating Hours :</Text>
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+                  <View key={index} className="flex-row">
+                    <Text className="w-1/3 font-kregular">{day}</Text>
+                    {hour[index]?.isOpen ? (
+                      <Text className="w-2/3 font-kregular text-right">
+                        {hour[index].openingTime} - {hour[index].closingTime}
+                      </Text>
+                    ) : (
+                      <Text className="text-right w-[30%] font-kregular">Closed</Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+  
+              <View className="w-full items-start">
+                <Text className="text-lg font-ksemibold">Contact Number :</Text>
+                <Text className="font-kregular">{contactNum}</Text>
+              </View>
+  
+              <View className="w-full items-start mt-3">
+                <Text className="text-lg font-ksemibold">Admission Fee:</Text>
+                {admissionType === 'free' ? (
+                  <Text className="font-kregular mt-2">Free Entry</Text>
+                ) : placeData.price_or_menu && placeData.price_or_menu.length > 0 ? (
+                  <View className="w-full">
+                    {placeData.price_or_menu.map((imageUri, index) => (
+                      <Image
+                      key={index}
+                      source={{ uri: imageUri }}
+                      style={{
+                        width: '100%', // Make it occupy full width
+                        aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
+                        marginBottom: 10, // Add spacing between images
+                      }}
+                      resizeMode="contain"
+                    />
+                    ))}
+                  </View>
+                ) : (
+                  <Text className="font-kregular mt-2">No price information available.</Text>
+                )}
+              </View>
+              <View className="w-full items-start my-3">
+                <Text className="text-lg font-ksemibold">Tags :</Text>
+                <Text className=" font-kregular">{tags}</Text>
+              </View>
             </View>
-            <View className="w-full items-start my-3">
-              <Text className="text-lg font-ksemibold">Tags:</Text>
-              <Text className=" font-kregular">{tags}</Text>
+  
+          ) : category === 'dining' ? (
+            <View className="w-full items-start mt-3">
+              {renderFacilities()}
+              <View className="w-full items-start">
+                <Text className="text-lg font-ksemibold">Address :</Text>
+                <Text className="font-kregular">{address}</Text>
+              </View>
+  
+              <View className="w-full items-start mt-3">
+                <Text className="text-lg font-ksemibold">Operating Hours :</Text>
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+                  <View key={index} className="flex-row">
+                    <Text className="w-1/3 font-kregular">{day}</Text>
+                    {hour[index]?.isOpen ? (
+                      <Text className="w-2/3 font-kregular text-right">
+                        {hour[index].openingTime} - {hour[index].closingTime}
+                      </Text>
+                    ) : (
+                      <Text className="text-right w-[30%] font-kregular">Closed</Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+  
+              <View className="w-full items-start">
+                <Text className="text-lg font-ksemibold">Contact Number :</Text>
+                <Text className="font-kregular">{contactNum}</Text>
+              </View>
+  
+              <Text className="text-lg font-ksemibold">Menu :</Text>
+              {placeData.price_or_menu && placeData.price_or_menu.length > 0 ? (
+                <View className="w-full">
+                  {placeData.price_or_menu.map((imageUri, index) => (
+                    <Image
+                    key={index}
+                    source={{ uri: imageUri }}
+                    style={{
+                      width: '100%', // Make it occupy full width
+                      aspectRatio: 1, // Maintain a 1:1 aspect ratio (square images)
+                      marginBottom: 10, // Add spacing between images
+                    }}
+                    resizeMode="contain"
+                  />
+                  ))}
+                </View>
+              ) : (
+                <Text className="font-kregular mt-2">No menu available.</Text>
+              )}
+  
+              <View className="w-full items-start my-3">
+                <Text className="text-lg font-ksemibold">Tags :</Text>
+                <Text className="font-kregular">{tags}</Text>
+              </View>
             </View>
-          </View>   
-                 
-        ):(
-        <View className="w-full items-start mt-3">
-          {category === 'attraction' ? (
-            <Text className="text-lg font-ksemibold">Price:</Text>
-          ):(
-            <Text className="text-lg font-ksemibold">Menu:</Text>
-          )}
-          <View className="w-full">
-            <Image 
-            source={{uri:price_or_menu}}
-            className="w-64 h-52"
-            resizeMode='contain'
-            />
-          </View>
-          <View className="w-full items-start my-3">
-            <Text className="text-lg font-ksemibold">Tags:</Text>
-            <Text className=" font-kregular">{tags}</Text>
-          </View>
+          ) : null}      
         </View>
-        )}        
       </View>
-    </View>
-  );
+    );
 
   if (loading) {
     return 
@@ -271,8 +413,24 @@ const DetailsPlaces = () => {
       <HeaderWithCart onCartPress={() => setModalVisible(true)} />
       <ScrollView className=" w-full">
        <View className="m-5">
-        <Poster image={poster} />
-          <Text className="mt-3 ml-3 font-kregular text-xl">{name}</Text>
+       {category === 'event' ? (
+            <Image
+              source={{
+                uri: poster,
+                cache: 'force-cache', // Options: 'default', 'reload', 'force-cache', 'only-if-cached'
+              }}
+              style={{
+                width: '100%',
+                aspectRatio: 1,
+                borderRadius: 10,
+                backgroundColor: '#E5E5E5', // Optional fallback background
+              }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Poster image={poster} />
+          )}
+            <Text className="mt-4 ml-3 font-kbold text-3xl">{name}</Text>
 
           <View>
             {renderDetails()}
