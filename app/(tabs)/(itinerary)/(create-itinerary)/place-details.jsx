@@ -47,15 +47,9 @@ const DetailsPlaces = () => {
         address,
         latitude,
         longitude,
+        tags,
       });
-      Alert.alert('Place added to cart successfully.',
-        [
-          {
-            text: "OK",
-            onPress: () => router.back(), // Navigate back after acknowledgment
-          },
-        ]
-      );
+      Alert.alert('Place added to cart successfully.');
     }
   };
   

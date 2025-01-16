@@ -27,7 +27,114 @@ const ChoosePlaces = () => {
   const user = auth.currentUser;
   const route = useRoute();
   const { docId, cartD, destination, lat, long, startDate, endDate, info } = route.params; 
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in km
+  };
 
+  // Add the other helper functions here
+  const PLACE_DURATION = {
+    attraction: 120,
+    restaurant: 60,
+    cafe: 45,
+    event: 180,
+  };
+
+  const MEAL_TIMES = {
+    breakfast: { start: 8, end: 10 },
+    lunch: { start: 12, end: 14 },
+    dinner: { start: 18, end: 20 }
+  };
+
+  const groupPlacesByProximity = (places, maxDistance = 5) => {
+    console.log('🗺️ Starting proximity grouping with', places.length, 'places');
+    
+    if (!places.length) return [];
+
+    const groups = [];
+    const used = new Set();
+
+    // Sort places by those with valid coordinates first
+    const validPlaces = places.filter(place => 
+      place.latitude && place.longitude && 
+      !isNaN(parseFloat(place.latitude)) && 
+      !isNaN(parseFloat(place.longitude))
+    );
+
+    console.log('📍 Valid places with coordinates:', validPlaces.length);
+
+    validPlaces.forEach((centerPlace, index) => {
+      if (used.has(centerPlace.placeID)) return;
+
+      const group = {
+        center: centerPlace,
+        places: [centerPlace],
+        categories: new Set([centerPlace.category])
+      };
+      used.add(centerPlace.placeID);
+
+      validPlaces.forEach((otherPlace) => {
+        if (used.has(otherPlace.placeID)) return;
+
+        const distance = calculateDistance(
+          parseFloat(centerPlace.latitude),
+          parseFloat(centerPlace.longitude),
+          parseFloat(otherPlace.latitude),
+          parseFloat(otherPlace.longitude)
+        );
+
+        if (distance <= maxDistance) {
+          group.places.push(otherPlace);
+          group.categories.add(otherPlace.category);
+          used.add(otherPlace.placeID);
+        }
+      });
+
+      // Only add groups that have a good mix of places
+      if (group.places.length >= 2) {
+        console.log(`✅ Found group with ${group.places.length} places around ${centerPlace.name}`);
+        groups.push(group);
+      }
+    });
+
+    // Sort groups by the number of different categories they contain
+    groups.sort((a, b) => b.categories.size - a.categories.size);
+    
+    console.log('🏘️ Created', groups.length, 'proximity groups');
+    return groups;
+  };
+
+  const isPlaceOpen = (place, date, time) => {
+    if (!place.operatingHours) {
+      const visitTime = moment(time, 'HH:mm');
+      const defaultOpenTime = moment('09:00', 'HH:mm');
+      const defaultCloseTime = moment('22:00', 'HH:mm');
+      return visitTime.isBetween(defaultOpenTime, defaultCloseTime);
+    }
+
+    const dayOfWeek = date.format('ddd').toUpperCase();
+    const operatingHours = place.operatingHours?.[dayOfWeek];
+    
+    if (!operatingHours || !operatingHours.isOpen) {
+      const visitTime = moment(time, 'HH:mm');
+      const defaultOpenTime = moment('09:00', 'HH:mm');
+      const defaultCloseTime = moment('22:00', 'HH:mm');
+      return visitTime.isBetween(defaultOpenTime, defaultCloseTime);
+    }
+    
+    const openTime = moment(operatingHours.openTime, 'HH:mm');
+    const closeTime = moment(operatingHours.closeTime, 'HH:mm');
+    const visitTime = moment(time, 'HH:mm');
+    
+    return visitTime.isBetween(openTime, closeTime);
+  };
   const isNearby = (placeLocation, placeCoordinates, targetLocation, targetCoordinates, radius = 30) => {
     if (!placeLocation || !targetLocation || !placeCoordinates || !targetCoordinates) return false;
 
@@ -248,74 +355,307 @@ const ChoosePlaces = () => {
 
   };
 
+  // Add meal type detection helper function
+  const getMealType = (place) => {
+    if (!place.tags) return null;
+    
+    const tags = place.tags.toLowerCase().split(' ');
+    if (tags.includes('breakfast') || tags.includes('brunch')) {
+      return 'breakfast';
+    }
+    if (tags.includes('lunch')) {
+      return 'lunch';
+    }
+    if (tags.includes('dinner')) {
+      return 'dinner';
+    }
+    return null;
+  };
+
   const handleGenerateItinerary = async () => {
-    setModalVisible(false)
-    if (loading) return; // Prevent multiple executions while loading
+    setModalVisible(false);
+    if (loading) return;
     setLoading(true);
+
+    console.log('🚀 Starting itinerary generation...');
+    console.log('📋 Cart items:', cart);
 
     if (cart.length === 0) {
       setLoading(false);
-      Alert.alert('No places added', 'Please add some places to generate itinerary');  
+      Alert.alert('No places added', 'Please add some places to generate itinerary');
+      return;
     }
-    else{
-      const formattedPlaces = JSON.stringify(cart);
 
-      console.log('Formatted Places:', formattedPlaces);
+    try {
+      const totalDays = itineraryData?.totalNoOfDays || 1;
+      console.log('📅 Total days to plan:', totalDays);
+      
+      const generatedItinerary = { days: [] };
+      
+      // First, group all places by proximity
+      const allPlaces = [...cart];
+      const proximityGroups = groupPlacesByProximity(allPlaces);
+      
+      // Create an array of all places that weren't grouped
+      const ungroupedPlaces = allPlaces.filter(place => 
+        !proximityGroups.some(group => 
+          group.places.some(p => p.placeID === place.placeID)
+        )
+      );
+      
+      console.log('📍 Proximity groups:', proximityGroups.length);
+      console.log('🏃‍♂️ Ungrouped places:', ungroupedPlaces.length);
+      console.log('📍 Ungrouped places:', ungroupedPlaces.map(p => p.name));
 
-      try {
-        const FINAL_PROMPT = AI_PROMPT
-          .replace('{tripName}', itineraryData?.tripName || '')
-          .replace('{destination}', destination || itineraryData?.locationIfo?.name || '')
-          .replace('{origin}',  'Penang, Malaysia')
-          .replace('{places}', formattedPlaces || '')
-          .replace('{totalDays}', itineraryData?.totalNoOfDays || 0)
-          .replace('{totalNights}', (itineraryData?.totalNoOfDays || 1) - 1)
-          .replace('{traveler}', itineraryData?.traveler || info?.traveler || '')
-          .replace('{budget}', itineraryData?.budget || info?.budget || '');
+      // Distribute places across days
+      for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
+        console.log(`\n📆 Planning Day ${dayIndex + 1}...`);
+        
+        const currentDate = moment(itineraryData?.startDate || startDate).add(dayIndex, 'days');
+        const dayPlaces = [];
+        let currentTime = moment('09:00', 'HH:mm');
 
-        console.log('AI Prompt:', FINAL_PROMPT);
+        // Get places for this day from proximity groups
+        let placesToSchedule = [];
+        const dayGroup = proximityGroups[dayIndex % proximityGroups.length];
+        
+        if (dayGroup) {
+          placesToSchedule = [...dayGroup.places];
+          console.log(`📍 Using proximity group around ${dayGroup.center.name} with ${placesToSchedule.length} places`);
+        }
 
-        const result = await chatSession.sendMessage(FINAL_PROMPT);
-        const response = JSON.parse(result.response.text()); // Assuming JSON response
+        // Add ungrouped places to this day
+        const ungroupedForDay = ungroupedPlaces.filter((_, index) => 
+          Math.floor(index / Math.ceil(ungroupedPlaces.length / totalDays)) === dayIndex
+        );
+        
+        if (ungroupedForDay.length > 0) {
+          console.log(`📍 Adding ${ungroupedForDay.length} ungrouped places:`, 
+            ungroupedForDay.map(p => p.name)
+          );
+          placesToSchedule.push(...ungroupedForDay);
+        }
 
-        console.log('AI Response:', response);
+        console.log(`🎯 Total places to schedule for day ${dayIndex + 1}: ${placesToSchedule.length}`);
 
-        if (docId) {
-          const docRef = doc(firestore, 'userItinerary', docId); // Use existing docId
-          await updateDoc(docRef, {
-            itineraryData: response,
-            cart: formattedPlaces,
+        // Sort places by category for scheduling
+        const dayRestaurants = placesToSchedule.filter(p => 
+          p.category === 'dining' || p.category === 'restaurant'
+        );
+        const dayAttractions = placesToSchedule.filter(p => 
+          p.category === 'attraction'
+        );
+        const dayEvents = placesToSchedule.filter(p => 
+          p.category === 'event'
+        );
+
+        // Categorize restaurants by meal type
+        const breakfastPlaces = dayRestaurants.filter(p => getMealType(p) === 'breakfast');
+        const lunchPlaces = dayRestaurants.filter(p => getMealType(p) === 'lunch');
+        const dinnerPlaces = dayRestaurants.filter(p => getMealType(p) === 'dinner');
+        const uncategorizedRestaurants = dayRestaurants.filter(p => !getMealType(p));
+
+        console.log('🍽️ Restaurants by meal type:', {
+          breakfast: breakfastPlaces.length,
+          lunch: lunchPlaces.length,
+          dinner: dinnerPlaces.length,
+          uncategorized: uncategorizedRestaurants.length
+        });
+
+        // Schedule breakfast
+        let breakfast;
+        if (breakfastPlaces.length > 0) {
+          breakfast = breakfastPlaces.shift();
+        } else if (uncategorizedRestaurants.length > 0) {
+          breakfast = uncategorizedRestaurants.shift();
+        }
+        
+        if (breakfast) {
+          currentTime = moment('09:00', 'HH:mm');
+          dayPlaces.push({
+            ...breakfast,
+            visitTime: currentTime.format('HH:mm'),
+            duration: PLACE_DURATION.restaurant,
+            mealType: 'breakfast'
           });
-          router.push({
-            pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
-            params: { docId },
+          currentTime.add(PLACE_DURATION.restaurant, 'minutes');
+        }
+
+        // Morning activities (2 attractions max)
+        let morningAttractions = dayAttractions.splice(0, 2);
+        for (const attraction of morningAttractions) {
+          dayPlaces.push({
+            ...attraction,
+            visitTime: currentTime.format('HH:mm'),
+            duration: PLACE_DURATION.attraction
           });
-        } else{
-          const docId = Date.now().toString();
-          await setDoc(doc(firestore, 'userItinerary', docId), {
-            docId: docId,
-            userEmail: user?.email,
-            cart: formattedPlaces,
-            info: itineraryData?.locationInfo,
-            itineraryData: response,
-            startDate: moment(itineraryData?.startDate).format('DD MMM YYYY'),
-            endDate: moment(itineraryData?.endDate).format('DD MMM YYYY')
+          currentTime.add(PLACE_DURATION.attraction, 'minutes');
+        }
+
+        // Schedule lunch
+        let lunch;
+        if (lunchPlaces.length > 0) {
+          lunch = lunchPlaces.shift();
+        } else if (uncategorizedRestaurants.length > 0) {
+          lunch = uncategorizedRestaurants.shift();
+        }
+
+        if (lunch) {
+          currentTime = moment('12:30', 'HH:mm');
+          dayPlaces.push({
+            ...lunch,
+            visitTime: currentTime.format('HH:mm'),
+            duration: PLACE_DURATION.restaurant,
+            mealType: 'lunch'
+          });
+          currentTime.add(PLACE_DURATION.restaurant, 'minutes');
+        }
+
+        // Afternoon activities (2 attractions max)
+        let afternoonAttractions = dayAttractions.splice(0, 2);
+        for (const attraction of afternoonAttractions) {
+          dayPlaces.push({
+            ...attraction,
+            visitTime: currentTime.format('HH:mm'),
+            duration: PLACE_DURATION.attraction
+          });
+          currentTime.add(PLACE_DURATION.attraction, 'minutes');
+        }
+
+        // Schedule dinner
+        let dinner;
+        if (dinnerPlaces.length > 0) {
+          dinner = dinnerPlaces.shift();
+        } else if (uncategorizedRestaurants.length > 0) {
+          dinner = uncategorizedRestaurants.shift();
+        }
+
+        if (dinner) {
+          currentTime = moment('18:30', 'HH:mm');
+          dayPlaces.push({
+            ...dinner,
+            visitTime: currentTime.format('HH:mm'),
+            duration: PLACE_DURATION.restaurant,
+            mealType: 'dinner'
+          });
+          currentTime.add(PLACE_DURATION.restaurant, 'minutes');
+        }
+
+        // Add ALL remaining restaurants and attractions
+        const remainingPlaces = [
+          ...breakfastPlaces,
+          ...lunchPlaces,
+          ...dinnerPlaces,
+          ...uncategorizedRestaurants,
+          ...dayAttractions
+        ];
+
+        console.log('📍 Remaining places to schedule:', remainingPlaces.length);
+
+        for (const place of remainingPlaces) {
+          if (place.category === 'dining' || place.category === 'restaurant') {
+            const mealType = getMealType(place);
+            let visitTime;
+            
+            switch(mealType) {
+              case 'breakfast':
+                visitTime = '10:30';
+                break;
+              case 'lunch':
+                visitTime = '13:30';
+                break;
+              case 'dinner':
+                visitTime = '19:30';
+                break;
+              default:
+                // For uncategorized restaurants, space them out through the day
+                if (currentTime.hour() < 11) visitTime = '10:30';
+                else if (currentTime.hour() < 15) visitTime = '14:00';
+                else visitTime = '19:30';
+            }
+
+            dayPlaces.push({
+              ...place,
+              visitTime,
+              duration: PLACE_DURATION.restaurant,
+              mealType: mealType || 'flexible'
+            });
+          } else {
+            // For remaining attractions, add them at the current time
+            dayPlaces.push({
+              ...place,
+              visitTime: currentTime.format('HH:mm'),
+              duration: PLACE_DURATION.attraction
+            });
+            currentTime.add(PLACE_DURATION.attraction, 'minutes');
+          }
+        }
+
+        // Sort all places by visit time
+        dayPlaces.sort((a, b) => 
+          moment(a.visitTime, 'HH:mm').diff(moment(b.visitTime, 'HH:mm'))
+        );
+
+        console.log('\n📝 Final schedule for the day:', 
+          dayPlaces.map(p => `${p.visitTime} - ${p.name} (${p.category}${p.mealType ? ' - ' + p.mealType : ''})`)
+        );
+
+        // Verify all places are used
+        console.log('✅ Total places scheduled:', dayPlaces.length);
+        console.log('📋 Original places to schedule:', placesToSchedule.length);
+
+        generatedItinerary.days.push({
+          day: dayIndex + 1,
+          date: currentDate.format('DD MMM YYYY'),
+          places: dayPlaces
+        });
+      }
+
+      console.log('\n💾 Saving itinerary to Firestore...');
+      // Save to Firestore
+      if (docId) {
+        console.log('📝 Updating existing document:', docId);
+        const docRef = doc(firestore, 'userItinerary', docId);
+        await updateDoc(docRef, {
+          itineraryData: generatedItinerary,
+          cart: JSON.stringify(cart),
+        });
+      } else {
+        const newDocId = Date.now().toString();
+        console.log('📝 Creating new document:', newDocId);
+        await setDoc(doc(firestore, 'userItinerary', newDocId), {
+          docId: newDocId,
+          userEmail: user?.email,
+          cart: JSON.stringify(cart),
+          info: itineraryData?.locationInfo,
+          tripDetails: {
+            budget: itineraryData?.budget,
+            totalDays: itineraryData?.totalNoOfDays,
+            totalNights: itineraryData?.totalNoOfDays-1,
+            traveler: itineraryData?.traveler,
+            tripName: itineraryData?.tripName,
+            destination: itineraryData?.locationInfo?.name,
+          },
+          itineraryData: generatedItinerary,
+          startDate: moment(itineraryData?.startDate).format('DD MMM YYYY'),
+          endDate: moment(itineraryData?.endDate).format('DD MMM YYYY')
         });
         router.push({
           pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
-          params: { docId },
+          params: { docId: newDocId },
         });
-        }
-        clearCart();
-
-      } catch (error) {
-        console.error('Error generating itinerary:', error);
-      } finally {
-        setLoading(false);
       }
+      
+      console.log('✨ Itinerary generation completed successfully!');
+      clearCart();
+
+    } catch (error) {
+      console.error('❌ Error generating itinerary:', error);
+      Alert.alert('Error', 'Failed to generate itinerary');
+    } finally {
+      setLoading(false);
     }
   };
-
   const handleBookmarkPress = () => {
     setBookmarkVisible(!bookmarkVisible);
   };
