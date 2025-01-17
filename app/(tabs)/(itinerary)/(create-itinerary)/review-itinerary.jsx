@@ -31,7 +31,7 @@ const ReviewItinerary = () => {
           const data = docSnap.data();
           setItineraryData(data.itineraryData || []); // Default to empty array if data is missing
           setDate(data);
-          console.log('Document Data:', data);
+          // console.log('Document Data:', data);
         } else {
           console.log(`Document with ID ${docId} does not exist.`);
         }
@@ -51,7 +51,7 @@ const ReviewItinerary = () => {
   useEffect(() => {
     const fetchPlaceDetails = async () => {
       const db = getDatabase();
-      console.log("Fetching Itinerary Data:", itineraryData);
+      // console.log("Fetching Itinerary Data:", itineraryData);
       
       if (itineraryData?.days) {
         const newPlaceDetails = {};

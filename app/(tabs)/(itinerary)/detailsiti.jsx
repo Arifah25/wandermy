@@ -171,7 +171,7 @@ const ItineraryDetails = () => {
               });
             });
           });
-          console.log("Updated Place Details:", newPlaceDetails);
+          // console.log("Updated Place Details:", newPlaceDetails);
         }
       };
       
@@ -263,7 +263,38 @@ const ItineraryDetails = () => {
     );
   };
   
-
+  const findNearestHotels = async (latitude, longitude) => {
+    try {
+      const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY;
+      // Make API request to Google Places
+      const radius = 5000; // 5 km
+      const type = 'hotel';
+  
+      const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
+      const response = await fetch(url);
+      const data = await response.json();
+  
+      // Handle results
+      if (data.results && data.results.length > 0) {
+        const nearestPlaces = data.results.slice(1, 4); // Take the top 3 results
+        const placesInfo = nearestPlaces.map(place => {
+          return `Name: ${place.name}\nAddress: ${place.vicinity}\nRating: ${place.rating || 'N/A'}`;
+        }).join('\n\n');
+  
+        // Show alert with the nearest places info
+        Alert.alert(
+          'Nearest Hotel Recommendations',
+          placesInfo,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('No Nearby Places', 'No hotels found within 5 km.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while fetching nearby places.');
+      console.error(error);
+    }
+  };
 
 const findNearestMosque = async (latitude, longitude) => {
   
@@ -413,6 +444,12 @@ const findNearestMosque = async (latitude, longitude) => {
             <Text className="text-base font-kregular">💵 {date.tripDetails.budget} </Text>
             <Text className="text-base font-kregular">🧍🏽‍♂️ {date.tripDetails.traveler} </Text>
           </View>
+        </View>
+        <View className="w-full items-center">
+          <Text className="font-kregular text-xl">Hotels</Text>
+          <TouchableOpacity onPress={findNearestHotels(date.info.coordinates.lat, date.info.coordinates.lng )} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+            <Text style={{ color: '#007bff', marginLeft: 5 }}>Hotel</Text>
+          </TouchableOpacity>
         </View>
         <ScrollView className="mb-7 flex h-4/5">
           {renderTransportRecommendation}

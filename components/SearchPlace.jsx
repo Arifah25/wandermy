@@ -19,7 +19,7 @@ const SearchPlace = () => {
     const {itineraryData, setItineraryData}=useContext(CreateItineraryContext);
 
     useEffect(() => {
-        console.log(itineraryData); 
+        // console.log(itineraryData); 
     }),[itineraryData]
      
   return (

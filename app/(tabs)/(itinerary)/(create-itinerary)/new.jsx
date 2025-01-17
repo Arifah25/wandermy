@@ -29,7 +29,7 @@ const NewItinerary = () => {
   };
 
   const OnDateSelectionContinue = () => {
-    if (!tripName || !startDate || !endDate || !selectedBudget || !selectedTraveler) {
+    if (!tripName || !startDate || !endDate || !selectedBudget || !selectedTraveler || !itineraryData.locationInfo) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
     }

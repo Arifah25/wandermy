@@ -1,4 +1,4 @@
-import { View, FlatList, ActivityIndicator, Text, SafeAreaView, TouchableOpacity, Modal, Image } from 'react-native';
+import { View, FlatList, ActivityIndicator, Text, SafeAreaView, TouchableOpacity, Modal, Image, Alert } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { getDatabase, ref, onValue, get } from 'firebase/database';
 import { useRouter } from 'expo-router';
@@ -351,6 +351,35 @@ const ChoosePlaces = () => {
     Alert.alert('Place removed from cart successfully.');
   };
 
+  const findNearestHotels = async (latitude, longitude) => {
+    try {
+      console.log('🏨 Finding nearby hotels...');
+      console.log('📍 Coordinates:', latitude, longitude);
+        const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY;
+        // Make API request to Google Places
+        const radius = 5000; // 5 km
+        const type = 'lodging';
+
+        const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Handle results
+        if (data.results && data.results.length > 0) {
+            return data.results.slice(0, 3).map(place => ({
+                name: place.name,
+                address: place.vicinity,
+                rating: place.rating || 'N/A'
+            }));
+            console.log('🏨 Nearby hotels:', data.results);
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error('Error fetching nearby hotels:', error);
+        return [];
+    }
+};
 
   // Add meal type detection helper function
   const getMealType = (place) => {
@@ -375,7 +404,7 @@ const ChoosePlaces = () => {
     setLoading(true);
 
     console.log('🚀 Starting itinerary generation...');
-    console.log('📋 Cart items:', cart);
+    // console.log('📋 Cart items:', cart);
 
     if (cart.length === 0) {
       setLoading(false);
@@ -611,17 +640,21 @@ const ChoosePlaces = () => {
       console.log('\n💾 Saving itinerary to Firestore...');
       // Save to Firestore
       if (docId) {
+        const nearestHotels = await findNearestHotels(itineraryData?.locationInfo?.coordinates.lat, itineraryData?.locationInfo?.coordinates.lng);
+        console.log('Hotel recommendation:', nearestHotels);
         console.log('📝 Updating existing document:', docId);
         const docRef = doc(firestore, 'userItinerary', docId);
         await updateDoc(docRef, {
           itineraryData: generatedItinerary,
           cart: JSON.stringify(cart),
+          hotelRecommendation: nearestHotels
         });
         router.push({
           pathname: '(tabs)/(itinerary)/(create-itinerary)/review-itinerary',
           params: { docId: docId },
         });
       } else {
+        const nearestHotels = await findNearestHotels(itineraryData?.locationInfo?.coordinates.lat, itineraryData?.locationInfo?.coordinates.lng);
         const newDocId = Date.now().toString();
         console.log('📝 Creating new document:', newDocId);
         await setDoc(doc(firestore, 'userItinerary', newDocId), {
@@ -637,6 +670,7 @@ const ChoosePlaces = () => {
             tripName: itineraryData?.tripName,
             destination: itineraryData?.locationInfo?.name,
           },
+          hotelRecommendation: nearestHotels,
           itineraryData: generatedItinerary,
           startDate: moment(itineraryData?.startDate).format('DD MMM YYYY'),
           endDate: moment(itineraryData?.endDate).format('DD MMM YYYY')
