@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 app = Flask(__name__)
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate('C:/vscode projects/wandermy/app/serviceAccountKey.json')
+cred = credentials.Certificate('serviceAccountKey.json')
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://wandermy2-default-rtdb.asia-southeast1.firebasedatabase.app'
 })
