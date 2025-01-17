@@ -124,13 +124,13 @@ const Home = () => {
     try {
       console.log("Fetching recommendations...");
       const response = await axios.post(
-        'http://172.20.10.11:5000/recommendations', // Flask endpoint
-        { userId }, // The payload
+        process.env.EXPO_PUBLIC_API_URL + '/recommendations', // Using env variable
+        { userId },
         {
           headers: {
-            'Content-Type': 'application/json', // Ensure correct content type
+            'Content-Type': 'application/json',
           },
-          timeout: 30000, // Timeout for the request
+          timeout: 30000,
         }
       );
       console.log("Backend response:", response.data);
