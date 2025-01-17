@@ -25,6 +25,16 @@ const SignIn = () => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+          Alert.alert(
+            "Email Not Verified",
+            "Please check your email and verify your account before signing in."
+          );
+          setIsSubmitting(false);
+          return;
+        }
+        
         if (email === 'u2001083@siswa.um.edu.my' && password === 'Admin123!') {
           Alert.alert('Success', 'Sign In Admin Successful');
           setTimeout(() => {

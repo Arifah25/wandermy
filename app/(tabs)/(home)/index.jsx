@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { View, Text, Image, FlatList, ActivityIndicator, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from "../../../constants";
@@ -7,6 +7,7 @@ import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, get, push, set } from 'firebase/database';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { PlaceCard, PlaceCardHome } from '../../../components';
+import { Image } from 'expo-image';
 
 const logUserInteraction = async (placeID) => {
   const db = getDatabase();
@@ -268,7 +269,7 @@ const Home = () => {
         activeOpacity={0.8} // Set the opacity effect for better UX
       >
         <View className="bg-white rounded-lg p-4 mt-7 ml-5 mr-5 mb-2 shadow-md">
-          <Text className="font-ksemibold text-xl mb-2">Your Progress</Text>
+          <Text className="font-ksemibold text-xl mb-2">My Points</Text>
           <Text className="font-kregular text-lg mb-4">
             Points: <Text className="font-ksemibold">{points}</Text>/{currentMilestone}
           </Text>

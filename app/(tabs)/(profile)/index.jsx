@@ -1,10 +1,11 @@
-import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '../../../constants';
 import { useRouter } from 'expo-router';
 import { getAuth, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { getDatabase, ref, get, remove } from 'firebase/database';
+import { Image } from 'expo-image';
 
 
 const Profile = () => {

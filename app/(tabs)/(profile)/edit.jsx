@@ -1,4 +1,4 @@
-import { View, Text, Image, TextInput, TouchableOpacity, Modal, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, ActivityIndicator, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { icons } from '../../../constants';
 import { useRouter } from 'expo-router';
@@ -7,6 +7,7 @@ import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, get, update } from 'firebase/database';
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Image } from 'expo-image';
 
 const EditProfile = () => {
   const router = useRouter();

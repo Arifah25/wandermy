@@ -1,6 +1,6 @@
 import React from 'react'
-import { View, Text, Image, TouchableOpacity } from 'react-native'
-import { icons, images } from "../constants";
+import { View, Text, TouchableOpacity } from 'react-native'
+import { Image } from 'expo-image'; // Import Image from expo-image
 
 const PlaceCard = ({ image, name, handlePress }) => {
   return (
@@ -19,7 +19,9 @@ const PlaceCard = ({ image, name, handlePress }) => {
             width: '100%',
             height: 150, // Fixed height for consistent card display
           }}
-          resizeMode="cover"
+          contentFit="cover" // Maintain aspect ratio and fill
+          cachePolicy="memory-disk" // Enable caching for better performance
+          onError={(error) => console.log('Image Load Error:', error)} // Log any errors
         />
         <View style={{ 
           padding: 10, 
