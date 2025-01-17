@@ -101,7 +101,7 @@ const MyItinerary = () => {
           return null; // User not found as owner or collaborator
         }
       } else {
-        console.error('Document does not exist.');
+        // console.error('Document does not exist.');
         return null;
       }
     } catch (error) {

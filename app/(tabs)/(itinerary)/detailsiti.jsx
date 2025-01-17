@@ -106,6 +106,22 @@ const ItineraryDetails = () => {
       return;
     }
   
+    // Prevent adding yourself as collaborator
+    if (email === userEmail) {
+      Alert.alert('Error', 'You cannot add yourself as a collaborator.');
+      return;
+    }
+  
+    // Check if the email is already in collaborators
+    const isExistingCollaborator = collaborators.some(
+      collaborator => collaborator.email === email
+    );
+  
+    if (isExistingCollaborator) {
+      Alert.alert('Error', 'This user is already a collaborator.');
+      return;
+    }
+  
     try {
       const docRef = doc(firestore, 'userItinerary', docId);
       await updateDoc(docRef, {
@@ -262,39 +278,6 @@ const ItineraryDetails = () => {
       ]
     );
   };
-  
-  const findNearestHotels = async (latitude, longitude) => {
-    try {
-      const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY;
-      // Make API request to Google Places
-      const radius = 5000; // 5 km
-      const type = 'hotel';
-  
-      const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
-      const response = await fetch(url);
-      const data = await response.json();
-  
-      // Handle results
-      if (data.results && data.results.length > 0) {
-        const nearestPlaces = data.results.slice(1, 4); // Take the top 3 results
-        const placesInfo = nearestPlaces.map(place => {
-          return `Name: ${place.name}\nAddress: ${place.vicinity}\nRating: ${place.rating || 'N/A'}`;
-        }).join('\n\n');
-  
-        // Show alert with the nearest places info
-        Alert.alert(
-          'Nearest Hotel Recommendations',
-          placesInfo,
-          [{ text: 'OK' }]
-        );
-      } else {
-        Alert.alert('No Nearby Places', 'No hotels found within 5 km.');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'An error occurred while fetching nearby places.');
-      console.error(error);
-    }
-  };
 
 const findNearestMosque = async (latitude, longitude) => {
   
@@ -341,14 +324,27 @@ const findNearestMosque = async (latitude, longitude) => {
   }, [itineraryData]);
 
   const renderHotelRecommendation = useMemo(() => {
-    // Since we don't have transport data in new structure, return null or placeholder
-    return null;
-    // Or show placeholder:
-    // return (
-    //   <View>
-    //     <Text className="text-lg font-kregular mt-3">🚌 Transport options will be added soon</Text>
-    //   </View>
-    // );
+    if (!itineraryData) return null;
+    return (
+      <View>
+        <Text className="text-lg font-kregular mt-3">🏨 Hotel Recommendation:</Text>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          {date.hotelRecommendation.map((item, index) => (
+            <View key={index} className="mx-3 border border-secondary rounded-lg mt-2" style={{ width: 200 }}>
+              {/* <View className="items-center bg-secondary rounded-lg">
+                <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
+              </View> */}
+              <View className="rounded-lg p-2 mt-2">
+                <Text className="font-ksemibold">{item.name}</Text>
+                <Text className="font-kregular">{item.address}</Text>
+                {/* <Text className="font-kregular">{item.priceRange.min} - {item.priceRange.max}</Text> */}
+                <Text className="font-kregular text-right">⭐ {item.rating}</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
   }, [itineraryData]);
 
   const renderItinerary = useMemo(() => {
@@ -445,12 +441,6 @@ const findNearestMosque = async (latitude, longitude) => {
             <Text className="text-base font-kregular">🧍🏽‍♂️ {date.tripDetails.traveler} </Text>
           </View>
         </View>
-        <View className="w-full items-center">
-          <Text className="font-kregular text-xl">Hotels</Text>
-          <TouchableOpacity onPress={findNearestHotels(date.info.coordinates.lat, date.info.coordinates.lng )} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-            <Text style={{ color: '#007bff', marginLeft: 5 }}>Hotel</Text>
-          </TouchableOpacity>
-        </View>
         <ScrollView className="mb-7 flex h-4/5">
           {renderTransportRecommendation}
           {renderHotelRecommendation}
@@ -498,26 +488,51 @@ const findNearestMosque = async (latitude, longitude) => {
                   value={email}
                   onChangeText={(text) => setEmail(text)}
                 />
-                {Platform.OS === 'ios'? (
-                  <Picker
-                  selectedValue={role}
-                  onValueChange={(itemValue) => setRole(itemValue)}
-                  style={{ marginVertical: -24 }}
-                >
-                  <Picker.Item label="Viewerr" value="viewer"/>
-                  <Picker.Item label="Editor" value="editor" />
-                </Picker>
+                {Platform.OS === 'ios' ? (
+                  <View style={{ flexDirection: 'row', marginVertical: 10, gap: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => setRole('viewer')}
+                      style={{
+                        padding: 10,
+                        borderRadius: 5,
+                        backgroundColor: role === 'viewer' ? '#007bff' : '#f0f0f0',
+                        flex: 1,
+                      }}
+                    >
+                      <Text style={{ 
+                        textAlign: 'center',
+                        color: role === 'viewer' ? 'white' : 'black' 
+                      }}>
+                        Viewer
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => setRole('editor')}
+                      style={{
+                        padding: 10,
+                        borderRadius: 5,
+                        backgroundColor: role === 'editor' ? '#007bff' : '#f0f0f0',
+                        flex: 1,
+                      }}
+                    >
+                      <Text style={{ 
+                        textAlign: 'center',
+                        color: role === 'editor' ? 'white' : 'black' 
+                      }}>
+                        Editor
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 ) : (
                   <Picker
-                  selectedValue={role}
-                  onValueChange={(itemValue) => setRole(itemValue)}
-                  
-                >
-                  <Picker.Item label="Viewer" value="viewer"/>
-                  <Picker.Item label="Editor" value="editor" />
-                </Picker>
-                )
-                }
+                    selectedValue={role}
+                    onValueChange={(itemValue) => setRole(itemValue)}
+                  >
+                    <Picker.Item label="Viewer" value="viewer"/>
+                    <Picker.Item label="Editor" value="editor" />
+                  </Picker>
+                )}
                 
                 {email.length > 0 && (
                   <Text style={{ color: userExists ? 'green' : 'red', marginBottom: 10 }}>

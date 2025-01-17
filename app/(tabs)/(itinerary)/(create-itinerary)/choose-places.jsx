@@ -418,22 +418,17 @@ const ChoosePlaces = () => {
       
       const generatedItinerary = { days: [] };
       
-      // First, group all places by proximity
+      // First, create a copy of all places to ensure we use them all
       const allPlaces = [...cart];
       const proximityGroups = groupPlacesByProximity(allPlaces);
-      
-      // Create an array of all places that weren't grouped
-      const ungroupedPlaces = allPlaces.filter(place => 
-        !proximityGroups.some(group => 
-          group.places.some(p => p.placeID === place.placeID)
-        )
-      );
-      
-      console.log('📍 Proximity groups:', proximityGroups.length);
-      console.log('🏃‍♂️ Ungrouped places:', ungroupedPlaces.length);
-      console.log('📍 Ungrouped places:', ungroupedPlaces.map(p => p.name));
 
-      // Distribute places across days
+      // Create a more even distribution of places across days
+      const placesPerDay = Math.ceil(allPlaces.length / totalDays);
+      console.log(`📊 Aiming for ~${placesPerDay} places per day`);
+
+      // Create an array to track unused places
+      let unusedPlaces = [...allPlaces];
+
       for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
         console.log(`\n📆 Planning Day ${dayIndex + 1}...`);
         
@@ -441,25 +436,27 @@ const ChoosePlaces = () => {
         const dayPlaces = [];
         let currentTime = moment('09:00', 'HH:mm');
 
-        // Get places for this day from proximity groups
+        // Get places for this day
         let placesToSchedule = [];
-        const dayGroup = proximityGroups[dayIndex % proximityGroups.length];
         
+        // First, try to get a proximity group
+        const dayGroup = proximityGroups[dayIndex % proximityGroups.length];
         if (dayGroup) {
-          placesToSchedule = [...dayGroup.places];
-          console.log(`📍 Using proximity group around ${dayGroup.center.name} with ${placesToSchedule.length} places`);
+            const groupPlaces = dayGroup.places.filter(p => 
+                unusedPlaces.some(up => up.placeID === p.placeID)
+            );
+            placesToSchedule.push(...groupPlaces);
+            // Remove used places from unusedPlaces
+            unusedPlaces = unusedPlaces.filter(p => 
+                !groupPlaces.some(gp => gp.placeID === p.placeID)
+            );
         }
 
-        // Add ungrouped places to this day
-        const ungroupedForDay = ungroupedPlaces.filter((_, index) => 
-          Math.floor(index / Math.ceil(ungroupedPlaces.length / totalDays)) === dayIndex
-        );
-        
-        if (ungroupedForDay.length > 0) {
-          console.log(`📍 Adding ${ungroupedForDay.length} ungrouped places:`, 
-            ungroupedForDay.map(p => p.name)
-          );
-          placesToSchedule.push(...ungroupedForDay);
+        // If we need more places, get them from unused places
+        const remainingNeeded = placesPerDay - placesToSchedule.length;
+        if (remainingNeeded > 0 && unusedPlaces.length > 0) {
+            const additionalPlaces = unusedPlaces.splice(0, remainingNeeded);
+            placesToSchedule.push(...additionalPlaces);
         }
 
         console.log(`🎯 Total places to schedule for day ${dayIndex + 1}: ${placesToSchedule.length}`);
@@ -637,10 +634,23 @@ const ChoosePlaces = () => {
         });
       }
 
+      // After the loop, if there are still unused places, distribute them across days
+      if (unusedPlaces.length > 0) {
+        console.log(`⚠️ Distributing ${unusedPlaces.length} remaining places`);
+        unusedPlaces.forEach((place, index) => {
+          const dayIndex = index % totalDays;
+          generatedItinerary.days[dayIndex].places.push({
+            ...place,
+            visitTime: '16:00', // Default to late afternoon
+            duration: PLACE_DURATION[place.category] || PLACE_DURATION.attraction
+          });
+        });
+      }
+
       console.log('\n💾 Saving itinerary to Firestore...');
       // Save to Firestore
       if (docId) {
-        const nearestHotels = await findNearestHotels(itineraryData?.locationInfo?.coordinates.lat, itineraryData?.locationInfo?.coordinates.lng);
+        const nearestHotels = await findNearestHotels(lat,long);
         console.log('Hotel recommendation:', nearestHotels);
         console.log('📝 Updating existing document:', docId);
         const docRef = doc(firestore, 'userItinerary', docId);

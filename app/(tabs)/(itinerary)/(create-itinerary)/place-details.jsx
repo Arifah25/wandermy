@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Modal, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { Poster, HeaderWithCart, Button, DetailTab } from '../../../../components';
+import { Poster, HeaderWithCart, Button, DetailTab, Header } from '../../../../components';
 import { getDatabase, ref, onValue, get } from 'firebase/database';
 import { CreateItineraryContext } from '../../../../context/CreateItineraryContext';
 import { CartContext } from "../../../../context/CartContext";
@@ -49,7 +49,12 @@ const DetailsPlaces = () => {
         longitude,
         tags,
       });
-      Alert.alert('Place added to cart successfully.');
+      Alert.alert('Place added to cart successfully.', '', [
+        {
+          text: 'OK',
+          onPress: () => router.push('(tabs)/(itinerary)/(create-itinerary)/choose-places')
+        }
+      ]);
     }
   };
   
@@ -411,7 +416,7 @@ const DetailsPlaces = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <HeaderWithCart onCartPress={() => setModalVisible(true)} />
+      <Header />
       <ScrollView className=" w-full">
        <View className="m-5">
        {category === 'event' ? (

@@ -87,14 +87,27 @@ const ReviewItinerary = () => {
   }, [itineraryData]);
 
   const renderHotelRecommendation = useMemo(() => {
-    // Since we don't have hotel data in new structure, return null or placeholder
-    return null;
-    // Or show placeholder:
-    // return (
-    //   <View>
-    //     <Text className="text-lg font-kregular mt-3">🏨 Hotel options will be added soon</Text>
-    //   </View>
-    // );
+    if (!itineraryData) return null;
+    return (
+      <View>
+        <Text className="text-lg font-kregular mt-3">🏨 Hotel Recommendation:</Text>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          {date.hotelRecommendation.map((item, index) => (
+            <View key={index} className="mx-3 border border-secondary rounded-lg mt-2" style={{ width: 200 }}>
+              {/* <View className="items-center bg-secondary rounded-lg">
+                <Image source={icons.wandermy} style={{ width: 100, height: 100 }} />
+              </View> */}
+              <View className="rounded-lg p-2 mt-2">
+                <Text className="font-ksemibold">{item.name}</Text>
+                <Text className="font-kregular">{item.address}</Text>
+                {/* <Text className="font-kregular">{item.priceRange.min} - {item.priceRange.max}</Text> */}
+                <Text className="font-kregular text-right">⭐ {item.rating}</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
   }, [itineraryData]);
 
   const renderItinerary = useMemo(() => {
