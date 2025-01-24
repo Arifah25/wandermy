@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Image, ScrollView,toggleModalVisibility, TouchableOpacity, Modal, Linking } from 'react-native';
+import { View, Text, Image, ScrollView,toggleModalVisibility, TouchableOpacity, Modal, Linking, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { DetailTab, Poster, Button } from '../../../components';
 import { icons } from '../../../constants';
@@ -129,6 +129,47 @@ const PendingDetails = () => {
     }
   };
 
+  const handleRejectPlace = async () => {
+    Alert.alert(
+      "Confirm Rejection",
+      "Are you sure you want to reject this place? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Reject",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const placeRef = ref(db, `places/${placeID}`);
+  
+              // Check if place exists before deleting
+              const snapshot = await get(placeRef);
+              if (!snapshot.exists()) {
+                Alert.alert("Error", "Place not found.");
+                return;
+              }
+  
+              // Delete the place from Firebase
+              await remove(placeRef);
+              console.log(`Place with ID ${placeID} has been rejected and deleted.`);
+  
+              // Navigate back after deletion
+              Alert.alert("Rejected", "The place has been successfully removed.");
+              router.back();
+            } catch (error) {
+              console.error("Error rejecting place:", error);
+              Alert.alert("Error", "An error occurred while rejecting the place.");
+            }
+          },
+        },
+      ]
+    );
+  };
+  
+
   useEffect(() => {
     fetchPlaceDetails();
     fetchOperatingHours();
@@ -236,7 +277,7 @@ const PendingDetails = () => {
         <View className="flex-row items-center justify-evenly mt-5 mb-10">
           <Button 
             title="Reject" 
-            handlePress={toggleModalVisibility} 
+            handlePress={handleRejectPlace} 
             style="bg-primary w-2/5" 
             textColor="text-white" 
           />
